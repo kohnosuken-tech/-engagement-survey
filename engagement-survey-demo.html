@@ -4,76 +4,106 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>エンゲージメントサーベイ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f4f8; color: #333; }
+  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; background: #f1f5f9; color: #1e293b; }
 
   .screen { display: none; min-height: 100vh; }
   .screen.active { display: flex; }
-  .card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); padding: 40px; }
-  .btn { padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-  .btn-primary { background: #4f46e5; color: white; }
-  .btn-primary:hover { background: #4338ca; }
-  .btn-secondary { background: #e5e7eb; color: #374151; }
-  .btn-secondary:hover { background: #d1d5db; }
+  .card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); padding: 40px; }
+  .btn { padding: 12px 28px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; }
+  .btn-primary { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; box-shadow: 0 4px 0 #3730a3, 0 6px 16px rgba(79,70,229,0.3); transform: translateY(0); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #3730a3, 0 8px 20px rgba(79,70,229,0.35); }
+  .btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #3730a3, 0 2px 8px rgba(79,70,229,0.2); }
+  .btn-secondary { background: linear-gradient(180deg, #ffffff, #f1f5f9); color: #475569; box-shadow: 0 3px 0 #cbd5e1, 0 4px 10px rgba(0,0,0,0.06); transform: translateY(0); border: 1px solid #e2e8f0; }
+  .btn-secondary:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #cbd5e1, 0 6px 14px rgba(0,0,0,0.08); }
+  .btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 #cbd5e1; }
   .btn-sm { padding: 6px 14px; font-size: 13px; }
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-  .badge-alert { background: #fef2f2; color: #dc2626; }
-  .badge-ok { background: #f0fdf4; color: #16a34a; }
-  .badge-warn { background: #fffbeb; color: #d97706; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .badge-alert { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+  .badge-ok { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+  .badge-warn { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
 
   /* ログイン */
-  #screen-login { align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-  #screen-login .card { width: 400px; text-align: center; }
-  #screen-login h1 { font-size: 22px; margin-bottom: 6px; color: #1f2937; }
+  #screen-login { align-items: center; justify-content: center; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%); position: relative; overflow: hidden; }
+  #screen-login::before { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; background: rgba(255,255,255,0.05); top: -200px; right: -150px; pointer-events: none; }
+  #screen-login::after { content: ''; position: absolute; width: 400px; height: 400px; border-radius: 50%; background: rgba(255,255,255,0.04); bottom: -150px; left: -100px; pointer-events: none; }
+  #screen-login .card { width: 420px; text-align: center; position: relative; z-index: 1; border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.15); }
+  #screen-login .login-icon { font-size: 48px; margin-bottom: 12px; }
+  #screen-login h1 { font-size: 22px; margin-bottom: 6px; color: #1e1b4b; font-weight: 800; }
   #screen-login > .card > p { color: #6b7280; margin-bottom: 28px; font-size: 14px; }
-  #screen-login input { width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; text-align: center; letter-spacing: 4px; margin-bottom: 16px; transition: border-color 0.2s; }
-  #screen-login input:focus { outline: none; border-color: #4f46e5; }
-  .login-error { color: #dc2626; font-size: 13px; margin-top: 8px; }
-  .demo-ids { margin-top: 24px; padding: 16px; background: #f9fafb; border-radius: 8px; text-align: left; }
-  .demo-ids p { font-size: 12px; color: #9ca3af; margin-bottom: 6px; }
-  .demo-ids code { font-size: 13px; color: #4f46e5; font-weight: 600; cursor: pointer; }
+  #screen-login input { width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 18px; text-align: center; letter-spacing: 6px; margin-bottom: 16px; transition: all 0.2s; font-family: 'Inter', monospace; font-weight: 700; }
+  #screen-login input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.12); }
+  .login-error { color: #dc2626; font-size: 13px; margin-top: 8px; font-weight: 500; }
+  .demo-ids { margin-top: 24px; padding: 16px; background: #f8faff; border-radius: 10px; text-align: left; border: 1px solid #e0e7ff; }
+  .demo-ids p { font-size: 12px; color: #9ca3af; margin-bottom: 8px; font-weight: 500; }
+  .demo-ids code { font-size: 13px; color: #4f46e5; font-weight: 700; cursor: pointer; padding: 3px 8px; background: #eef2ff; border-radius: 6px; transition: background 0.15s; display: inline-block; }
+  .demo-ids code:hover { background: #e0e7ff; }
 
   /* サーベイ */
-  #screen-survey { align-items: flex-start; justify-content: center; padding: 40px 20px; }
-  #screen-survey .card { width: 100%; max-width: 640px; }
-  .survey-header { margin-bottom: 32px; }
-  .survey-header h2 { font-size: 20px; color: #1f2937; }
-  .survey-header p { color: #6b7280; font-size: 14px; margin-top: 4px; }
-  .progress-bar { height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 16px; }
-  .progress-fill { height: 100%; background: #4f46e5; border-radius: 3px; transition: width 0.3s; }
-  .question-block { margin-bottom: 32px; }
-  .question-block .category { font-size: 11px; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  .question-block .question { font-size: 15px; font-weight: 600; margin-bottom: 14px; color: #1f2937; }
-  .rating-scale { display: flex; gap: 8px; }
-  .rating-btn { flex: 1; padding: 10px 4px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; cursor: pointer; text-align: center; font-size: 13px; font-weight: 600; transition: all 0.15s; color: #6b7280; }
-  .rating-btn:hover { border-color: #4f46e5; color: #4f46e5; }
-  .rating-btn.selected { border-color: #4f46e5; background: #4f46e5; color: white; }
-  .rating-labels { display: flex; justify-content: space-between; margin-top: 6px; }
-  .rating-labels span { font-size: 11px; color: #9ca3af; }
-  .free-text textarea { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; resize: vertical; min-height: 100px; font-family: inherit; transition: border-color 0.2s; }
-  .free-text textarea:focus { outline: none; border-color: #4f46e5; }
-  .survey-footer { display: flex; justify-content: space-between; margin-top: 8px; }
+  #screen-survey { align-items: flex-start; justify-content: center; padding: 40px 20px; background: linear-gradient(160deg, #eef2ff 0%, #faf5ff 50%, #f0fdf4 100%); }
+  #screen-survey .card { width: 100%; max-width: 660px; border-radius: 20px; }
+  .survey-header { margin-bottom: 32px; border-bottom: 1px solid #f1f5f9; padding-bottom: 24px; }
+  .survey-header h2 { font-size: 20px; color: #1e1b4b; font-weight: 800; }
+  .survey-header p { color: #6b7280; font-size: 14px; margin-top: 4px; font-weight: 500; }
+  .progress-wrap { margin-top: 18px; }
+  .progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); border-radius: 4px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+  .progress-text { font-size: 12px; color: #94a3b8; margin-top: 6px; text-align: right; font-weight: 500; }
+  .question-block { margin-bottom: 36px; }
+  .question-block .category { display: inline-block; font-size: 11px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; background: #eef2ff; padding: 4px 12px; border-radius: 20px; }
+  .question-block .question { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #1e1b4b; line-height: 1.55; }
+  .rating-scale { display: flex; gap: 7px; }
+  .rating-btn {
+    flex: 1; padding: 15px 4px; border: none; border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    cursor: pointer; text-align: center; font-size: 15px; font-weight: 800; color: #64748b;
+    box-shadow: 0 5px 0 #cbd5e1, 0 6px 14px rgba(0,0,0,0.07);
+    transform: translateY(0);
+    transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease, color 0.12s ease;
+  }
+  .rating-btn:hover {
+    background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+    color: #6366f1; transform: translateY(-3px);
+    box-shadow: 0 8px 0 #c4b5fd, 0 10px 20px rgba(99,102,241,0.15);
+  }
+  .rating-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 #cbd5e1, 0 2px 4px rgba(0,0,0,0.08); }
+  .rating-btn[data-val="1"].selected { background: linear-gradient(180deg, #f87171, #ef4444); box-shadow: 0 2px 0 #b91c1c; transform: translateY(4px); color: white; }
+  .rating-btn[data-val="2"].selected { background: linear-gradient(180deg, #fb923c, #f97316); box-shadow: 0 2px 0 #c2410c; transform: translateY(4px); color: white; }
+  .rating-btn[data-val="3"].selected { background: linear-gradient(180deg, #fbbf24, #f59e0b); box-shadow: 0 2px 0 #92400e; transform: translateY(4px); color: #451a03; }
+  .rating-btn[data-val="4"].selected { background: linear-gradient(180deg, #facc15, #eab308); box-shadow: 0 2px 0 #713f12; transform: translateY(4px); color: #422006; }
+  .rating-btn[data-val="5"].selected { background: linear-gradient(180deg, #86efac, #22c55e); box-shadow: 0 2px 0 #166534; transform: translateY(4px); color: white; }
+  .rating-btn[data-val="6"].selected { background: linear-gradient(180deg, #4ade80, #16a34a); box-shadow: 0 2px 0 #14532d; transform: translateY(4px); color: white; }
+  .rating-btn[data-val="7"].selected { background: linear-gradient(180deg, #34d399, #059669); box-shadow: 0 2px 0 #064e3b; transform: translateY(4px); color: white; }
+  .rating-labels { display: flex; justify-content: space-between; margin-top: 10px; }
+  .rating-labels span { font-size: 11px; color: #94a3b8; font-weight: 500; }
+  .free-text textarea { width: 100%; padding: 14px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; resize: vertical; min-height: 110px; font-family: inherit; transition: all 0.2s; color: #1e293b; line-height: 1.6; }
+  .free-text textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
+  .survey-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
 
   /* 完了 */
-  #screen-done { align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-  #screen-done .card { width: 400px; text-align: center; }
-  .done-icon { font-size: 64px; margin-bottom: 16px; }
-  #screen-done h2 { font-size: 22px; color: #1f2937; margin-bottom: 8px; }
-  #screen-done p { color: #6b7280; font-size: 14px; }
+  #screen-done { align-items: center; justify-content: center; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%); }
+  #screen-done .card { width: 420px; text-align: center; border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
+  .done-icon { font-size: 72px; margin-bottom: 16px; animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+  @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  #screen-done h2 { font-size: 24px; color: #1e1b4b; margin-bottom: 8px; font-weight: 800; }
+  #screen-done p { color: #6b7280; font-size: 14px; line-height: 1.7; }
 
   /* 管理者共通 */
   #screen-admin { flex-direction: column; }
-  .admin-nav { background: #1e1b4b; color: white; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 60px; flex-shrink: 0; }
-  .admin-nav .logo { font-size: 16px; font-weight: 700; }
-  .admin-nav .user-info { font-size: 13px; color: #a5b4fc; display: flex; align-items: center; gap: 12px; }
-  .admin-nav .logout-btn { background: rgba(255,255,255,0.1); color: white; padding: 6px 14px; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+  .admin-nav { background: linear-gradient(90deg, #1e1b4b 0%, #2e1065 100%); color: white; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 64px; flex-shrink: 0; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  .admin-nav .logo { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+  .admin-nav .user-info { font-size: 13px; color: #a5b4fc; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+  .admin-nav .logout-btn { background: rgba(255,255,255,0.1); color: white; padding: 7px 16px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600; transition: background 0.15s; }
+  .admin-nav .logout-btn:hover { background: rgba(255,255,255,0.18); }
 
   /* タブ */
-  .admin-tabs { background: white; border-bottom: 1px solid #e5e7eb; padding: 0 32px; display: flex; gap: 0; flex-shrink: 0; }
-  .tab-btn { padding: 14px 24px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.2s; }
-  .tab-btn.active { color: #4f46e5; border-bottom-color: #4f46e5; }
-  .tab-btn:hover { color: #4f46e5; }
+  .admin-tabs { background: white; border-bottom: 1px solid #e5e7eb; padding: 0 32px; display: flex; gap: 0; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .tab-btn { padding: 16px 26px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 700; color: #94a3b8; cursor: pointer; transition: all 0.2s; letter-spacing: 0.2px; }
+  .tab-btn.active { color: #6366f1; border-bottom-color: #6366f1; }
+  .tab-btn:hover { color: #6366f1; }
 
   .admin-body { padding: 32px; max-width: 1200px; margin: 0 auto; width: 100%; overflow-y: auto; }
 
@@ -85,61 +115,65 @@
 
   /* KPIカード */
   .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-  .stat-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .stat-card .label { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
-  .stat-card .value { font-size: 28px; font-weight: 700; color: #1f2937; }
-  .stat-card .sub { font-size: 12px; margin-top: 4px; }
+  .stat-card { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); transition: transform 0.15s, box-shadow 0.15s; }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .stat-card .label { font-size: 12px; color: #94a3b8; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 30px; font-weight: 800; color: #1e293b; letter-spacing: -1px; }
+  .stat-card .sub { font-size: 12px; margin-top: 6px; font-weight: 600; }
   .stat-card .sub.up { color: #16a34a; }
   .stat-card .sub.down { color: #dc2626; }
-  .stat-card .sub.neutral { color: #6b7280; }
+  .stat-card .sub.neutral { color: #94a3b8; }
 
-  .section-title { font-size: 17px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
+  .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 16px; letter-spacing: -0.2px; }
 
   /* カテゴリスコア */
   .category-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
-  .score-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .score-card { background: white; border-radius: 14px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); transition: transform 0.15s, box-shadow 0.15s; }
+  .score-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
   .score-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .score-card-header .cat-name { font-size: 14px; font-weight: 600; color: #374151; }
-  .score-card-header .score-num { font-size: 22px; font-weight: 700; }
+  .score-card-header .cat-name { font-size: 14px; font-weight: 700; color: #475569; }
+  .score-card-header .score-num { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
   .score-card-header .score-num.alert { color: #dc2626; }
   .score-card-header .score-num.warn { color: #d97706; }
   .score-card-header .score-num.ok { color: #16a34a; }
-  .score-bar-wrap { height: 8px; background: #f3f4f6; border-radius: 4px; }
-  .score-bar { height: 100%; border-radius: 4px; transition: width 0.5s; }
-  .score-bar.alert { background: #ef4444; }
-  .score-bar.warn { background: #f59e0b; }
-  .score-bar.ok { background: #22c55e; }
-  .score-trend { font-size: 12px; color: #6b7280; margin-top: 8px; }
-  .score-trend .down { color: #dc2626; font-weight: 600; }
-  .score-trend .up { color: #16a34a; font-weight: 600; }
+  .score-bar-wrap { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+  .score-bar.alert { background: linear-gradient(90deg, #f87171, #ef4444); }
+  .score-bar.warn { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+  .score-bar.ok { background: linear-gradient(90deg, #4ade80, #22c55e); }
+  .score-trend { font-size: 12px; color: #94a3b8; margin-top: 8px; font-weight: 500; }
+  .score-trend .down { color: #dc2626; font-weight: 700; }
+  .score-trend .up { color: #16a34a; font-weight: 700; }
   .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 40px; margin-top: 10px; }
   .mini-bar { flex: 1; border-radius: 3px 3px 0 0; }
 
   /* アラート */
-  .alert-section { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 32px; }
-  .alert-item { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid #f3f4f6; }
+  .alert-section { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.04); }
+  .alert-item { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid #f8fafc; transition: background 0.15s; }
   .alert-item:last-child { border-bottom: none; }
-  .alert-icon { font-size: 20px; }
-  .alert-content .title { font-size: 14px; font-weight: 600; color: #1f2937; }
-  .alert-content .detail { font-size: 12px; color: #6b7280; margin-top: 2px; }
-  .no-alert { text-align: center; padding: 24px; color: #6b7280; font-size: 14px; }
+  .alert-icon { font-size: 22px; flex-shrink: 0; }
+  .alert-content .title { font-size: 14px; font-weight: 700; color: #1e293b; }
+  .alert-content .detail { font-size: 12px; color: #94a3b8; margin-top: 3px; font-weight: 500; }
+  .no-alert { text-align: center; padding: 24px; color: #94a3b8; font-size: 14px; font-weight: 500; }
 
   /* 回答一覧テーブル */
-  .response-table { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 32px; }
+  .response-table { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.04); }
   .response-table table { width: 100%; border-collapse: collapse; }
-  .response-table th { background: #f9fafb; padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; }
-  .response-table td { padding: 12px 16px; font-size: 14px; border-top: 1px solid #f3f4f6; }
-  .response-table tr.clickable:hover td { background: #f0f4ff; cursor: pointer; }
-  .detail-link { color: #4f46e5; font-size: 13px; font-weight: 600; background: none; border: none; cursor: pointer; text-decoration: underline; }
+  .response-table th { background: #f8fafc; padding: 13px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .response-table td { padding: 13px 16px; font-size: 14px; border-top: 1px solid #f8fafc; color: #334155; }
+  .response-table tr.clickable:hover td { background: #f5f3ff; cursor: pointer; }
+  .detail-link { color: #6366f1; font-size: 13px; font-weight: 700; background: none; border: none; cursor: pointer; text-decoration: none; padding: 5px 12px; background: #eef2ff; border-radius: 8px; transition: background 0.15s; }
+  .detail-link:hover { background: #e0e7ff; }
 
   /* 社員詳細画面 */
   #screen-detail { flex-direction: column; }
   .detail-body { padding: 32px; max-width: 1000px; margin: 0 auto; width: 100%; }
   .detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
-  .detail-header .back-btn { background: none; border: 2px solid #e5e7eb; border-radius: 8px; padding: 8px 16px; font-size: 14px; cursor: pointer; color: #374151; }
-  .detail-header .back-btn:hover { border-color: #4f46e5; color: #4f46e5; }
-  .detail-header h2 { font-size: 22px; font-weight: 700; color: #1f2937; }
-  .detail-header .dept-badge { background: #ede9fe; color: #7c3aed; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .detail-header .back-btn { background: linear-gradient(180deg, #ffffff, #f1f5f9); border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 18px; font-size: 14px; cursor: pointer; color: #475569; font-weight: 600; box-shadow: 0 2px 0 #cbd5e1; transition: all 0.1s; }
+  .detail-header .back-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 0 #cbd5e1; color: #6366f1; }
+  .detail-header .back-btn:active { transform: translateY(2px); box-shadow: 0 0px 0 #cbd5e1; }
+  .detail-header h2 { font-size: 22px; font-weight: 800; color: #1e293b; }
+  .detail-header .dept-badge { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
 
   /* SVGライングラフ */
   .chart-card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
@@ -166,6 +200,66 @@
   /* アラート履歴 */
   .alert-history { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
   .alert-history h3 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
+
+  /* 評価・推奨アクション */
+  .guide-card { background: white; border-radius: 10px; padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 12px; border-left: 5px solid #e5e7eb; display: flex; gap: 24px; align-items: flex-start; }
+  .guide-card.alert { border-left-color: #ef4444; }
+  .guide-card.warn { border-left-color: #f59e0b; }
+  .guide-card.ok { border-left-color: #22c55e; }
+  .guide-card-score { flex: 0 0 110px; }
+  .guide-score-num { font-size: 26px; font-weight: 700; }
+  .guide-score-num.alert { color: #dc2626; }
+  .guide-score-num.warn { color: #d97706; }
+  .guide-score-num.ok { color: #16a34a; }
+  .guide-cat-name { font-size: 12px; color: #6b7280; margin-top: 2px; font-weight: 600; }
+  .guide-diff { font-size: 12px; margin-top: 4px; font-weight: 600; }
+  .guide-card-body { flex: 1; }
+  .guide-eval { font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 10px; }
+  .guide-action-label { font-size: 11px; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .guide-action-text { font-size: 13px; color: #6b7280; line-height: 1.7; }
+  .no-guide { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 32px; }
+
+  /* ID管理 */
+  .id-issue-card { background: white; border-radius: 14px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+  .id-issue-card h3 { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 20px; }
+  .form-row { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 160px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-family: inherit; transition: all 0.2s; color: #1e293b; font-weight: 500; }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+  .issued-result { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 12px; padding: 20px 24px; margin-top: 20px; display: none; animation: fadeSlideIn 0.3s ease; }
+  @keyframes fadeSlideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .issued-result-label { font-size: 13px; color: #16a34a; font-weight: 700; margin-bottom: 10px; }
+  .issued-id-big { font-size: 34px; font-weight: 800; color: #15803d; letter-spacing: 3px; font-family: 'Inter', monospace; }
+  .issued-sub { font-size: 14px; color: #374151; margin-top: 4px; font-weight: 500; }
+  .copy-btn { padding: 8px 16px; background: linear-gradient(180deg, #fff, #f1f5f9); border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; box-shadow: 0 3px 0 #cbd5e1; transition: all 0.1s; white-space: nowrap; }
+  .copy-btn:hover { background: linear-gradient(180deg, #f5f3ff, #ede9fe); color: #6366f1; border-color: #c4b5fd; box-shadow: 0 3px 0 #c4b5fd; }
+  .copy-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #cbd5e1; }
+  .id-table-wrap { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.04); }
+  .id-table-wrap table { width: 100%; border-collapse: collapse; }
+  .id-table-wrap th { background: #f8fafc; padding: 13px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .id-table-wrap td { padding: 13px 16px; font-size: 14px; border-top: 1px solid #f8fafc; color: #334155; }
+  .id-badge { font-size: 14px; font-weight: 800; color: #6366f1; background: #eef2ff; padding: 4px 10px; border-radius: 8px; font-family: 'Inter', monospace; letter-spacing: 1px; }
+  .dept-chip { background: #f1f5f9; padding: 3px 10px; border-radius: 20px; font-size: 12px; color: #64748b; font-weight: 600; }
+  .new-badge { background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+  /* トースト通知 */
+  .toast { position: fixed; bottom: 36px; left: 50%; transform: translateX(-50%) translateY(16px); background: #1e293b; color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 9999; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.25); white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* 社員詳細：推奨対応 */
+  .recommend-section { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .recommend-section h3 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
+  .recommend-item { border-left: 4px solid #e5e7eb; padding: 12px 16px; margin-bottom: 10px; border-radius: 0 8px 8px 0; background: #fafafa; }
+  .recommend-item.alert { border-left-color: #ef4444; background: #fff5f5; }
+  .recommend-item.warn { border-left-color: #f59e0b; background: #fffbeb; }
+  .recommend-item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .recommend-item-header .cat { font-size: 13px; font-weight: 700; color: #374151; }
+  .recommend-item-header .score { font-size: 13px; font-weight: 700; }
+  .recommend-item-header .score.alert { color: #dc2626; }
+  .recommend-item-header .score.warn { color: #d97706; }
+  .recommend-eval { font-size: 13px; color: #374151; margin-bottom: 6px; }
+  .recommend-action { font-size: 12px; color: #6b7280; line-height: 1.6; }
+  .recommend-action::before { content: '▶ '; color: #4f46e5; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -173,6 +267,7 @@
 <!-- ログイン -->
 <div id="screen-login" class="screen active">
   <div class="card">
+    <div class="login-icon">📊</div>
     <h1>月次エンゲージメントサーベイ</h1>
     <p>2026年3月 回答期間：3/1〜3/15</p>
     <input type="text" id="login-id" placeholder="社員ID を入力" maxlength="6">
@@ -196,7 +291,10 @@
     <div class="survey-header">
       <h2>2026年3月 エンゲージメントサーベイ</h2>
       <p id="survey-user-name"></p>
-      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        <div class="progress-text" id="progress-text">1 / 12</div>
+      </div>
     </div>
     <div id="questions-container"></div>
     <div class="survey-footer">
@@ -228,6 +326,7 @@
   <div class="admin-tabs">
     <button class="tab-btn active" onclick="switchTab('dashboard', this)">月次ダッシュボード</button>
     <button class="tab-btn" onclick="switchTab('employees', this)">社員一覧</button>
+    <button class="tab-btn" onclick="switchTab('idmgmt', this)">ID管理</button>
   </div>
 
   <!-- 月次ダッシュボード -->
@@ -248,6 +347,8 @@
     <div class="alert-section" id="alert-list"></div>
     <div class="section-title">カテゴリ別スコア</div>
     <div class="category-scores" id="category-grid"></div>
+    <div class="section-title">📋 評価基準・推奨アクション</div>
+    <div id="action-guide-list"></div>
   </div>
 
   <!-- 社員一覧 -->
@@ -265,6 +366,40 @@
     </div>
     <div class="section-title">社員別スコア一覧</div>
     <div class="response-table" id="emp-table"></div>
+  </div>
+
+  <!-- ID管理 -->
+  <div id="tab-idmgmt" class="admin-body" style="display:none">
+    <div class="section-title">🆔 新規ID発行</div>
+    <div class="id-issue-card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>氏名 <span style="color:#ef4444">*</span></label>
+          <input type="text" id="new-emp-name" placeholder="例：山田 太郎">
+        </div>
+        <div class="form-group">
+          <label>所属部署 <span style="color:#ef4444">*</span></label>
+          <input type="text" id="new-emp-dept" placeholder="例：営業部" list="dept-list">
+          <datalist id="dept-list">
+            <option value="営業部"><option value="開発部"><option value="総務部">
+            <option value="マーケ部"><option value="人事部"><option value="経理部">
+          </datalist>
+        </div>
+        <button class="btn btn-primary" onclick="issueNewId()" style="flex-shrink:0;white-space:nowrap;height:44px;align-self:flex-end">IDを発行する ＋</button>
+      </div>
+      <div class="issued-result" id="issued-result">
+        <div class="issued-result-label">✅ IDを発行しました</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:6px">
+          <div>
+            <div class="issued-id-big" id="issued-id-value"></div>
+            <div class="issued-sub" id="issued-name-value"></div>
+          </div>
+          <button class="copy-btn" onclick="copyIssuedId()">📋 IDをコピー</button>
+        </div>
+      </div>
+    </div>
+    <div class="section-title">👥 社員ID一覧</div>
+    <div class="id-table-wrap" id="id-table"></div>
   </div>
 </div>
 
@@ -308,73 +443,121 @@ const monthLabels = { '2025-10':'10月', '2025-11':'11月', '2025-12':'12月', '
 // 月次・社員別スコアデータ（モック）
 const empData = {
   'EMP001': {
-    '2025-10': { やりがい:82, 上司:80, チーム:78, 業務:72, 信頼:75, 成長:80 },
-    '2025-11': { やりがい:80, 上司:79, チーム:80, 業務:70, 信頼:74, 成長:78 },
-    '2025-12': { やりがい:78, 上司:78, チーム:76, 業務:68, 信頼:72, 成長:76 },
-    '2026-01': { やりがい:76, 上司:78, チーム:75, 業務:66, 信頼:70, 成長:74 },
-    '2026-02': { やりがい:75, 上司:78, チーム:74, 業務:65, 信頼:70, 成長:73 },
-    '2026-03': { やりがい:70, 上司:45, チーム:72, 業務:60, 信頼:62, 成長:71 },
+    '2025-10': { やりがい:82, 上司:80, チーム:78, 業務:72, 信頼:75, 成長:80, 健康:70, 承認:75, 組織:72 },
+    '2025-11': { やりがい:80, 上司:79, チーム:80, 業務:70, 信頼:74, 成長:78, 健康:68, 承認:73, 組織:71 },
+    '2025-12': { やりがい:78, 上司:78, チーム:76, 業務:68, 信頼:72, 成長:76, 健康:65, 承認:71, 組織:70 },
+    '2026-01': { やりがい:76, 上司:78, チーム:75, 業務:66, 信頼:70, 成長:74, 健康:62, 承認:68, 組織:68 },
+    '2026-02': { やりがい:75, 上司:78, チーム:74, 業務:65, 信頼:70, 成長:73, 健康:59, 承認:65, 組織:66 },
+    '2026-03': { やりがい:70, 上司:45, チーム:72, 業務:60, 信頼:62, 成長:71, 健康:55, 承認:58, 組織:62 },
   },
   'EMP042': {
-    '2025-10': { やりがい:72, 上司:74, チーム:80, 業務:68, 信頼:70, 成長:72 },
-    '2025-11': { やりがい:74, 上司:75, チーム:82, 業務:66, 信頼:71, 成長:73 },
-    '2025-12': { やりがい:74, 上司:76, チーム:83, 業務:65, 信頼:72, 成長:74 },
-    '2026-01': { やりがい:75, 上司:77, チーム:84, 業務:64, 信頼:72, 成長:75 },
-    '2026-02': { やりがい:76, 上司:77, チーム:83, 業務:66, 信頼:73, 成長:75 },
-    '2026-03': { やりがい:78, 上司:79, チーム:85, 業務:67, 信頼:74, 成長:76 },
+    '2025-10': { やりがい:72, 上司:74, チーム:80, 業務:68, 信頼:70, 成長:72, 健康:75, 承認:76, 組織:76 },
+    '2025-11': { やりがい:74, 上司:75, チーム:82, 業務:66, 信頼:71, 成長:73, 健康:76, 承認:77, 組織:77 },
+    '2025-12': { やりがい:74, 上司:76, チーム:83, 業務:65, 信頼:72, 成長:74, 健康:77, 承認:78, 組織:78 },
+    '2026-01': { やりがい:75, 上司:77, チーム:84, 業務:64, 信頼:72, 成長:75, 健康:78, 承認:79, 組織:79 },
+    '2026-02': { やりがい:76, 上司:77, チーム:83, 業務:66, 信頼:73, 成長:75, 健康:78, 承認:80, 組織:80 },
+    '2026-03': { やりがい:78, 上司:79, チーム:85, 業務:67, 信頼:74, 成長:76, 健康:79, 承認:81, 組織:81 },
   },
   'EMP099': {
-    '2025-10': { やりがい:78, 上司:80, チーム:76, 業務:76, 信頼:78, 成長:76 },
-    '2025-11': { やりがい:79, 上司:80, チーム:78, 業務:76, 信頼:79, 成長:77 },
-    '2025-12': { やりがい:80, 上司:81, チーム:79, 業務:77, 信頼:79, 成長:78 },
-    '2026-01': { やりがい:81, 上司:82, チーム:80, 業務:78, 信頼:80, 成長:79 },
-    '2026-02': { やりがい:80, 上司:82, チーム:80, 業務:78, 信頼:80, 成長:79 },
-    '2026-03': { やりがい:82, 上司:84, チーム:82, 業務:80, 信頼:82, 成長:81 },
+    '2025-10': { やりがい:78, 上司:80, チーム:76, 業務:76, 信頼:78, 成長:76, 健康:80, 承認:80, 組織:82 },
+    '2025-11': { やりがい:79, 上司:80, チーム:78, 業務:76, 信頼:79, 成長:77, 健康:81, 承認:81, 組織:83 },
+    '2025-12': { やりがい:80, 上司:81, チーム:79, 業務:77, 信頼:79, 成長:78, 健康:82, 承認:82, 組織:84 },
+    '2026-01': { やりがい:81, 上司:82, チーム:80, 業務:78, 信頼:80, 成長:79, 健康:82, 承認:83, 組織:85 },
+    '2026-02': { やりがい:80, 上司:82, チーム:80, 業務:78, 信頼:80, 成長:79, 健康:83, 承認:83, 組織:85 },
+    '2026-03': { やりがい:82, 上司:84, チーム:82, 業務:80, 信頼:82, 成長:81, 健康:84, 承認:85, 組織:86 },
   },
   'EMP017': {
-    '2025-10': { やりがい:74, 上司:76, チーム:72, 業務:70, 信頼:72, 成長:70 },
-    '2025-11': { やりがい:73, 上司:75, チーム:71, 業務:68, 信頼:71, 成長:69 },
-    '2025-12': { やりがい:71, 上司:73, チーム:70, 業務:66, 信頼:70, 成長:68 },
-    '2026-01': { やりがい:68, 上司:70, チーム:68, 業務:62, 信頼:67, 成長:66 },
-    '2026-02': { やりがい:65, 上司:68, チーム:66, 業務:60, 信頼:65, 成長:64 },
-    '2026-03': { やりがい:60, 上司:52, チーム:62, 業務:52, 信頼:58, 成長:61 },
+    '2025-10': { やりがい:74, 上司:76, チーム:72, 業務:70, 信頼:72, 成長:70, 健康:68, 承認:68, 組織:70 },
+    '2025-11': { やりがい:73, 上司:75, チーム:71, 業務:68, 信頼:71, 成長:69, 健康:65, 承認:66, 組織:68 },
+    '2025-12': { やりがい:71, 上司:73, チーム:70, 業務:66, 信頼:70, 成長:68, 健康:61, 承認:63, 組織:66 },
+    '2026-01': { やりがい:68, 上司:70, チーム:68, 業務:62, 信頼:67, 成長:66, 健康:57, 承認:59, 組織:63 },
+    '2026-02': { やりがい:65, 上司:68, チーム:66, 業務:60, 信頼:65, 成長:64, 健康:53, 承認:55, 組織:60 },
+    '2026-03': { やりがい:60, 上司:52, チーム:62, 業務:52, 信頼:58, 成長:61, 健康:48, 承認:50, 組織:56 },
   },
   'EMP058': {
-    '2025-10': { やりがい:76, 上司:78, チーム:80, 業務:74, 信頼:74, 成長:76 },
-    '2025-11': { やりがい:75, 上司:77, チーム:79, 業務:72, 信頼:73, 成長:75 },
-    '2025-12': { やりがい:74, 上司:76, チーム:78, 業務:68, 信頼:72, 成長:74 },
-    '2026-01': { やりがい:74, 上司:75, チーム:77, 業務:65, 信頼:71, 成長:73 },
-    '2026-02': { やりがい:73, 上司:74, チーム:77, 業務:63, 信頼:70, 成長:72 },
-    '2026-03': { やりがい:72, 上司:74, チーム:76, 業務:55, 信頼:68, 成長:71 },
+    '2025-10': { やりがい:76, 上司:78, チーム:80, 業務:74, 信頼:74, 成長:76, 健康:73, 承認:74, 組織:76 },
+    '2025-11': { やりがい:75, 上司:77, チーム:79, 業務:72, 信頼:73, 成長:75, 健康:72, 承認:73, 組織:75 },
+    '2025-12': { やりがい:74, 上司:76, チーム:78, 業務:68, 信頼:72, 成長:74, 健康:71, 承認:72, 組織:74 },
+    '2026-01': { やりがい:74, 上司:75, チーム:77, 業務:65, 信頼:71, 成長:73, 健康:70, 承認:71, 組織:73 },
+    '2026-02': { やりがい:73, 上司:74, チーム:77, 業務:63, 信頼:70, 成長:72, 健康:69, 承認:70, 組織:72 },
+    '2026-03': { やりがい:72, 上司:74, チーム:76, 業務:55, 信頼:68, 成長:71, 健康:67, 承認:69, 組織:71 },
   },
   'EMP033': {
-    '2025-10': { やりがい:80, 上司:82, チーム:84, 業務:78, 信頼:80, 成長:80 },
-    '2025-11': { やりがい:81, 上司:82, チーム:84, 業務:79, 信頼:81, 成長:80 },
-    '2025-12': { やりがい:82, 上司:83, チーム:85, 業務:80, 信頼:82, 成長:81 },
-    '2026-01': { やりがい:82, 上司:84, チーム:85, 業務:80, 信頼:82, 成長:82 },
-    '2026-02': { やりがい:83, 上司:84, チーム:86, 業務:81, 信頼:83, 成長:82 },
-    '2026-03': { やりがい:84, 上司:85, チーム:87, 業務:82, 信頼:84, 成長:83 },
+    '2025-10': { やりがい:80, 上司:82, チーム:84, 業務:78, 信頼:80, 成長:80, 健康:82, 承認:84, 組織:83 },
+    '2025-11': { やりがい:81, 上司:82, チーム:84, 業務:79, 信頼:81, 成長:80, 健康:83, 承認:84, 組織:84 },
+    '2025-12': { やりがい:82, 上司:83, チーム:85, 業務:80, 信頼:82, 成長:81, 健康:84, 承認:85, 組織:85 },
+    '2026-01': { やりがい:82, 上司:84, チーム:85, 業務:80, 信頼:82, 成長:82, 健康:84, 承認:86, 組織:86 },
+    '2026-02': { やりがい:83, 上司:84, チーム:86, 業務:81, 信頼:83, 成長:82, 健康:85, 承認:86, 組織:87 },
+    '2026-03': { やりがい:84, 上司:85, チーム:87, 業務:82, 信頼:84, 成長:83, 健康:86, 承認:87, 組織:88 },
   },
   'EMP071': {
-    '2025-10': { やりがい:68, 上司:70, チーム:72, 業務:66, 信頼:68, 成長:66 },
-    '2025-11': { やりがい:69, 上司:70, チーム:72, 業務:66, 信頼:68, 成長:67 },
-    '2025-12': { やりがい:70, 上司:71, チーム:73, 業務:67, 信頼:69, 成長:68 },
-    '2026-01': { やりがい:70, 上司:72, チーム:73, 業務:67, 信頼:69, 成長:68 },
-    '2026-02': { やりがい:71, 上司:72, チーム:74, 業務:68, 信頼:70, 成長:69 },
-    '2026-03': { やりがい:72, 上司:73, チーム:75, 業務:69, 信頼:71, 成長:70 },
+    '2025-10': { やりがい:68, 上司:70, チーム:72, 業務:66, 信頼:68, 成長:66, 健康:68, 承認:70, 組織:70 },
+    '2025-11': { やりがい:69, 上司:70, チーム:72, 業務:66, 信頼:68, 成長:67, 健康:69, 承認:71, 組織:71 },
+    '2025-12': { やりがい:70, 上司:71, チーム:73, 業務:67, 信頼:69, 成長:68, 健康:70, 承認:72, 組織:72 },
+    '2026-01': { やりがい:70, 上司:72, チーム:73, 業務:67, 信頼:69, 成長:68, 健康:70, 承認:72, 組織:72 },
+    '2026-02': { やりがい:71, 上司:72, チーム:74, 業務:68, 信頼:70, 成長:69, 健康:71, 承認:73, 組織:73 },
+    '2026-03': { やりがい:72, 上司:73, チーム:75, 業務:69, 信頼:71, 成長:70, 健康:72, 承認:74, 組織:74 },
   },
   'EMP088': {
-    '2025-10': { やりがい:85, 上司:86, チーム:88, 業務:82, 信頼:84, 成長:84 },
-    '2025-11': { やりがい:84, 上司:86, チーム:88, 業務:82, 信頼:84, 成長:84 },
-    '2025-12': { やりがい:85, 上司:86, チーム:88, 業務:83, 信頼:85, 成長:84 },
-    '2026-01': { やりがい:85, 上司:87, チーム:89, 業務:83, 信頼:85, 成長:85 },
-    '2026-02': { やりがい:86, 上司:87, チーム:89, 業務:84, 信頼:86, 成長:85 },
-    '2026-03': { やりがい:86, 上司:88, チーム:90, 業務:84, 信頼:86, 成長:86 },
+    '2025-10': { やりがい:85, 上司:86, チーム:88, 業務:82, 信頼:84, 成長:84, 健康:85, 承認:85, 組織:86 },
+    '2025-11': { やりがい:84, 上司:86, チーム:88, 業務:82, 信頼:84, 成長:84, 健康:86, 承認:86, 組織:87 },
+    '2025-12': { やりがい:85, 上司:86, チーム:88, 業務:83, 信頼:85, 成長:84, 健康:86, 承認:86, 組織:88 },
+    '2026-01': { やりがい:85, 上司:87, チーム:89, 業務:83, 信頼:85, 成長:85, 健康:87, 承認:87, 組織:88 },
+    '2026-02': { やりがい:86, 上司:87, チーム:89, 業務:84, 信頼:86, 成長:85, 健康:87, 承認:88, 組織:89 },
+    '2026-03': { やりがい:86, 上司:88, チーム:90, 業務:84, 信頼:86, 成長:86, 健康:88, 承認:88, 組織:90 },
   },
 };
 
-const catKeys = ['やりがい', '上司', 'チーム', '業務', '信頼', '成長'];
-const catNames = { やりがい:'仕事のやりがい', 上司:'上司との関係性', チーム:'チームワーク', 業務:'業務量・残業', 信頼:'会社への信頼', 成長:'成長・キャリア' };
+const categoryGuide = {
+  やりがい: {
+    ok:   { eval: '職務満足度は良好な状態です。', action: '現状の業務環境・役割を維持し、強みを活かせる機会を継続的に提供しましょう。' },
+    warn: { eval: 'やりがいの低下傾向が見られます。', action: '1on1ミーティングで業務内容・役割の再確認を。プロジェクトへのアサインや担当変更も検討してください。' },
+    alert:{ eval: 'エンゲージメントが深刻に低下しています。離職リスクがあります。', action: '緊急面談を実施し、不満の根本原因を直接確認してください。配置転換や業務再設計の検討が必要です。' },
+  },
+  成長: {
+    ok:   { eval: '成長実感・自己効力感が高い状態です。', action: '研修機会・ストレッチアサインを継続し、キャリアモチベーションを維持しましょう。' },
+    warn: { eval: '成長機会の不足感が出ています。', action: 'スキルアップ研修やOJT機会の提供を検討。キャリアパスについて1on1で話し合いましょう。' },
+    alert:{ eval: '成長の見通しを失っています。キャリア不安が高まっています。', action: 'キャリア面談を早急に実施し、中長期の成長プランを一緒に描いてください。' },
+  },
+  健康: {
+    ok:   { eval: 'ストレス・疲労は許容範囲内です。', action: '定期的なコンディション確認を継続し、過負荷の予防に努めましょう。' },
+    warn: { eval: '心身の疲労兆候が見られます。', action: '業務量・残業状況を確認し、タスク分散や優先度見直しを推奨します。' },
+    alert:{ eval: 'バーンアウトリスクが高い状態です。', action: '産業医面談の設定を検討。業務量の緊急軽減と休暇取得の促進が必要です。' },
+  },
+  上司: {
+    ok:   { eval: '上司からのサポートが十分に機能しています。', action: '良好な関係を維持しつつ、定期的なフィードバックを継続しましょう。' },
+    warn: { eval: '上司とのコミュニケーションに課題が生じています。', action: '1on1の頻度・質を見直し、フィードバック機会を増やしましょう。マネジャーへのコーチング支援も検討を。' },
+    alert:{ eval: '上司関係が大きく損なわれています。離職の直接原因になりえます。', action: '人事介入による三者面談を検討。マネジャー研修または配置転換の緊急対応が必要です。' },
+  },
+  チーム: {
+    ok:   { eval: 'チームの連帯感・協力関係が高い状態です。', action: 'チームビルディング活動を継続し、良好な関係を育てましょう。' },
+    warn: { eval: '職場の人間関係に軽度の問題が生じています。', action: 'チームワークショップや交流機会を設けましょう。孤立しているメンバーがいないか確認を。' },
+    alert:{ eval: '職場内の孤立・摩擦が深刻です。', action: 'チームファシリテーションの専門家介入を検討。関係修復のための組織開発施策が必要です。' },
+  },
+  承認: {
+    ok:   { eval: '貢献が適切に評価・承認されています。', action: '表彰制度やサンクスメッセージの仕組みを継続・強化しましょう。' },
+    warn: { eval: '承認・評価への不足感が出ています。', action: '評価面談の実施と、日頃の貢献への言語的承認を増やしましょう。評価基準の透明性も確認を。' },
+    alert:{ eval: '評価への不満・不公平感が高まっています。', action: '評価制度・等級制度の見直しを検討。個別面談で不満の根拠を丁寧にヒアリングしてください。' },
+  },
+  信頼: {
+    ok:   { eval: '経営方針・理念への共感・信頼が高い状態です。', action: '経営方針の発信を継続し、現場への浸透活動を維持しましょう。' },
+    warn: { eval: '経営への疑問・不信感が芽生え始めています。', action: 'タウンホールミーティングや経営層との対話機会を増やし、情報開示を強化しましょう。' },
+    alert:{ eval: '経営への不信感が強く、組織コミットメントが大きく低下しています。', action: '全社説明会・Q&Aセッションを早急に実施。経営層が直接メッセージを発信する機会を設けてください。' },
+  },
+  組織: {
+    ok:   { eval: '心理的安全性が高く、挑戦できる組織風土です。', action: '挑戦・失敗を讃える文化を継続し、部門横断の協力体制を強化しましょう。' },
+    warn: { eval: '組織風土に課題感が出ています。', action: '職場環境改善ワークショップの実施を検討。部署間連携の障壁を確認しましょう。' },
+    alert:{ eval: '組織としての機能不全の兆候があります。', action: '文化変革プロジェクトの立ち上げを検討。外部組織開発コンサルタントの活用も視野に入れてください。' },
+  },
+  業務: {
+    ok:   { eval: '職場環境・報酬・ワークライフバランスに満足しています。', action: '柔軟な働き方の選択肢を拡充し、環境の質を継続的に改善しましょう。' },
+    warn: { eval: '職場環境・処遇への不満の萌芽があります。', action: '報酬水準のベンチマーク調査と、オフィス環境の改善検討を開始しましょう。' },
+    alert:{ eval: '処遇・環境への不満が深刻で、離職原因になりえます。', action: '報酬制度・福利厚生の緊急見直しを。ワークスタイル改革（リモートワーク・フレックス等）も並行して検討してください。' },
+  },
+};
+
+const catKeys = ['やりがい', '成長', '健康', '上司', 'チーム', '承認', '信頼', '組織', '業務'];
+const catNames = { やりがい:'職務', 成長:'自己成長', 健康:'健康', 上司:'支援', チーム:'人間関係', 承認:'承認', 信頼:'理念戦略', 組織:'組織風土', 業務:'環境' };
 
 function getTotal(scores) {
   const vals = Object.values(scores);
@@ -490,6 +673,38 @@ function renderDashboard() {
         <div class="mini-chart">${pastScores.map(v => `<div class="mini-bar" style="height:${(v/maxS)*100}%;background:${status==='alert'?'#ef4444':status==='warn'?'#f59e0b':'#22c55e'};opacity:0.7"></div>`).join('')}</div>
       </div>`;
   }).join('');
+
+  // 評価・推奨アクション
+  const guideList = document.getElementById('action-guide-list');
+  const guideItems = catKeys.map(k => {
+    const score = cats[k];
+    const prev = prevCats ? prevCats[k] : null;
+    const diff = prev !== null ? score - prev : null;
+    const status = prev !== null ? getStatus(score, diff) : (score < 60 ? 'alert' : score < 70 ? 'warn' : 'ok');
+    return { k, score, diff, status };
+  }).filter(item => item.status !== 'ok');
+
+  if (guideItems.length === 0) {
+    guideList.innerHTML = '<div class="no-guide">✅ 全カテゴリ良好。継続的なモニタリングを行いましょう。</div>';
+  } else {
+    guideList.innerHTML = guideItems.map(({ k, score, diff, status }) => {
+      const guide = categoryGuide[k][status];
+      const diffText = diff !== null ? `<span class="guide-diff" style="color:${diff < 0 ? '#dc2626' : '#16a34a'}">${diff > 0 ? '↑ +' : '↓ '}${diff}点</span>` : '';
+      return `
+        <div class="guide-card ${status}">
+          <div class="guide-card-score">
+            <div class="guide-score-num ${status}">${score}点</div>
+            <div class="guide-cat-name">${catNames[k]}</div>
+            ${diffText}
+          </div>
+          <div class="guide-card-body">
+            <div class="guide-eval">📊 ${guide.eval}</div>
+            <div class="guide-action-label">推奨アクション</div>
+            <div class="guide-action-text">${guide.action}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
 }
 
 // ===== 社員一覧描画 =====
@@ -659,6 +874,34 @@ function showDetail(empId) {
             </div>
             <span class="badge badge-${a.level}" style="margin-left:auto">${a.diff > 0 ? '+' : ''}${a.diff}点</span>
           </div>`).join('')}
+    </div>
+    <div class="recommend-section">
+      <h3>💡 推奨対応</h3>
+      ${(() => {
+        const prevMonth = months[months.length - 2];
+        const items = catKeys.map(k => {
+          const score = latestScores[k];
+          const prevScore = prevScores ? prevScores[k] : null;
+          const diff = prevScore !== null ? score - prevScore : null;
+          const st = diff !== null ? getStatus(score, diff) : (score < 60 ? 'alert' : score < 70 ? 'warn' : 'ok');
+          return { k, score, diff, st };
+        }).filter(item => item.st !== 'ok');
+        if (items.length === 0) return '<div class="no-alert">✅ 現在すべてのカテゴリが良好です。</div>';
+        return items.map(({ k, score, diff, st }) => {
+          const guide = categoryGuide[k][st];
+          const diffText = diff !== null ? `（前月比 ${diff > 0 ? '+' : ''}${diff}点）` : '';
+          return `
+            <div class="recommend-item ${st}">
+              <div class="recommend-item-header">
+                <span class="cat">${catNames[k]}</span>
+                <span class="score ${st}">${score}点${diffText}</span>
+                <span class="badge badge-${st}" style="margin-left:auto">${st === 'alert' ? '⚠️ 要対応' : '注意'}</span>
+              </div>
+              <div class="recommend-eval">${guide.eval}</div>
+              <div class="recommend-action">${guide.action}</div>
+            </div>`;
+        }).join('');
+      })()}
     </div>`;
 
   showScreen('detail');
@@ -677,38 +920,80 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   document.getElementById('tab-dashboard').style.display = name === 'dashboard' ? 'block' : 'none';
   document.getElementById('tab-employees').style.display = name === 'employees' ? 'block' : 'none';
+  document.getElementById('tab-idmgmt').style.display = name === 'idmgmt' ? 'block' : 'none';
   if (name === 'employees') renderEmployeeList();
+  if (name === 'idmgmt') renderIdList();
 }
 
 function switchTabById(name) {
   const btns = document.querySelectorAll('.tab-btn');
   btns.forEach(b => b.classList.remove('active'));
-  const idx = name === 'dashboard' ? 0 : 1;
+  const idx = name === 'dashboard' ? 0 : name === 'employees' ? 1 : 2;
   btns[idx].classList.add('active');
   document.getElementById('tab-dashboard').style.display = name === 'dashboard' ? 'block' : 'none';
   document.getElementById('tab-employees').style.display = name === 'employees' ? 'block' : 'none';
+  document.getElementById('tab-idmgmt').style.display = name === 'idmgmt' ? 'block' : 'none';
 }
 
 // ===== サーベイ =====
 const questions = [
   { page:0, items:[
-    { id:'q1', category:'仕事のやりがい', text:'現在の仕事に充実感・やりがいを感じている', type:'rating' },
-    { id:'q2', category:'仕事のやりがい', text:'自分の強みや能力が仕事で活かされている', type:'rating' },
+    { id:'q1', category:'職務', text:'自社を働きがいのある会社として推薦出来ますか？', type:'rating' },
+    { id:'q2', category:'職務', text:'今の自分の職務内容にやりがいを感じていますか？', type:'rating' },
   ]},
   { page:1, items:[
-    { id:'q3', category:'上司との関係性', text:'上司は私の意見や提案をきちんと聞いてくれる', type:'rating' },
-    { id:'q4', category:'上司との関係性', text:'上司からのフィードバックは適切で参考になる', type:'rating' },
+    { id:'q3', category:'職務', text:'今の職務を遂行するにあたって必要な裁量は与えられていますか？', type:'rating' },
+    { id:'q4', category:'職務', text:'活き活きと仕事に取り組めていると感じていますか？', type:'rating' },
   ]},
   { page:2, items:[
-    { id:'q5', category:'チームワーク', text:'チームメンバーと協力しながら仕事ができている', type:'rating' },
-    { id:'q6', category:'業務量・残業', text:'業務量は適切で、無理なく取り組める範囲である', type:'rating' },
+    { id:'q5', category:'自己成長', text:'仕事を通じて自分の能力やスキルを高められていますか？', type:'rating' },
+    { id:'q6', category:'自己成長', text:'最近仕事をする中で、達成感を得ていますか？', type:'rating' },
+    { id:'q7', category:'自己成長', text:'仕事をする中で、自身の能力を活用できていると感じますか？', type:'rating' },
   ]},
   { page:3, items:[
-    { id:'q7', category:'会社への信頼', text:'会社の方向性や経営判断を信頼している', type:'rating' },
-    { id:'q8', category:'成長・キャリア', text:'この会社で自分のキャリアを成長させられると感じる', type:'rating' },
+    { id:'q8', category:'健康', text:'最近些細なことでイライラするときがありますか？', type:'rating' },
+    { id:'q9', category:'健康', text:'最近頭が重いと感じるときがありますか？', type:'rating' },
+    { id:'q10', category:'健康', text:'最近、自身の仕事量についてどう感じていますか？', type:'rating' },
   ]},
   { page:4, items:[
-    { id:'q9', category:'自由記述', text:'職場環境や業務について、感じていることを自由に教えてください（任意）', type:'text' },
+    { id:'q11', category:'支援', text:'上司は自分が職務を遂行する上で、必要な手助けをしてくれていると感じますか？', type:'rating' },
+    { id:'q12', category:'支援', text:'上司は自分の成長の手助けをしてくれていますか？', type:'rating' },
+    { id:'q13', category:'支援', text:'上司は部署やチームの使命や目標を分かりやすく伝えてくれていますか？', type:'rating' },
+  ]},
+  { page:5, items:[
+    { id:'q14', category:'支援', text:'自分が困っている時、仕事仲間は助けてくれると思いますか？', type:'rating' },
+    { id:'q15', category:'支援', text:'上司は誠実な態度で対応してくれていますか？', type:'rating' },
+    { id:'q16', category:'支援', text:'上司と仕事以外の事でも、気軽に話すことができますか？', type:'rating' },
+  ]},
+  { page:6, items:[
+    { id:'q17', category:'人間関係', text:'仕事仲間とは仕事をする上で良好な関係ですか？', type:'rating' },
+    { id:'q18', category:'人間関係', text:'仕事仲間と仕事以外の事でも、気軽に話すことができますか？', type:'rating' },
+    { id:'q19', category:'人間関係', text:'最近仕事仲間から仕事の成果を認められたり、褒められたりしましたか？', type:'rating' },
+  ]},
+  { page:7, items:[
+    { id:'q20', category:'承認', text:'自分の意見や提案に対して、仕事仲間がちゃんと耳を傾けてくれていると感じますか？', type:'rating' },
+    { id:'q21', category:'承認', text:'あなたの成果や貢献に見合った評価がされていますか？', type:'rating' },
+  ]},
+  { page:8, items:[
+    { id:'q22', category:'理念戦略', text:'あなたは会社のミッション・ビジョンに共感していますか？', type:'rating' },
+    { id:'q23', category:'理念戦略', text:'会社の事業戦略や方針に納得していますか？', type:'rating' },
+    { id:'q24', category:'理念戦略', text:'経営陣は、誠実で論理的に仕事を行っていると思いますか？', type:'rating' },
+    { id:'q25', category:'理念戦略', text:'自分が携わっている事業やサービスを親しい友人に進めることができますか？', type:'rating' },
+  ]},
+  { page:9, items:[
+    { id:'q26', category:'組織風土', text:'社内で誰かが称賛されたとき、それが適切であると感じていますか？', type:'rating' },
+    { id:'q27', category:'組織風土', text:'（会社・事業の）目標を遂行する上で、他の部署の人達は協力的だと感じますか？', type:'rating' },
+    { id:'q28', category:'組織風土', text:'自分が意欲的であれば、会社はチャンスを与えてくれていると感じますか？', type:'rating' },
+    { id:'q29', category:'組織風土', text:'この会社は例え失敗したとしても、挑戦したことを讃えられる会社だと思いますか？', type:'rating' },
+  ]},
+  { page:10, items:[
+    { id:'q30', category:'環境', text:'あなたにとって職場の環境（場所・オフィス等）は働きやすいですか？', type:'rating' },
+    { id:'q31', category:'環境', text:'この会社では、必要に応じて仕事と生活のバランスが取れると感じていますか？', type:'rating' },
+    { id:'q32', category:'環境', text:'この会社では、働きに見合った報酬が支払われていますか？', type:'rating' },
+    { id:'q33', category:'環境', text:'仕事をする中で、自分の強みを活かせていると感じていますか？', type:'rating' },
+  ]},
+  { page:11, items:[
+    { id:'q34', category:'自由記述', text:'職場環境や業務について、感じていることを自由に教えてください（任意）', type:'text' },
   ]},
 ];
 
@@ -748,7 +1033,7 @@ function renderPage() {
         <div class="category">${q.category}</div>
         <div class="question">${q.text}</div>
         <div class="rating-scale">
-          ${[1,2,3,4,5].map(n => `<button class="rating-btn ${saved===n?'selected':''}" onclick="selectRating('${q.id}',${n},this)">${n}</button>`).join('')}
+          ${[1,2,3,4,5,6,7].map(n => `<button class="rating-btn ${saved===n?'selected':''}" data-val="${n}" onclick="selectRating('${q.id}',${n},this)">${n}</button>`).join('')}
         </div>
         <div class="rating-labels"><span>全くそう思わない</span><span>強くそう思う</span></div>`;
     } else {
@@ -761,6 +1046,7 @@ function renderPage() {
     container.appendChild(block);
   });
   document.getElementById('progress-fill').style.width = (currentPage / questions.length * 100) + '%';
+  document.getElementById('progress-text').textContent = `${currentPage + 1} / ${questions.length}`;
   document.getElementById('btn-back').style.display = currentPage > 0 ? 'inline-block' : 'none';
   document.getElementById('btn-next').textContent = currentPage === questions.length - 1 ? '送信する ✓' : '次へ →';
 }
@@ -790,6 +1076,82 @@ function goToLogin() {
   document.getElementById('login-error').textContent = '';
   showScreen('login');
 }
+
+// ===== ID管理 =====
+let lastIssuedId = '';
+
+function nextEmpId() {
+  const nums = Object.keys(employees)
+    .filter(k => /^EMP\d+$/.test(k))
+    .map(k => parseInt(k.replace('EMP', '')));
+  return 'EMP' + String((nums.length > 0 ? Math.max(...nums) : 0) + 1).padStart(3, '0');
+}
+
+function issueNewId() {
+  const name = document.getElementById('new-emp-name').value.trim();
+  const dept = document.getElementById('new-emp-dept').value.trim();
+  if (!name) { showToast('⚠️ 氏名を入力してください'); return; }
+  if (!dept) { showToast('⚠️ 所属部署を入力してください'); return; }
+  const newId = nextEmpId();
+  const now = new Date();
+  const issuedAt = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+  employees[newId] = { name, dept, issuedAt, isNew: true };
+  lastIssuedId = newId;
+  const result = document.getElementById('issued-result');
+  result.style.display = 'block';
+  result.style.animation = 'none';
+  result.offsetHeight; // reflow
+  result.style.animation = '';
+  document.getElementById('issued-id-value').textContent = newId;
+  document.getElementById('issued-name-value').textContent = `${name}（${dept}）`;
+  document.getElementById('new-emp-name').value = '';
+  document.getElementById('new-emp-dept').value = '';
+  renderIdList();
+  showToast('✅ IDを発行しました');
+}
+
+function renderIdList() {
+  const table = document.getElementById('id-table');
+  const rows = Object.entries(employees).map(([id, emp]) => {
+    const issuedAt = emp.issuedAt || '既存';
+    const newMark = emp.isNew ? '<span class="new-badge">NEW</span>' : '';
+    return `<tr>
+      <td><span class="id-badge">${id}</span>${newMark}</td>
+      <td style="font-weight:600;color:#1e293b">${emp.name}</td>
+      <td><span class="dept-chip">${emp.dept}</span></td>
+      <td style="color:#94a3b8;font-size:13px">${issuedAt}</td>
+      <td><button class="copy-btn" onclick="copyIdToClipboard('${id}')">📋 コピー</button></td>
+    </tr>`;
+  });
+  table.innerHTML = `<table>
+    <thead><tr><th>社員ID</th><th>氏名</th><th>所属部署</th><th>発行日</th><th>操作</th></tr></thead>
+    <tbody>${rows.join('')}</tbody>
+  </table>`;
+}
+
+function copyIssuedId() { copyIdToClipboard(lastIssuedId); }
+
+function copyIdToClipboard(id) {
+  const fallback = () => {
+    const el = document.createElement('textarea');
+    el.value = id; document.body.appendChild(el);
+    el.select(); document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast(`📋 ${id} をコピーしました`);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(id).then(() => showToast(`📋 ${id} をコピーしました`)).catch(fallback);
+  } else { fallback(); }
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
 </script>
+<div id="toast" class="toast"></div>
 </body>
 </html>
