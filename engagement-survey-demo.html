@@ -319,6 +319,42 @@
   .answer-bar-fill { height: 100%; border-radius: 4px; }
   .answer-val { font-size: 14px; font-weight: 800; width: 28px; text-align: right; }
 
+  /* ロジック一覧タブ */
+  .logic-section { background: white; border-radius: 14px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 28px; border: 1px solid rgba(0,0,0,0.04); }
+  .logic-section h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
+  .logic-section .logic-desc { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
+  .rank-matrix-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .rank-matrix-table th, .rank-matrix-table td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: center; font-size: 13px; }
+  .rank-matrix-table th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 12px; }
+  .rank-matrix-table .axis-label { background: #f1f5f9; font-weight: 700; color: #334155; font-size: 12px; }
+  .rank-cell { border-radius: 8px; padding: 6px 10px; font-weight: 900; font-size: 14px; color: white; display: inline-block; min-width: 44px; }
+  .rank-cell-s { background: linear-gradient(135deg,#7c3aed,#4f46e5); }
+  .rank-cell-a { background: linear-gradient(135deg,#1d4ed8,#0284c7); }
+  .rank-cell-b { background: linear-gradient(135deg,#15803d,#059669); }
+  .rank-cell-c { background: linear-gradient(135deg,#b45309,#dc2626); }
+  .rank-list-table { width: 100%; border-collapse: collapse; }
+  .rank-list-table th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; }
+  .rank-list-table td { padding: 12px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #f8fafc; vertical-align: top; line-height: 1.55; }
+  .rank-list-table tr:hover td { background: #f9fafb; }
+  .mbti-group-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 8px; }
+  .mbti-group-block { border-radius: 12px; padding: 18px 20px; border: 1px solid #e2e8f0; }
+  .mbti-group-block .mg-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+  .mbti-group-block .mg-style { font-size: 12px; color: #64748b; margin-bottom: 12px; font-weight: 500; }
+  .mbti-type-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mbti-type-chip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+  .persona-matrix-table { width: 100%; border-collapse: collapse; }
+  .persona-matrix-table th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; }
+  .persona-matrix-table td { padding: 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #f8fafc; vertical-align: top; }
+  .persona-matrix-table tr:hover td { background: #fafafa; }
+  .pm-tier { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; font-size: 13px; font-weight: 900; color: white; }
+  .pm-persona { font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+  .pm-desc { font-size: 12px; color: #475569; line-height: 1.6; }
+  .pm-watch { font-size: 11px; color: #dc2626; font-weight: 600; margin-top: 6px; background: #fef2f2; padding: 5px 8px; border-radius: 6px; line-height: 1.5; }
+  .iq-threshold-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .threshold-chip { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 14px; font-size: 13px; }
+  .threshold-chip .tc-rank { font-weight: 900; font-size: 14px; }
+  .threshold-chip .tc-range { color: #64748b; font-size: 12px; font-weight: 500; }
+
   /* 社員詳細：推奨対応 */
   .recommend-section { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
   .recommend-section h3 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
@@ -411,6 +447,7 @@
     <button class="tab-btn active" onclick="switchTab('dashboard', this)">月次ダッシュボード</button>
     <button class="tab-btn" onclick="switchTab('employees', this)">社員一覧</button>
     <button class="tab-btn" onclick="switchTab('idmgmt', this)">ID管理</button>
+    <button class="tab-btn" onclick="switchTab('logic', this)">📖 ロジック一覧</button>
   </div>
 
   <!-- 月次ダッシュボード -->
@@ -488,6 +525,140 @@
     </div>
     <div class="section-title">👥 社員ID一覧</div>
     <div class="id-table-wrap" id="id-table"></div>
+  </div>
+
+  <!-- ロジック一覧 -->
+  <div id="tab-logic" class="admin-body" style="display:none">
+    <div style="margin-bottom:28px">
+      <div class="section-title">📖 ランク・MBTIロジック一覧</div>
+      <p style="font-size:13px;color:#64748b;font-weight:500">ランク算出・MBTIペルソナの設計ロジックをまとめたリファレンスです。定期的に見直してブラッシュアップしてください。</p>
+    </div>
+
+    <!-- ランク算出ロジック -->
+    <div class="logic-section">
+      <h3>🧮 ランク算出マトリクス</h3>
+      <p class="logic-desc">IQスコア（縦軸）× 戦闘力（横軸）の組み合わせで16ランクを算出します。</p>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">IQティア基準</div>
+          <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
+            <div class="threshold-chip"><span class="tc-rank" style="color:#7c3aed">S</span><span class="tc-range">IQ 120以上</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#2563eb">A</span><span class="tc-range">IQ 105〜119</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#16a34a">B</span><span class="tc-range">IQ 90〜104</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#d97706">C</span><span class="tc-range">IQ 89以下</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">戦闘力ティア基準</div>
+          <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
+            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">1</span><span class="tc-range">7,000以上</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">2</span><span class="tc-range">6,000〜6,999</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">3</span><span class="tc-range">5,000〜5,999</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">4</span><span class="tc-range">4,999以下</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="rank-matrix-table">
+          <thead>
+            <tr>
+              <th style="width:120px">IQ ＼ 戦闘力</th>
+              <th>1<br><span style="font-weight:500;color:#94a3b8">7,000+</span></th>
+              <th>2<br><span style="font-weight:500;color:#94a3b8">6,000+</span></th>
+              <th>3<br><span style="font-weight:500;color:#94a3b8">5,000+</span></th>
+              <th>4<br><span style="font-weight:500;color:#94a3b8">〜4,999</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="axis-label">S（120+）</td>
+              <td><span class="rank-cell rank-cell-s">S1</span></td>
+              <td><span class="rank-cell rank-cell-s">S2</span></td>
+              <td><span class="rank-cell rank-cell-s">S3</span></td>
+              <td><span class="rank-cell rank-cell-s">S4</span></td>
+            </tr>
+            <tr>
+              <td class="axis-label">A（105〜119）</td>
+              <td><span class="rank-cell rank-cell-a">A1</span></td>
+              <td><span class="rank-cell rank-cell-a">A2</span></td>
+              <td><span class="rank-cell rank-cell-a">A3</span></td>
+              <td><span class="rank-cell rank-cell-a">A4</span></td>
+            </tr>
+            <tr>
+              <td class="axis-label">B（90〜104）</td>
+              <td><span class="rank-cell rank-cell-b">B1</span></td>
+              <td><span class="rank-cell rank-cell-b">B2</span></td>
+              <td><span class="rank-cell rank-cell-b">B3</span></td>
+              <td><span class="rank-cell rank-cell-b">B4</span></td>
+            </tr>
+            <tr>
+              <td class="axis-label">C（〜89）</td>
+              <td><span class="rank-cell rank-cell-c">C1</span></td>
+              <td><span class="rank-cell rank-cell-c">C2</span></td>
+              <td><span class="rank-cell rank-cell-c">C3</span></td>
+              <td><span class="rank-cell rank-cell-c">C4</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ランク詳細一覧 -->
+    <div class="logic-section">
+      <h3>🏆 ランク詳細定義（S1〜C4）</h3>
+      <p class="logic-desc">各ランクのキャッチコピー・思考力・実行力・推奨ロール・育成方針を定義します。</p>
+      <div style="overflow-x:auto">
+        <table class="rank-list-table" id="rank-detail-table"></table>
+      </div>
+    </div>
+
+    <!-- MBTIグループ -->
+    <div class="logic-section">
+      <h3>🧠 MBTIグループ定義</h3>
+      <p class="logic-desc">16種類のMBTIタイプを4グループに分類し、それぞれの傾向をまとめています。</p>
+      <div class="mbti-group-grid" id="mbti-group-grid"></div>
+    </div>
+
+    <!-- MBTI × Rank ペルソナ一覧 -->
+    <div class="logic-section">
+      <h3>🎭 ランク（S1〜C4）× MBTIタイプ　ペルソナ一覧（256パターン）</h3>
+      <p class="logic-desc">16ランク（S1〜C4）× MBTIタイプ（16種）の組み合わせで動的生成される256パターンのペルソナ定義です。特定の組み合わせは <code>rankMbtiOverrides</code> でカスタム上書き可能です。</p>
+      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:5px">ランクで絞り込み</label>
+          <select id="filter-rank" onchange="renderPersonaTable()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#334155">
+            <option value="">すべてのランク</option>
+            <optgroup label="S ティア（IQ120+）">
+              <option>S1</option><option>S2</option><option>S3</option><option>S4</option>
+            </optgroup>
+            <optgroup label="A ティア（IQ105〜119）">
+              <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            </optgroup>
+            <optgroup label="B ティア（IQ90〜104）">
+              <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+            </optgroup>
+            <optgroup label="C ティア（IQ89以下）">
+              <option>C1</option><option>C2</option><option>C3</option><option>C4</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:5px">MBTIタイプで絞り込み</label>
+          <select id="filter-mbti" onchange="renderPersonaTable()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#334155">
+            <option value="">すべてのタイプ</option>
+            <optgroup label="NT（アナリスト）"><option>INTJ</option><option>INTP</option><option>ENTJ</option><option>ENTP</option></optgroup>
+            <optgroup label="NF（ディプロマット）"><option>INFJ</option><option>INFP</option><option>ENFJ</option><option>ENFP</option></optgroup>
+            <optgroup label="SJ（センチネル）"><option>ISTJ</option><option>ISFJ</option><option>ESTJ</option><option>ESFJ</option></optgroup>
+            <optgroup label="SP（エクスプローラー）"><option>ISTP</option><option>ISFP</option><option>ESTP</option><option>ESFP</option></optgroup>
+          </select>
+        </div>
+        <button onclick="document.getElementById('filter-rank').value='';document.getElementById('filter-mbti').value='';renderPersonaTable()" class="btn btn-secondary btn-sm">リセット</button>
+        <span id="persona-count-label" style="font-size:12px;color:#94a3b8;font-weight:500;align-self:center"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="persona-matrix-table" id="persona-matrix-table"></table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -651,24 +822,97 @@ const mbtiGroupData = {
   SP: { name:'エクスプローラー型', style:'適応・実践的', color:'#d97706' },
 };
 
-// ランクtier(S/A/B/C) × MBTIグループ(NT/NF/SJ/SP) = 16パターン
-const rankMbtiInsights = {
-  'S-NT': { persona:'知的頂点の戦略家',         desc:'組織最高峰の知性で複雑な問題を体系的に解決。長期ビジョンと緻密な設計で組織の未来を描くことができる。自律駆動型で最も力を発揮する。',                      watch:'孤立・完璧主義・感情軽視に注意。チームへの言語化・共有が鍵。' },
-  'S-NF': { persona:'カリスマ的ビジョナリー',   desc:'高い知性と深い人間理解を組み合わせ、人を鼓舞しながら組織変革を牽引。意義ある仕事に最大のパフォーマンスを発揮し、組織の精神的な支柱になる。',               watch:'理想と現実のギャップ・自己犠牲傾向に注意。自分のリソース管理も必須。' },
-  'S-SJ': { persona:'卓越した実務リーダー',     desc:'高い知的能力と確実な実行力で、システマティックに成果を積み上げる。品質と信頼性において組織の基準を作り、長期に渡って安定した成果を出し続ける。',           watch:'変化への過剰抵抗・革新への消極性に注意。定期的に「疑う時間」を設ける。' },
-  'S-SP': { persona:'天才型イノベーター',       desc:'高い知性と実験精神で既存の枠を超えた解決策を生み出す。現場での応用力と発想力が武器。課題を遊びながら解く天才的なアプローチが特徴。',                         watch:'継続性と組織内政治への対応が課題。「仕組み化」への意識が成長を加速。' },
-  'A-NT': { persona:'実力派戦略プレイヤー',     desc:'論理的思考と安定した実行力を持つ頼れる中核。戦略立案と実務遂行を高い水準でこなし、組織の知的インフラを担う存在。上位層への梯子が見えている。',               watch:'感情的側面の軽視・チーム配慮に意識的に向き合うことが昇格の鍵。' },
-  'A-NF': { persona:'信頼の人材育成者',         desc:'共感力と安定したパフォーマンスで、チームの心理的安全性を高めながら成果を出す。コーチング・育成役として最大の力を発揮し、チームの総合力を底上げする。',         watch:'自身の成果よりチームを優先しすぎる傾向に注意。個人KPIも大切に。' },
-  'A-SJ': { persona:'組織の屋台骨',             desc:'堅実な判断と確実な実行でチームを支える。プロセス管理と品質維持において最も信頼できる存在。嵐の中でも揺るがない安定感が組織の安心感を作る。',                 watch:'新しいアプローチへの柔軟性を意識的に高めること。定期的に「なぜ」を問う習慣を。' },
-  'A-SP': { persona:'現場の問題解決者',         desc:'適度な分析力と高い適応力で、現場の課題を素早く解決する。実践的なアプローチで確実に成果を出し、現場のモチベーションを引き上げる存在感を持つ。',             watch:'長期視点の欠如・計画性強化が成長のカギ。月次で進捗を構造化する習慣を。' },
-  'B-NT': { persona:'潜在能力型分析者',         desc:'論理的思考の資質はあるが、実行力とのバランス調整が成長のカギ。思考と行動をつなぐ訓練で大きく飛躍できるポテンシャルを持つ。',                               watch:'分析過多・実行の遅れに注意。「完璧な計画より速い実行」を意識して刷り込む。' },
-  'B-NF': { persona:'共感型成長人材',           desc:'人への気配りと意欲は本物。スキルの体系的な積み上げと成功体験の蓄積で、安定した成果者へと着実に成長できる素地を持つ。',                                     watch:'感情的疲弊・境界設定の弱さに注意。自分を守りながら貢献する術を学ぶことが先決。' },
-  'B-SJ': { persona:'堅実な現場サポーター',     desc:'指示に対して着実に動ける実行者。ルーティン業務での信頼性は高く、得意領域での専門性向上が有効。安定した出勤・行動そのものが組織への貢献になっている。',       watch:'主体的提案力の弱さが課題。自ら問題提起する小さな経験を積ませる設計を。' },
-  'B-SP': { persona:'現場突破の行動人材',       desc:'行動力と適応力は本物。思考の枠組みを身につけることで、現場での爆発力がより効果的になる。正しい方向への行動力は組織の突破口になりうる。',                     watch:'場当たり的な判断が最大のリスク。振り返りと計画の習慣が成長加速のカギ。' },
-  'C-NT': { persona:'知的素地のある育成枠',     desc:'思考の萌芽はあるが、実行と経験が不足。適切な課題設定と失敗経験の積み重ねで覚醒する可能性を秘める。知的好奇心を実行の起爆剤に変える支援が必要。',           watch:'頭でっかちになるリスクが高い。まず動く経験を意識的に設計し続けること。' },
-  'C-NF': { persona:'感受性豊かな成長途上',     desc:'人への共感と意欲は持っている。成功体験と明確な役割定義で自信をつけることが最優先課題。周囲からの承認が行動の燃料になるタイプ。',                           watch:'失敗への過剰反応・萎縮に注意。安全な環境での小さな挑戦機会を丁寧に提供。' },
-  'C-SJ': { persona:'ルーティン特化の実行者',   desc:'明確な手順と環境があれば確実に動ける。マニュアル化された業務での安定貢献が期待できる。職域の明確化がパフォーマンス最大化の鍵。',                           watch:'判断を求めない設計が効果的。責任範囲を段階的・慎重に拡大する。' },
-  'C-SP': { persona:'行動力先行の育成人材',     desc:'動く意欲はあるが方向性が定まらない。明確なKPIと毎日の小さな成功体験の積み重ねが必須。エネルギーを正しい方向に向ける設計が重要。',                         watch:'空回りリスクが最大の課題。細かいタスク管理と日次確認で軌道修正を継続。' },
+// 手動オーバーライド（特定の rank-MBTI に独自定義を入れたい場合はここに追記）
+// 例: 'S1-INTJ': { persona:'...', desc:'...', watch:'...' }
+const rankMbtiOverrides = {};
+
+// 動的生成: rankData[rank] × mbtiData[mbtiType] → 256パターン
+function getPersonaInsight(rank, mbtiType) {
+  const key = `${rank}-${mbtiType}`;
+  if (rankMbtiOverrides[key]) return rankMbtiOverrides[key];
+  const r = rankData[rank];
+  const m = mbtiData[mbtiType];
+  if (!r || !m) return null;
+  const tier = rank[0], num = rank[1];
+  const tierPrefix  = { S:'最高峰の知性と', A:'確かな思考力と', B:'成長途上の思考力と', C:'基礎を積み上げ中で' };
+  const numInfix    = { '1':'圧倒的な実行力を兼ね備えた', '2':'高い実行力を持ち合わせた', '3':'標準的な実行力を持つ', '4':'実行力をこれから伸ばす' };
+  const persona = `${r.copy}型 ${m.name}`;
+  const desc    = `${tierPrefix[tier]}${numInfix[num]}${m.name}タイプ（${mbtiType}）。「${m.strength}」を強みとし、${r.role}での活躍が期待される。${m.motivation}をモチベーション源とし、${r.execution}という実行特性を発揮する。`;
+  const watch   = `MBTIの盲点「${m.blindspot}」に加え、育成上は「${r.growth}」が重要。両面からのアプローチで成長を加速させる。`;
+  return { persona, desc, watch };
+}
+
+// ===== (旧 rankMbtiInsights は getPersonaInsight() に統合) =====
+const _REMOVED = {
+  'S-INTJ': { persona:'知的頂点の戦略設計者',       desc:'組織最高峰の知性で未来を体系的に設計する孤高の完璧主義者。長期ビジョンと精緻な構造化で、誰も描けなかった解を示す。自律駆動型で最も力を発揮する。',                    watch:'孤立・完璧主義・感情軽視に注意。言語化とチームへの共有が昇華の鍵。' },
+  'S-INTP': { persona:'天才的システム思考者',        desc:'複雑な問題を根本から分解し、誰も気づかない構造を見抜く稀有な存在。理論と実装を高次元で統合できる。知的自律性が最大のパフォーマンスを引き出す。',             watch:'実行への移行と締切管理が課題。理論を形にする仕組みを外部に持つこと。' },
+  'S-ENTJ': { persona:'最強の組織指揮官',            desc:'卓越した知性と圧倒的実行力で組織を牽引。目標達成への強い意志と論理的戦略で周囲を巻き込みながら成果を生む。経営幹部候補の最右翼。',                            watch:'感情的配慮と細部への関心が盲点。部下の心理安全性に意識的に向き合う。' },
+  'S-ENTP': { persona:'革新的問題解決の先駆者',      desc:'高い知性と創造性で既存の枠を超えた解を次々と生み出す。知的議論と新アイデアで組織を刺激し、イノベーションの火種になる。',                                   watch:'継続性と実装フォローが課題。アイデアを形にするパートナーか仕組みを持つこと。' },
+  'S-INFJ': { persona:'カリスマ的ビジョナリーリーダー',desc:'深い洞察と人間理解で組織の方向性を示す。意義ある目標に向かって人を鼓舞し変革を牽引する精神的支柱。静かな影響力が組織を動かす。',                        watch:'理想と現実のギャップ・自己犠牲傾向に注意。自分のリソース管理が必須。' },
+  'S-INFP': { persona:'深い使命感を持つ創造者',      desc:'高い知性と豊かな内的世界を組み合わせ独自の価値を生む。組織の意義や文化に深く貢献できる。本質的な問いへの探求が独自の成果物につながる。',                     watch:'現実的な成果へのコミットと自己アピールが課題。価値を外部に発信する習慣を。' },
+  'S-ENFJ': { persona:'最高水準の人材育成者',        desc:'人の可能性を最大化することへの強い動機と高い知性を持ち、チーム全体のパフォーマンスを底上げする。組織の文化を作るリーダー。',                              watch:'自己犠牲傾向・過干渉に注意。個人KPIの達成も同様に大切に。' },
+  'S-ENFP': { persona:'天才的インスパイアラー',      desc:'溢れる創造性と人を引きつける魅力で組織にエネルギーと革新をもたらす。高い知性がアイデアに深みを与え、周囲の可能性を解放する触媒になる。',                   watch:'継続性と細部への注意が課題。実行フェーズを担うバディの仕組みが必要。' },
+  'S-ISTJ': { persona:'卓越した組織システム構築者',  desc:'高い知性と徹底した実行力で組織の品質基準とプロセスを最高水準に引き上げる。信頼性の象徴として長期に渡り組織を支える存在。',                              watch:'変化への柔軟性と革新的アプローチへの開放性に意識的に取り組む。' },
+  'S-ISFJ': { persona:'最高水準の縁の下の力持ち',    desc:'細やかな配慮と高い知性を組み合わせ組織全体を支える。品質とチームケアにおいて群を抜き、誰よりも深く組織の痛みを察知できる。',                              watch:'自己主張と自分の成果のアピールが課題。過剰サポートで消耗しないよう注意。' },
+  'S-ESTJ': { persona:'卓越した経営管理者',          desc:'組織の効率と秩序を最高水準で管理する。明確な目標設定とプロセス管理でチームの生産性を最大化し、組織の機能美を実現する。',                                  watch:'感情的柔軟性と新しいアプローチへの開放性が課題。定期的に「例外」を許容する練習を。' },
+  'S-ESFJ': { persona:'組織の心を掌握するリーダー',  desc:'高い知性と深い人間理解で組織の文化とハーモニーを守りながら成果を出す。人心掌握と実務能力を兼ね備えた稀有な存在。',                                    watch:'批判への敏感さと変化への抵抗感に注意。フィードバックを客観的に受け取る練習を。' },
+  'S-ISTP': { persona:'問題解決の天才職人',          desc:'高い知性と実践的スキルを組み合わせ複雑な問題を鮮やかに解決する。現場での応用力と即興性が際立ち、理論と現場の橋渡しができる。',                            watch:'長期計画と感情表現・チームへの共有が課題。成果を言語化する習慣を持つ。' },
+  'S-ISFP': { persona:'感性と知性を持つ革新者',      desc:'独自の美的センスと高い知性でユニークな価値を生み出す。自分のペースで深く探求することで最大の成果が出る。創造的な領域で圧倒的な輝きを放つ。',              watch:'長期計画と自己主張が課題。価値を適切に発信するアウトプット習慣を。' },
+  'S-ESTP': { persona:'最強の実戦型リーダー',        desc:'高い知性と爆発的実行力を兼ね備え、危機的状況でも冷静に最善手を打つ。圧倒的な現場力と交渉力で組織の突破口を切り開く。',                                  watch:'長期計画と感情への配慮が課題。スピードと熟慮のバランスを意識的に設計する。' },
+  'S-ESFP': { persona:'天才的エンターテイナー兼統率者',desc:'人を惹きつける魅力と高い知性で組織に活力と革新をもたらす。チームの士気を最大化しながら実を取る唯一無二の存在。',                                     watch:'長期計画と構造化が課題。エネルギーを持続させる仕組みを組織に組み込む。' },
+
+  // ===== A ティア =====
+  'A-INTJ': { persona:'実力派戦略立案者',            desc:'論理的思考と安定した実行力で組織の戦略設計と実務を高い水準でこなす。信頼できる知的中核として上位層への梯子が見えている存在。',                             watch:'感情的側面の軽視・チーム配慮が昇格の鍵。意識的に「人」を見る時間を設ける。' },
+  'A-INTP': { persona:'分析力に優れた実務家',        desc:'深い分析力と実用的な問題解決で組織に貢献する。複雑な課題を整理し現実的な解を提示する安定した知的貢献者。',                                               watch:'実行への転換と期限管理が課題。完成度より速度を意識する場面を設ける。' },
+  'A-ENTJ': { persona:'頼れる推進リーダー',          desc:'戦略的思考と強い実行力でチームをゴールへ導く。意思決定が早く組織の推進力を担う。中規模以上のプロジェクトで最も輝く。',                                    watch:'細部への配慮と部下の感情への意識が課題。速さと丁寧さのバランスを意識する。' },
+  'A-ENTP': { persona:'創造的問題解決者',            desc:'多角的な視点と実行力で現場の課題に革新的な解をもたらす。アイデアマンかつ実行者として、組織に新しい風を吹き込む。',                                       watch:'継続性と一貫性が課題。アイデアを最後まで形にする完走経験を積む。' },
+  'A-INFJ': { persona:'信念を持つ育成者',            desc:'ビジョンと人への深い関心でチームの成長と組織文化に貢献する。静かなカリスマとして影響力を発揮し、組織の精神的な質を高める。',                              watch:'自己犠牲傾向と完璧主義に注意。自分の限界を設定することが重要。' },
+  'A-INFP': { persona:'価値観駆動の貢献者',          desc:'強い価値観と共感力で組織の意義ある仕事に深くコミットする。クリエイティブな領域で際立ち、品質への深いこだわりが組織の水準を上げる。',                      watch:'現実的な成果へのコミットと対立回避傾向が課題。数値目標との接続を意識する。' },
+  'A-ENFJ': { persona:'人材育成の核心人物',          desc:'チームの心理的安全性を高めながら安定した成果を出す。コーチング・育成役として最大の力を発揮し、組織の総合力を底上げする。',                                watch:'自身の成果より周囲を優先しすぎる傾向に注意。個人KPIも大切に。' },
+  'A-ENFP': { persona:'組織に活気をもたらす推進者',  desc:'熱意と実行力で周囲を巻き込みながら成果を出す。人のモチベーションを引き上げる天才的な存在で、停滞した組織の起爆剤になる。',                               watch:'継続性と細部への注意が課題。熱量が長期間持続する仕組みを組み込む。' },
+  'A-ISTJ': { persona:'組織の屋台骨',                desc:'堅実な判断と確実な実行でチームを支える。プロセス管理と品質維持において最も信頼できる存在で、嵐の中でも揺るがない安定感を持つ。',                            watch:'新しいアプローチへの柔軟性を意識的に高めること。定期的に「なぜ」を問う習慣を。' },
+  'A-ISFJ': { persona:'献身的な組織サポーター',      desc:'細やかなサポートと安定した実行力でチームを守る。縁の下の力持ちとして組織の安心感を作り、メンバーの心理的安全を底から支える。',                            watch:'自己主張と変化への適応が課題。自分の貢献を適切にアピールする習慣を。' },
+  'A-ESTJ': { persona:'効率的な組織管理者',          desc:'プロセスと効率を重視しチームの生産性を安定的に維持する。明確なルールと目標設定で組織を機能させる、信頼性の高い実行リーダー。',                            watch:'感情的柔軟性と新アイデアへの開放性に注意。例外を積極的に認める経験を積む。' },
+  'A-ESFJ': { persona:'チームハーモニーの守護者',    desc:'関係構築と調和を保ちながら安定した成果を出す。職場の雰囲気を良好に保ちながら実務もこなす、チームに不可欠な存在。',                                     watch:'批判への弱さと変化への抵抗感に注意。フィードバックを贈り物として受け取る練習を。' },
+  'A-ISTP': { persona:'現場の問題解決者',            desc:'実践的スキルと適度な分析力で現場の課題を素早く解決する。実用的なアプローチで確実な成果を出し、現場のモチベーションを引き上げる。',                        watch:'長期計画の欠如と感情表現が課題。振り返りと計画の習慣で精度を上げる。' },
+  'A-ISFP': { persona:'適応力高い現場貢献者',        desc:'柔軟な適応力と現場力でチームに貢献する。穏やかな存在感で職場の雰囲気を支えながら、自分のペースで着実に成果を積み上げる。',                              watch:'長期計画と自己主張が課題。自分の価値を積極的に発信する機会を意識的に作る。' },
+  'A-ESTP': { persona:'行動力ある現場リーダー',      desc:'素早い判断と高い実行力で現場を牽引する。危機対応と即時結果を出す力で組織の突破口を開く。営業・交渉・現場仕切りに最も力を発揮。',                        watch:'長期計画と感情への配慮が課題。振り返りの習慣で精度と信頼性を高める。' },
+  'A-ESFP': { persona:'現場を盛り上げるプレイヤー',  desc:'人を引きつける魅力と安定した実行力で現場のムードメーカーかつ成果者として活躍する。チームのエネルギーを最大化する存在。',                                watch:'長期計画と構造化が課題。エネルギーを成果に直結させる習慣を設計する。' },
+
+  // ===== B ティア =====
+  'B-INTJ': { persona:'潜在的な戦略分析者',          desc:'論理的思考の素地はあるが実行経験が成長の鍵。思考と行動をつなぐ経験で大きく飛躍できるポテンシャルを秘める。方向性さえ定まれば独走できる。',                  watch:'分析過多・行動の遅れに注意。「完璧な計画より速い実行」を意識的に刷り込む。' },
+  'B-INTP': { persona:'理論好きな成長途上',          desc:'分析・理論への強い関心はあるがアウトプットへの転換が課題。知識を実務に活かす経験を積むことで覚醒する。潜在的な専門家候補。',                              watch:'締切管理と実行への転換が最優先課題。小さなアウトプットを積み重ねる習慣を。' },
+  'B-ENTJ': { persona:'発展途上のリーダー候補',      desc:'リーダーシップ志向と行動力はあるが戦略の精度と感情管理が成長のカギ。経験を積めば大きく飛躍できるリーダーの素地を持つ。',                              watch:'感情的配慮と計画の精度を意識的に鍛える。小規模リーダー経験を積ませる設計を。' },
+  'B-ENTP': { persona:'アイデア豊富な実行者',        desc:'創造的なアイデアと行動力はあるが継続性に課題がある。アイデアを最後まで形にする完走経験の積み重ねが次のステージへの切符。',                              watch:'継続性とルーティンへの対応が課題。一つのプロジェクトを完走する経験を優先する。' },
+  'B-INFJ': { persona:'共感型成長人材',              desc:'人への気配りと意欲は本物。スキルの体系的積み上げと成功体験の蓄積で安定した成果者へと着実に成長できる素地がある。',                                      watch:'感情的疲弊と境界設定の弱さに注意。自分を守りながら貢献する術を先に学ぶ。' },
+  'B-INFP': { persona:'感受性豊かな貢献者候補',      desc:'価値観と共感力は強み。しかし現実的な成果への転換が課題。意義を感じられる仕事での活躍が期待でき、方向性が合えば深く貢献できる。',                      watch:'現実逃避傾向と対立回避に注意。小さな現実的成果を積み重ねる経験を設計する。' },
+  'B-ENFJ': { persona:'育成意欲のある成長人材',      desc:'人を助けたい気持ちは本物。チームワークと育成への関心を活かせる環境で力を発揮できる。自分のスキルを積み上げながら他者を支える役割が適合。',              watch:'自己犠牲傾向に注意。まず自分のスキルを高めることを優先させる設計を。' },
+  'B-ENFP': { persona:'元気者の発展途上プレイヤー',  desc:'エネルギーと人を引きつける力があるが継続性と集中力が課題。正しい方向への熱量が育てば大きな戦力になる可能性を秘める。',                               watch:'継続性と細部への注意が課題。一つのことを深める経験を意識的に設計する。' },
+  'B-ISTJ': { persona:'堅実な現場サポーター',        desc:'指示に対して着実に動ける実行者。ルーティン業務での信頼性は高く得意領域での専門性向上が有効。安定した行動そのものが組織への貢献になっている。',          watch:'主体的提案力の弱さが課題。自ら問題提起する小さな経験を積ませる設計を。' },
+  'B-ISFJ': { persona:'丁寧な業務遂行者',            desc:'細やかさと献身的な姿勢で業務を遂行する。チームのサポート役として安定した貢献ができ、誰かを助けることに深いやりがいを感じる。',                        watch:'自己主張と変化への適応が課題。適切にNoと言える環境と経験を整える。' },
+  'B-ESTJ': { persona:'実直な現場実行者',            desc:'ルールと手順を守りながら業務を進める。明確な指示とKPIの下で安定したパフォーマンスを発揮でき、信頼できる実務担当者。',                                  watch:'感情的柔軟性と創造性への開放性が課題。型を破る経験を意識的に与える。' },
+  'B-ESFJ': { persona:'チームワーカー',              desc:'協調性と人への気配りで職場の雰囲気に貢献する。明確な役割と良好な人間関係の下で力を発揮し、チームの潤滑油として機能する。',                              watch:'批判への弱さが課題。フィードバックを成長機会として受け取る習慣を育てる。' },
+  'B-ISTP': { persona:'現場突破の行動人材',          desc:'行動力と適応力は本物。思考の枠組みを身につけることで現場での爆発力がより高まる。正しい方向への行動力は組織の突破口になりうる。',                      watch:'場当たり的な判断が最大リスク。振り返りと計画の習慣が成長のカギ。' },
+  'B-ISFP': { persona:'現場フィット型貢献者',        desc:'状況への適応力と穏やかな現場力で貢献する。自分のペースで着実に成長できる環境が重要で、得意領域での専門性向上が最も有効。',                            watch:'長期計画と自己主張が課題。自分の強みを言語化する支援を継続的に行う。' },
+  'B-ESTP': { persona:'行動先行の現場プレイヤー',    desc:'エネルギーと行動力で現場を動かすが戦略性の補強が課題。正しい方向への行動力は組織の突破口になりうる、磨けば光る原石。',                               watch:'計画性と振り返りの習慣化が最優先。PDCAの「P」と「C」を意識させる。' },
+  'B-ESFP': { persona:'現場の盛り上げ役',            desc:'明るさと人を引きつける力で職場の雰囲気を作る。具体的な成果に繋げるための構造を整えることが、潜在力を解放する鍵。',                                   watch:'長期計画と構造化への意識が課題。エネルギーを成果に繋げる設計を整える。' },
+
+  // ===== C ティア =====
+  'C-INTJ': { persona:'理論先行の育成対象',          desc:'論理的な思考の萌芽はあるが実行経験と結果が伴っていない。適切な課題設定と失敗経験で覚醒する可能性を秘める。知的好奇心を行動の起爆剤に変える支援が必要。',    watch:'頭でっかちになるリスクが高い。まず動く経験を意識的に設計し続ける。' },
+  'C-INTP': { persona:'知的好奇心はあるが実行不足',  desc:'分析や理論への関心はあるが成果に結びついていない。実行経験の積み重ねが最優先課題で、小さなアウトプットを積み重ねる設計が必要。',                       watch:'実行への転換と期限遵守が最重要。タスクを小さく分解して成功体験を積む。' },
+  'C-ENTJ': { persona:'方向性を探すリーダー志向',    desc:'リーダーへの志向はあるがスキルと実績がまだ伴っていない。小規模なリーダー経験を積みながら着実に力をつける段階にある。',                                watch:'感情的配慮と現実的な自己評価が課題。まず実績を作ることに集中させる。' },
+  'C-ENTP': { persona:'アイデアはあるが結果が出ない段階',desc:'発想力の萌芽はあるが実行と継続に大きな課題を抱える。アイデアを形にする経験を段階的に設計することで成長できる。',                                    watch:'実行力と継続性が最大の課題。小さなプロジェクトの完遂体験から始める。' },
+  'C-INFJ': { persona:'感受性豊かな成長途上',        desc:'人への共感と意欲は持っているが成果への転換がまだ難しい。安全な環境での成功体験が成長の燃料となるタイプ。承認が行動のエネルギーになる。',                  watch:'失敗への過剰反応・萎縮に注意。丁寧な承認と小さな挑戦機会を提供し続ける。' },
+  'C-INFP': { persona:'内向き型の育成枠',            desc:'価値観と感受性は豊かだが現実的な成果への転換が大きな課題。役割を明確にし意義を感じられる業務設計が重要で、動機の源泉を丁寧に探る必要がある。',          watch:'現実逃避傾向と対立回避に注意。具体的で小さなKPIを与え続ける設計を。' },
+  'C-ENFJ': { persona:'承認欲求型の育成人材',        desc:'人に関わりたい気持ちは強いが自身のスキルと成果がまだ不足している。周囲からの承認が行動の燃料になるため、小さな成功体験の設計が最重要。',              watch:'過干渉傾向と自己評価の不安定さに注意。自分のKPIに集中させる環境を整える。' },
+  'C-ENFP': { persona:'エネルギーはあるが空回り気味', desc:'元気と意欲はあるが方向性が定まらず成果に繋がっていない。明確なKPIと毎日の小さな成功体験の積み重ねが最も効果的なアプローチ。',                           watch:'空回りリスクが最大の課題。細かいタスク管理と日次確認で軌道修正を継続。' },
+  'C-ISTJ': { persona:'ルーティン特化の実行者',      desc:'明確な手順と環境があれば確実に動ける。マニュアル化された業務での安定貢献が期待でき、職域の明確化がパフォーマンス最大化の鍵になる。',                  watch:'判断を求めない設計が効果的。責任範囲を段階的・慎重に拡大していく。' },
+  'C-ISFJ': { persona:'従順な現場サポーター',        desc:'指示に従い丁寧に動くことができる。明確な役割とサポート環境があれば安定して貢献でき、安心できる環境が最大のパフォーマンスを引き出す。',                  watch:'自己主張と問題提起が難しい状況。声を出しやすい環境づくりと1on1の設計を。' },
+  'C-ESTJ': { persona:'形式重視の指示遂行者',        desc:'ルールと手順に沿って動くことはできるが独自の判断や改善提案は難しい段階。明確なマニュアルが最大のパフォーマンスを引き出す。',                          watch:'新しいアプローチへの抵抗が課題。段階的な変化に慣れさせる設計で対応する。' },
+  'C-ESFJ': { persona:'協調性はあるが自立度が低い',  desc:'人間関係の維持は得意だが自律的な業務推進が難しい。関係性の良い環境で明確な指示の下での業務が最も適合するタイプ。',                                 watch:'批判への過剰反応と依存傾向に注意。自立的な小さな判断経験を積む機会を。' },
+  'C-ISTP': { persona:'行動力先行の育成人材',        desc:'動く意欲はあるが方向性が定まらない。明確なKPIと細かいタスク管理でエネルギーを正しい方向に向ける設計が必要。正しく使えば現場の突破力になる。',            watch:'場当たり的判断が最大リスク。毎日の細かいタスク確認と方向修正が必須。' },
+  'C-ISFP': { persona:'丁寧なフォローが必要な人材',  desc:'意欲は持っているが成果への転換に時間がかかる。安心できる環境と細やかなフィードバックで着実に成長できる。強みを見つけることが最初の仕事。',            watch:'長期計画と自己主張の弱さが課題。強みを見つけ小さな成功体験を丁寧に積む。' },
+  'C-ESTP': { persona:'馬力はあるが空回りしやすい',  desc:'行動量は突出するが方向性が定まらず成果が出にくい。明確な目標と細かい管理でエネルギーを正しく使う設計が重要で、方向さえ定まれば突破力になる。',        watch:'方向感の欠如が最大の課題。毎日タスクを細かく指示し、判断を求めない設計を。' },
 };
 
 const categoryGuide = {
@@ -1299,24 +1543,78 @@ function backToAdmin() {
 }
 
 // ===== タブ切替 =====
+const TAB_NAMES = ['dashboard', 'employees', 'idmgmt', 'logic'];
 function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-dashboard').style.display = name === 'dashboard' ? 'block' : 'none';
-  document.getElementById('tab-employees').style.display = name === 'employees' ? 'block' : 'none';
-  document.getElementById('tab-idmgmt').style.display = name === 'idmgmt' ? 'block' : 'none';
+  TAB_NAMES.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = (t === name) ? 'block' : 'none';
+  });
   if (name === 'employees') renderEmployeeList();
   if (name === 'idmgmt') renderIdList();
+  if (name === 'logic') renderLogicTab();
 }
 
 function switchTabById(name) {
   const btns = document.querySelectorAll('.tab-btn');
   btns.forEach(b => b.classList.remove('active'));
-  const idx = name === 'dashboard' ? 0 : name === 'employees' ? 1 : 2;
-  btns[idx].classList.add('active');
-  document.getElementById('tab-dashboard').style.display = name === 'dashboard' ? 'block' : 'none';
-  document.getElementById('tab-employees').style.display = name === 'employees' ? 'block' : 'none';
-  document.getElementById('tab-idmgmt').style.display = name === 'idmgmt' ? 'block' : 'none';
+  const idx = TAB_NAMES.indexOf(name);
+  if (btns[idx]) btns[idx].classList.add('active');
+  TAB_NAMES.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = (t === name) ? 'block' : 'none';
+  });
+}
+
+// ===== ロジック一覧タブ描画 =====
+function renderLogicTab() {
+  // ランク詳細テーブル
+  const rankTable = document.getElementById('rank-detail-table');
+  const tierColors = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
+  const tierClass  = { S:'rank-cell-s', A:'rank-cell-a', B:'rank-cell-b', C:'rank-cell-c' };
+  rankTable.innerHTML = `
+    <thead><tr>
+      <th style="width:60px">ランク</th>
+      <th style="width:130px">キャッチコピー</th>
+      <th>思考力</th><th>実行力</th><th>推奨ロール</th><th>育成方針</th>
+    </tr></thead>
+    <tbody>${Object.entries(rankData).map(([rank, d]) => {
+      const tier = rank[0];
+      return `<tr>
+        <td><span class="rank-cell ${tierClass[tier]}" style="min-width:40px;font-size:13px">${rank}</span></td>
+        <td style="font-weight:700;color:#1e293b">${d.copy}</td>
+        <td>${d.thinking}</td>
+        <td>${d.execution}</td>
+        <td style="color:#4f46e5;font-weight:600">${d.role}</td>
+        <td>${d.growth}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+
+  // MBTIグループ
+  const groupGrid = document.getElementById('mbti-group-grid');
+  const groupColorBg = { NT:'#f5f3ff', NF:'#eff6ff', SJ:'#f0fdf4', SP:'#fffbeb' };
+  const groupColorText = { NT:'#7c3aed', NF:'#2563eb', SJ:'#16a34a', SP:'#d97706' };
+  const groupColorBorder = { NT:'#ddd6fe', NF:'#bfdbfe', SJ:'#bbf7d0', SP:'#fde68a' };
+  const chipBg = { NT:'#ede9fe', NF:'#dbeafe', SJ:'#dcfce7', SP:'#fef3c7' };
+  const typesByGroup = {};
+  Object.entries(mbtiData).forEach(([type, d]) => {
+    if (!typesByGroup[d.group]) typesByGroup[d.group] = [];
+    typesByGroup[d.group].push({ type, name: d.name });
+  });
+  groupGrid.innerHTML = Object.entries(mbtiGroupData).map(([grp, gd]) => `
+    <div class="mbti-group-block" style="background:${groupColorBg[grp]};border-color:${groupColorBorder[grp]}">
+      <div class="mg-title" style="color:${groupColorText[grp]}">${grp} — ${gd.name}</div>
+      <div class="mg-style" style="color:${groupColorText[grp]};opacity:0.75">${gd.style}</div>
+      <div class="mbti-type-chips">
+        ${(typesByGroup[grp]||[]).map(t => `
+          <span class="mbti-type-chip" style="background:${chipBg[grp]};color:${groupColorText[grp]}">${t.type} <span style="font-weight:500;opacity:0.8">${t.name}</span></span>
+        `).join('')}
+      </div>
+    </div>`).join('');
+
+  // ペルソナテーブル（256パターン、フィルター付き）
+  renderPersonaTable();
 }
 
 // ===== サーベイ =====
@@ -1513,9 +1811,8 @@ function renderRankBlock(rank, empId) {
   const group = mbti ? mbti.group : null;
 
   let personaHtml = '';
-  if (mbti && group) {
-    const key = `${tier}-${group}`;
-    const insight = rankMbtiInsights[key];
+  if (mbti && mbtiType) {
+    const insight = getPersonaInsight(rank, mbtiType);
     const gData = mbtiGroupData[group];
     if (insight) {
       personaHtml = `
@@ -1554,6 +1851,55 @@ function renderRankBlock(rank, empId) {
       <div class="rank-info-item full growth"><div class="ri-label">🌱 育成ポイント</div><div class="ri-text">${r.growth}</div></div>
     </div>
     ${personaHtml}`;
+}
+
+// ===== ペルソナテーブル（フィルター付き 256パターン）=====
+function renderPersonaTable() {
+  const rankFilter  = (document.getElementById('filter-rank')  || {}).value || '';
+  const mbtiFilter  = (document.getElementById('filter-mbti')  || {}).value || '';
+  const rankOrder   = ['S1','S2','S3','S4','A1','A2','A3','A4','B1','B2','B3','B4','C1','C2','C3','C4'];
+  const mbtiOrder   = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+  const tierGrad    = { S:'#7c3aed,#4f46e5', A:'#1d4ed8,#0284c7', B:'#15803d,#059669', C:'#b45309,#dc2626' };
+  const groupText   = { NT:'#7c3aed', NF:'#2563eb', SJ:'#16a34a', SP:'#d97706' };
+
+  const ranks  = rankFilter  ? [rankFilter]  : rankOrder;
+  const mbtis  = mbtiFilter  ? [mbtiFilter]  : mbtiOrder;
+  const rows   = ranks.flatMap(rank => mbtis.map(mbtiType => {
+    const insight = getPersonaInsight(rank, mbtiType) || {};
+    const r   = rankData[rank] || {};
+    const md  = mbtiData[mbtiType] || {};
+    const grp = md.group || '';
+    const tier = rank[0];
+    return `<tr>
+      <td>
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,${tierGrad[tier]});color:white;font-weight:900;font-size:14px">${rank}</span>
+        <div style="font-size:10px;color:#94a3b8;margin-top:3px;font-weight:600">${r.copy||''}</div>
+      </td>
+      <td>
+        <span class="mbti-badge mbti-${grp.toLowerCase()}">${mbtiType}</span>
+        <div style="font-size:11px;color:#94a3b8;margin-top:3px">${md.name||''}</div>
+      </td>
+      <td><div class="pm-persona">${insight.persona||'—'}</div></td>
+      <td><div class="pm-desc">${insight.desc||'—'}</div></td>
+      <td><div class="pm-watch">${insight.watch||'—'}</div></td>
+    </tr>`;
+  }));
+
+  const total = rows.length;
+  const countEl = document.getElementById('persona-count-label');
+  if (countEl) countEl.textContent = `${total}件表示`;
+
+  const table = document.getElementById('persona-matrix-table');
+  if (!table) return;
+  table.innerHTML = `
+    <thead><tr>
+      <th style="width:80px">ランク</th>
+      <th style="width:90px">MBTIタイプ</th>
+      <th style="width:150px">ペルソナ</th>
+      <th>説明</th>
+      <th style="width:220px">⚠️ 注意点</th>
+    </tr></thead>
+    <tbody>${rows.join('')}</tbody>`;
 }
 
 // ===== ID管理 =====
