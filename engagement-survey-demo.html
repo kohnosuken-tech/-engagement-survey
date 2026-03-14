@@ -320,6 +320,15 @@
   .answer-val { font-size: 14px; font-weight: 800; width: 28px; text-align: right; }
 
   /* ロジック一覧タブ */
+  .threshold-table { width: 100%; border-collapse: collapse; }
+  .threshold-table th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; }
+  .threshold-table td { padding: 10px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .threshold-table tr:hover td { background: #f9fafb; }
+  .threshold-input { width: 64px; padding: 5px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; font-weight: 700; text-align: center; color: #1e293b; }
+  .threshold-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
+  .th-badge-alert { background: #fee2e2; color: #dc2626; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+  .th-badge-warn  { background: #fef9c3; color: #ca8a04; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+  .th-badge-ok    { background: #dcfce7; color: #16a34a; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
   .logic-section { background: white; border-radius: 14px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 28px; border: 1px solid rgba(0,0,0,0.04); }
   .logic-section h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
   .logic-section .logic-desc { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
@@ -741,6 +750,18 @@
       </div>
       <div style="overflow-x:auto">
         <table class="persona-matrix-table" id="persona-matrix-table"></table>
+      </div>
+    </div>
+
+    <!-- カテゴリ別閾値設定 -->
+    <div class="logic-section">
+      <h3>🎚️ カテゴリ別スコア閾値設定</h3>
+      <p class="logic-desc">各カテゴリの「健常 / 注意 / 危険」判定に使う閾値を設定します。スコアが「危険」閾値未満 → 危険（赤）、「注意」閾値未満 → 注意（黄）、それ以上 → 健常（緑）として扱います。</p>
+      <div id="threshold-editor"></div>
+      <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
+        <button class="btn btn-primary" onclick="applyThresholds()">💾 保存して反映</button>
+        <button class="btn btn-secondary" onclick="resetThresholds()">↩️ デフォルトに戻す</button>
+        <span id="threshold-save-msg" style="font-size:13px;color:#16a34a;font-weight:600;display:none">✅ 保存しました</span>
       </div>
     </div>
   </div>
@@ -1171,6 +1192,39 @@ function getStatus(score, diff) {
   return 'ok';
 }
 
+// ===== カテゴリ別閾値設定 =====
+const defaultCategoryThresholds = {
+  やりがい: { alert: 60, warn: 70 },
+  成長:     { alert: 60, warn: 70 },
+  健康:     { alert: 65, warn: 75 },
+  上司:     { alert: 60, warn: 70 },
+  チーム:   { alert: 60, warn: 70 },
+  承認:     { alert: 60, warn: 70 },
+  信頼:     { alert: 60, warn: 70 },
+  組織:     { alert: 60, warn: 70 },
+  業務:     { alert: 55, warn: 65 },
+};
+
+let categoryThresholds = (() => {
+  try {
+    const saved = localStorage.getItem('es_cat_thresholds');
+    return saved ? { ...defaultCategoryThresholds, ...JSON.parse(saved) } : { ...defaultCategoryThresholds };
+  } catch(e) { return { ...defaultCategoryThresholds }; }
+})();
+
+function getCatStatus(cat, score, diff) {
+  const th = categoryThresholds[cat] || { alert: 60, warn: 70 };
+  if (diff !== null && (diff <= -10 || score < th.alert)) return 'alert';
+  if (diff !== null && (diff <= -5  || score < th.warn))  return 'warn';
+  if (diff === null && score < th.alert) return 'alert';
+  if (diff === null && score < th.warn)  return 'warn';
+  return 'ok';
+}
+
+function saveThresholds() {
+  localStorage.setItem('es_cat_thresholds', JSON.stringify(categoryThresholds));
+}
+
 function getMonthData(month) {
   const prev = months[months.indexOf(month) - 1];
   const cats = {};
@@ -1303,7 +1357,7 @@ function renderDashboard() {
     const score = cats[k];
     const prev = prevCats ? prevCats[k] : null;
     const diff = prev !== null ? score - prev : null;
-    const status = prev !== null ? getStatus(score, diff) : (score < 60 ? 'alert' : score < 70 ? 'warn' : 'ok');
+    const status = getCatStatus(k, score, diff);
     const alert = status !== 'ok' ? ' ⚠️' : '';
     const pastScores = months.slice(0, months.indexOf(month) + 1).map(m => {
       const s = Object.values(empData).map(e => e[m]?.[k] || 0).filter(v => v > 0);
@@ -1328,7 +1382,7 @@ function renderDashboard() {
     const score = cats[k];
     const prev = prevCats ? prevCats[k] : null;
     const diff = prev !== null ? score - prev : null;
-    const status = prev !== null ? getStatus(score, diff) : (score < 60 ? 'alert' : score < 70 ? 'warn' : 'ok');
+    const status = getCatStatus(k, score, diff);
     return { k, score, diff, status };
   }).filter(item => item.status !== 'ok');
 
@@ -1726,7 +1780,7 @@ function showDetail(empId) {
           const score = latestScores[k];
           const prevScore = prevScores ? prevScores[k] : null;
           const diff = prevScore !== null ? score - prevScore : null;
-          const st = diff !== null ? getStatus(score, diff) : (score < 60 ? 'alert' : score < 70 ? 'warn' : 'ok');
+          const st = getCatStatus(k, score, diff);
           return { k, score, diff, st };
         }).filter(item => item.st !== 'ok');
         if (items.length === 0) return '<div class="no-alert">✅ 現在すべてのカテゴリが良好です。</div>';
@@ -1841,6 +1895,9 @@ function renderLogicTab() {
 
   // ペルソナテーブル（256パターン、フィルター付き）
   renderPersonaTable();
+
+  // カテゴリ別閾値エディター
+  renderThresholdEditor();
 }
 
 // ===== サーベイ =====
@@ -2119,6 +2176,71 @@ function renderRankBlock(rank, empId) {
       <div class="rank-info-item full growth"><div class="ri-label">🌱 育成ポイント</div><div class="ri-text">${r.growth}</div></div>
     </div>
     ${personaHtml}`;
+}
+
+// ===== カテゴリ閾値エディター =====
+function renderThresholdEditor() {
+  const el = document.getElementById('threshold-editor');
+  if (!el) return;
+  const catLabelMap = {
+    やりがい:'やりがい（職務）', 成長:'成長（キャリア）', 健康:'健康（ウェルビーイング）',
+    上司:'上司（支援）', チーム:'チーム（人間関係）', 承認:'承認', 信頼:'信頼（理念戦略）',
+    組織:'組織（風土）', 業務:'業務（環境）',
+  };
+  el.innerHTML = `
+    <table class="threshold-table">
+      <thead><tr>
+        <th>カテゴリ</th>
+        <th>危険（赤）閾値<br><span style="font-size:10px;font-weight:500;color:#94a3b8">スコアがこれ未満</span></th>
+        <th>注意（黄）閾値<br><span style="font-size:10px;font-weight:500;color:#94a3b8">スコアがこれ未満</span></th>
+        <th>現在の状態例</th>
+      </tr></thead>
+      <tbody>
+        ${catKeys.map(k => {
+          const th = categoryThresholds[k] || defaultCategoryThresholds[k];
+          const def = defaultCategoryThresholds[k];
+          const alertChanged = th.alert !== def.alert ? ' style="border-color:#6366f1"' : '';
+          const warnChanged  = th.warn  !== def.warn  ? ' style="border-color:#6366f1"' : '';
+          return `<tr>
+            <td style="font-weight:700;color:#334155">${catLabelMap[k] || k}</td>
+            <td><input class="threshold-input" type="number" min="0" max="100" id="th-alert-${k}" value="${th.alert}"${alertChanged}></td>
+            <td><input class="threshold-input" type="number" min="0" max="100" id="th-warn-${k}"  value="${th.warn}"${warnChanged}></td>
+            <td>
+              <span class="th-badge-alert">危険 &lt;${th.alert}</span>
+              <span style="margin:0 4px;color:#94a3b8">～</span>
+              <span class="th-badge-warn">注意 &lt;${th.warn}</span>
+              <span style="margin:0 4px;color:#94a3b8">～</span>
+              <span class="th-badge-ok">健常 ${th.warn}+</span>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function applyThresholds() {
+  catKeys.forEach(k => {
+    const alertEl = document.getElementById(`th-alert-${k}`);
+    const warnEl  = document.getElementById(`th-warn-${k}`);
+    if (!alertEl || !warnEl) return;
+    const alertVal = parseInt(alertEl.value, 10);
+    const warnVal  = parseInt(warnEl.value, 10);
+    if (isNaN(alertVal) || isNaN(warnVal) || alertVal < 0 || warnVal > 100) return;
+    categoryThresholds[k] = { alert: alertVal, warn: warnVal };
+  });
+  saveThresholds();
+  renderThresholdEditor();
+  const msg = document.getElementById('threshold-save-msg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+}
+
+function resetThresholds() {
+  if (!confirm('閾値をデフォルト値にリセットしますか？')) return;
+  categoryThresholds = { ...defaultCategoryThresholds };
+  localStorage.removeItem('es_cat_thresholds');
+  renderThresholdEditor();
+  const msg = document.getElementById('threshold-save-msg');
+  if (msg) { msg.textContent = '↩️ リセットしました'; msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; msg.textContent = '✅ 保存しました'; }, 2500); }
 }
 
 // ===== ペルソナテーブル（フィルター付き 256パターン）=====
