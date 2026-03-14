@@ -873,7 +873,7 @@
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
       <div>
         <div class="section-title" style="margin-bottom:4px">📋 アクションプラン管理</div>
-        <p style="font-size:13px;color:#64748b">推奨アクションを参考に、実際の対応内容を記録・進捗管理します。</p>
+        <p style="font-size:13px;color:#64748b">対象者ごとに、推奨アクションを参考にしながら実際の対応を記録・進捗管理します。</p>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <label style="font-size:13px;font-weight:600;color:#475569">対象月：</label>
@@ -887,7 +887,18 @@
         </select>
       </div>
     </div>
-    <div id="action-plan-list"></div>
+    <!-- 2ペインレイアウト -->
+    <div style="display:flex;gap:20px;align-items:flex-start">
+      <!-- 左：社員リスト -->
+      <div style="width:280px;flex-shrink:0">
+        <input type="text" id="action-emp-search" placeholder="名前・IDで検索..." oninput="renderActionPlan()" style="width:100%;padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:10px">
+        <div id="action-emp-list" style="display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 260px);overflow-y:auto"></div>
+      </div>
+      <!-- 右：選択社員のアクション詳細 -->
+      <div style="flex:1;min-width:0">
+        <div id="action-plan-detail" style="color:#94a3b8;font-size:14px;padding:40px;text-align:center">← 左の一覧から対象者を選択してください</div>
+      </div>
+    </div>
   </div>
 
 <!-- 社員詳細 -->
@@ -2861,111 +2872,163 @@ function resetCustomQuestions() {
   renderQuestionEditor();
 }
 
-// ===== アクションプラン =====
+// ===== アクションプラン（対象者別）=====
 function getActionPlanData() {
   try { return JSON.parse(localStorage.getItem('es_action_plan') || '{}'); } catch(e) { return {}; }
 }
-function saveActionPlanItem(month, cat, status, note) {
+function saveActionPlanItem(empId, month, cat, status, note) {
   const data = getActionPlanData();
-  data[`${month}__${cat}`] = { status, note, updatedAt: new Date().toISOString() };
+  data[`${empId}__${month}__${cat}`] = { status, note, updatedAt: new Date().toISOString() };
   localStorage.setItem('es_action_plan', JSON.stringify(data));
 }
+let selectedActionEmpId = null;
 
 function renderActionPlan() {
   const month = document.getElementById('action-month-select')?.value;
   if (!month) return;
   const prev = months[months.indexOf(month) - 1];
-  const { cats, prevCats } = (() => {
-    const c = {}, pc = {};
-    catKeys.forEach(k => {
-      const s = Object.values(empData).map(e => e[month]?.[k] || 0).filter(v => v > 0);
-      c[k] = s.length ? Math.round(s.reduce((a,b) => a+b, 0) / s.length) : null;
-      if (prev) {
-        const ps = Object.values(empData).map(e => e[prev]?.[k] || 0).filter(v => v > 0);
-        pc[k] = ps.length ? Math.round(ps.reduce((a,b) => a+b, 0) / ps.length) : null;
-      }
-    });
-    return { cats: c, prevCats: prev ? pc : null };
-  })();
-
+  const search = (document.getElementById('action-emp-search')?.value || '').toLowerCase();
   const planData = getActionPlanData();
 
-  const items = catKeys.map(k => {
-    const score = cats[k];
-    if (score === null) return null;
-    const prevScore = prevCats?.[k] ?? null;
-    const diff = prevScore !== null ? score - prevScore : null;
-    const status = getCatStatus(k, score, diff);
-    const key = `${month}__${k}`;
-    const saved = planData[key] || { status: 'pending', note: '' };
-    return { k, score, diff, catStatus: status, key, saved };
-  }).filter(Boolean).sort((a, b) => {
-    const order = { alert: 0, warn: 1, ok: 2 };
-    return order[a.catStatus] - order[b.catStatus];
-  });
+  // 社員リスト（当月データありのみ）
+  const empList = Object.entries(employees).filter(([id, emp]) => {
+    if (!empData[id]?.[month]) return false;
+    if (search && !emp.name.toLowerCase().includes(search) && !id.toLowerCase().includes(search)) return false;
+    return true;
+  }).map(([id, emp]) => {
+    const scores = empData[id][month];
+    const prevScores = prev ? empData[id]?.[prev] : null;
+    const alertCount = catKeys.filter(k => {
+      const diff = prevScores ? scores[k] - prevScores[k] : null;
+      return getCatStatus(k, scores[k], diff) !== 'ok';
+    }).length;
+    const actionKeys = catKeys.map(k => `${id}__${month}__${k}`);
+    const doneCount = actionKeys.filter(key => planData[key]?.status === 'done').length;
+    const actionCount = actionKeys.filter(key => planData[key]).length;
+    return { id, emp, scores, alertCount, doneCount, actionCount, total: getTotal(scores) };
+  }).sort((a, b) => b.alertCount - a.alertCount || a.total - b.total);
 
-  const container = document.getElementById('action-plan-list');
-
-  const counts = { done: 0, in_progress: 0, pending: 0 };
-  items.forEach(i => counts[i.saved.status] = (counts[i.saved.status] || 0) + 1);
-  const total = items.length;
-  const summaryHtml = `
-    <div style="background:white;border-radius:12px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);display:flex;gap:20px;flex-wrap:wrap;align-items:center">
-      <div style="font-size:13px;font-weight:700;color:#475569">進捗サマリー</div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <span style="background:#f0fdf4;color:#16a34a;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700">✅ 完了 ${counts.done}</span>
-        <span style="background:#fffbeb;color:#d97706;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700">🔄 対応中 ${counts.in_progress}</span>
-        <span style="background:#f8fafc;color:#64748b;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:700">⏳ 未対応 ${counts.pending}</span>
-      </div>
-      <div style="flex:1;min-width:150px;background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden">
-        <div style="height:100%;width:${total?Math.round(counts.done/total*100):0}%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:4px;transition:width 0.5s"></div>
-      </div>
-      <div style="font-size:13px;font-weight:700;color:#16a34a">${total?Math.round(counts.done/total*100):0}%</div>
-    </div>`;
-
-  const cardsHtml = items.map(({ k, score, diff, catStatus, key, saved }) => {
-    const guide = categoryGuide[k]?.[catStatus];
-    const recText = guide ? guide.action : '現時点では問題ありません。継続モニタリングを推奨します。';
-    const diffText = diff !== null ? `前月比 ${diff >= 0 ? '+' : ''}${diff}点` : '初回';
-    const catStatusLabel = catStatus === 'alert' ? '🔴 要注意' : catStatus === 'warn' ? '🟡 注意' : '🟢 良好';
-    const statusCls = saved.status;
-    return `
-      <div class="action-plan-card ${saved.status === 'done' ? 'done' : ''}">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+  // 左：社員リスト描画
+  const empListEl = document.getElementById('action-emp-list');
+  if (empListEl) {
+    empListEl.innerHTML = empList.length ? empList.map(({ id, emp, alertCount, doneCount, actionCount, total }) => {
+      const isSelected = id === selectedActionEmpId;
+      const profile = getProfile(id);
+      const rankInfo = calcRank(profile.iq, profile.battlePower) || '';
+      return `<div onclick="selectActionEmployee('${id}')" style="background:${isSelected?'#eef2ff':'white'};border:2px solid ${isSelected?'#6366f1':'#e2e8f0'};border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
           <div>
-            <span style="font-size:16px;font-weight:800;color:#1e293b">${catNames[k]}</span>
-            <span style="margin-left:10px;font-size:20px;font-weight:900;color:${catStatus==='alert'?'#dc2626':catStatus==='warn'?'#d97706':'#16a34a'}">${score}点</span>
-            <span style="margin-left:8px;font-size:12px;color:#94a3b8">${diffText}</span>
+            <div style="font-size:13px;font-weight:700;color:#1e293b">${emp.name}</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px">${emp.dept}${rankInfo ? ' · ' + rankInfo : ''}</div>
           </div>
-          <span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;background:${catStatus==='alert'?'#fef2f2':catStatus==='warn'?'#fffbeb':'#f0fdf4'};color:${catStatus==='alert'?'#dc2626':catStatus==='warn'?'#d97706':'#16a34a'}">${catStatusLabel}</span>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:14px;font-weight:800;color:#1e293b">${total}点</div>
+            ${alertCount > 0 ? `<div style="font-size:10px;color:#dc2626;font-weight:700">⚠️ ${alertCount}件</div>` : `<div style="font-size:10px;color:#16a34a;font-weight:700">✅</div>`}
+          </div>
         </div>
-        <div class="action-rec-label">💡 推奨アクション（参考）</div>
-        <div class="action-rec-box">${recText.replace(/\n/g, '<br>')}</div>
-        <div class="action-actual-label">✏️ 実行内容（自由記入）</div>
-        <textarea class="action-textarea" id="action-note-${k}" placeholder="実際に行う対応内容を記入してください...">${saved.note || ''}</textarea>
-        <div class="action-status-row">
-          <select class="status-select ${statusCls}" id="action-status-${k}" onchange="this.className='status-select '+this.value">
-            <option value="pending" ${saved.status==='pending'?'selected':''}>⏳ 未対応</option>
-            <option value="in_progress" ${saved.status==='in_progress'?'selected':''}>🔄 対応中</option>
-            <option value="done" ${saved.status==='done'?'selected':''}>✅ 完了</option>
-          </select>
-          <button class="action-save-btn" onclick="saveActionItem('${month}','${k}')">保存</button>
-          <span class="action-saved-chip" id="action-saved-${k}">✅ 保存済み</span>
-        </div>
+        ${actionCount > 0 ? `<div style="margin-top:8px;background:#f1f5f9;border-radius:4px;height:4px;overflow:hidden"><div style="height:100%;width:${Math.round(doneCount/actionCount*100)}%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:4px"></div></div>` : ''}
       </div>`;
-  }).join('');
+    }).join('') : '<div style="color:#94a3b8;font-size:13px;padding:20px;text-align:center">該当者なし</div>';
+  }
 
-  container.innerHTML = summaryHtml + cardsHtml;
+  // 右：選択中の社員がいれば詳細を再描画
+  if (selectedActionEmpId && empList.find(e => e.id === selectedActionEmpId)) {
+    renderActionDetail(selectedActionEmpId, month);
+  }
 }
 
-function saveActionItem(month, cat) {
-  const note = document.getElementById(`action-note-${cat}`)?.value || '';
-  const status = document.getElementById(`action-status-${cat}`)?.value || 'pending';
-  saveActionPlanItem(month, cat, status, note);
-  const chip = document.getElementById(`action-saved-${cat}`);
+function selectActionEmployee(empId) {
+  selectedActionEmpId = empId;
+  const month = document.getElementById('action-month-select')?.value;
+  renderActionPlan();
+  if (month) renderActionDetail(empId, month);
+}
+
+function renderActionDetail(empId, month) {
+  const prev = months[months.indexOf(month) - 1];
+  const scores = empData[empId]?.[month];
+  const detail = document.getElementById('action-plan-detail');
+  if (!scores || !detail) return;
+  const prevScores = prev ? empData[empId]?.[prev] : null;
+  const emp = employees[empId] || {};
+  const profile = getProfile(empId);
+  const empRank = calcRank(profile.iq, profile.battlePower);
+  const mbtiType = profile.mbti || emp.mbti;
+  const planData = getActionPlanData();
+  const tierColorMap = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
+
+  const items = catKeys.map(k => {
+    const score = scores[k]; if (score == null) return null;
+    const diff = prevScores ? score - prevScores[k] : null;
+    const catStatus = getCatStatus(k, score, diff);
+    const saved = planData[`${empId}__${month}__${k}`] || { status: 'pending', note: '' };
+    return { k, score, diff, catStatus, saved };
+  }).filter(Boolean).sort((a, b) => ({ alert:0, warn:1, ok:2 }[a.catStatus]||3) - ({ alert:0, warn:1, ok:2 }[b.catStatus]||3));
+
+  const counts = { done:0, in_progress:0, pending:0 };
+  items.forEach(i => { counts[i.saved.status || 'pending']++; });
+  const total = items.length;
+
+  detail.innerHTML = `
+    <div style="background:white;border-radius:12px;padding:16px 20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#1e293b">${emp.name || empId}</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:2px">${emp.dept || ''}${empRank ? ` · <span style="color:${tierColorMap[empRank[0]]||'#475569'};font-weight:700">${empRank}</span>` : ''}${mbtiType ? ` · ${mbtiType}` : ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto">
+          <span style="background:#f0fdf4;color:#16a34a;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">✅ ${counts.done}</span>
+          <span style="background:#fffbeb;color:#d97706;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">🔄 ${counts.in_progress}</span>
+          <span style="background:#f8fafc;color:#64748b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">⏳ ${counts.pending}</span>
+        </div>
+      </div>
+      <div style="background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden">
+        <div style="height:100%;width:${total?Math.round(counts.done/total*100):0}%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:4px;transition:width 0.5s"></div>
+      </div>
+    </div>
+    ${items.map(({ k, score, diff, catStatus, saved }) => {
+      const guide = getPersonalizedCategoryAction(k, catStatus, empRank, mbtiType);
+      const recText = guide?.action || categoryGuide[k]?.[catStatus]?.action || '現時点では問題ありません。';
+      const isPersonalized = guide?.personalized;
+      const diffText = diff !== null ? `前月比 ${diff >= 0 ? '+' : ''}${diff}点` : '初回';
+      const catStatusLabel = catStatus === 'alert' ? '🔴 要注意' : catStatus === 'warn' ? '🟡 注意' : '🟢 良好';
+      const statusCls = saved.status || 'pending';
+      return `
+      <div class="action-plan-card ${statusCls === 'done' ? 'done' : ''}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+          <div>
+            <span style="font-size:15px;font-weight:800;color:#1e293b">${catNames[k]}</span>
+            <span style="margin-left:10px;font-size:19px;font-weight:900;color:${catStatus==='alert'?'#dc2626':catStatus==='warn'?'#d97706':'#16a34a'}">${score}点</span>
+            <span style="margin-left:8px;font-size:12px;color:#94a3b8">${diffText}</span>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${catStatus==='alert'?'#fef2f2':catStatus==='warn'?'#fffbeb':'#f0fdf4'};color:${catStatus==='alert'?'#dc2626':catStatus==='warn'?'#d97706':'#16a34a'}">${catStatusLabel}</span>
+        </div>
+        <div class="action-rec-label">💡 推奨アクション（参考）${isPersonalized ? '<span style="font-size:10px;background:#eef2ff;color:#6366f1;padding:2px 7px;border-radius:10px;margin-left:6px;font-weight:700">個別カスタマイズ</span>' : ''}</div>
+        <div class="action-rec-box">${recText.replace(/\n/g, '<br>')}</div>
+        <div class="action-actual-label">✏️ 実行内容（自由記入）</div>
+        <textarea class="action-textarea" id="action-note-${empId}-${k}" placeholder="実際に行う対応内容を記入してください...">${saved.note || ''}</textarea>
+        <div class="action-status-row">
+          <select class="status-select ${statusCls}" id="action-status-${empId}-${k}" onchange="this.className='status-select '+this.value">
+            <option value="pending" ${statusCls==='pending'?'selected':''}>⏳ 未対応</option>
+            <option value="in_progress" ${statusCls==='in_progress'?'selected':''}>🔄 対応中</option>
+            <option value="done" ${statusCls==='done'?'selected':''}>✅ 完了</option>
+          </select>
+          <button class="action-save-btn" onclick="saveActionItem('${empId}','${month}','${k}')">保存</button>
+          <span class="action-saved-chip" id="action-saved-${empId}-${k}">✅ 保存済み</span>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+function saveActionItem(empId, month, cat) {
+  const note = document.getElementById(`action-note-${empId}-${cat}`)?.value || '';
+  const status = document.getElementById(`action-status-${empId}-${cat}`)?.value || 'pending';
+  saveActionPlanItem(empId, month, cat, status, note);
+  const chip = document.getElementById(`action-saved-${empId}-${cat}`);
   if (chip) { chip.style.display = 'inline'; setTimeout(() => chip.style.display = 'none', 2000); }
   renderActionPlan();
 }
+
 
 rebuildEmpData();
 </script>
