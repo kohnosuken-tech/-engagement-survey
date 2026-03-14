@@ -358,17 +358,28 @@
   /* 社員詳細：推奨対応 */
   .recommend-section { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
   .recommend-section h3 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
-  .recommend-item { border-left: 4px solid #e5e7eb; padding: 12px 16px; margin-bottom: 10px; border-radius: 0 8px 8px 0; background: #fafafa; }
+  .recommend-item { border-left: 4px solid #e5e7eb; padding: 14px 16px; margin-bottom: 12px; border-radius: 0 8px 8px 0; background: #fafafa; }
   .recommend-item.alert { border-left-color: #ef4444; background: #fff5f5; }
   .recommend-item.warn { border-left-color: #f59e0b; background: #fffbeb; }
-  .recommend-item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .recommend-item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
   .recommend-item-header .cat { font-size: 13px; font-weight: 700; color: #374151; }
   .recommend-item-header .score { font-size: 13px; font-weight: 700; }
   .recommend-item-header .score.alert { color: #dc2626; }
   .recommend-item-header .score.warn { color: #d97706; }
-  .recommend-eval { font-size: 13px; color: #374151; margin-bottom: 6px; }
-  .recommend-action { font-size: 12px; color: #6b7280; line-height: 1.6; }
+  .recommend-eval { font-size: 13px; color: #374151; margin-bottom: 10px; }
+  .recommend-action { font-size: 12px; color: #6b7280; line-height: 1.7; }
   .recommend-action::before { content: '▶ '; color: #4f46e5; font-weight: 700; }
+  .personalized-action-wrap { margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 10px; }
+  .personalized-tags { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .personalized-tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .ptag-rank-s { background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe; }
+  .ptag-rank-a { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+  .ptag-rank-b { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+  .ptag-rank-c { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
+  .ptag-mbti { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
+  .personalized-action-text { font-size: 12px; color: #374151; line-height: 1.8; white-space: pre-line; }
+  .personalized-note { font-size: 11px; color: #64748b; background: #f1f5f9; border-radius: 6px; padding: 6px 10px; margin-top: 6px; line-height: 1.6; }
+  .generic-action-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -497,7 +508,7 @@
   <div id="tab-idmgmt" class="admin-body" style="display:none">
     <div class="section-title">🆔 新規ID発行</div>
     <div class="id-issue-card">
-      <div class="form-row">
+      <div class="form-row" style="margin-bottom:14px">
         <div class="form-group">
           <label>氏名 <span style="color:#ef4444">*</span></label>
           <input type="text" id="new-emp-name" placeholder="例：山田 太郎">
@@ -509,6 +520,38 @@
             <option value="営業部"><option value="開発部"><option value="総務部">
             <option value="マーケ部"><option value="人事部"><option value="経理部">
           </datalist>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:14px">
+        <div class="form-group" style="max-width:140px">
+          <label>IQスコア</label>
+          <input type="number" id="new-emp-iq" placeholder="例：115" min="60" max="200">
+        </div>
+        <div class="form-group" style="max-width:180px">
+          <label>戦闘力</label>
+          <input type="number" id="new-emp-bp" placeholder="例：8500" min="0">
+        </div>
+        <div class="form-group" style="max-width:160px">
+          <label>MBTIタイプ</label>
+          <select id="new-emp-mbti">
+            <option value="">未設定</option>
+            <optgroup label="NT（アナリスト）">
+              <option value="INTJ">INTJ 建築家</option><option value="INTP">INTP 論理学者</option>
+              <option value="ENTJ">ENTJ 指揮官</option><option value="ENTP">ENTP 討論者</option>
+            </optgroup>
+            <optgroup label="NF（ディプロマット）">
+              <option value="INFJ">INFJ 提唱者</option><option value="INFP">INFP 仲介者</option>
+              <option value="ENFJ">ENFJ 主人公</option><option value="ENFP">ENFP 広報運動家</option>
+            </optgroup>
+            <optgroup label="SJ（センチネル）">
+              <option value="ISTJ">ISTJ 管理者</option><option value="ISFJ">ISFJ 擁護者</option>
+              <option value="ESTJ">ESTJ 幹部</option><option value="ESFJ">ESFJ 領事</option>
+            </optgroup>
+            <optgroup label="SP（エクスプローラー）">
+              <option value="ISTP">ISTP 巨匠</option><option value="ISFP">ISFP 冒険家</option>
+              <option value="ESTP">ESTP 起業家</option><option value="ESFP">ESFP エンターテイナー</option>
+            </optgroup>
+          </select>
         </div>
         <button class="btn btn-primary" onclick="issueNewId()" style="flex-shrink:0;white-space:nowrap;height:44px;align-self:flex-end">IDを発行する ＋</button>
       </div>
@@ -963,6 +1006,62 @@ const categoryGuide = {
   },
 };
 
+// ===== ランク別アクションアプローチ =====
+const rankActionGuide = {
+  S1: { approach:'自ら解決策を設計・主導できる完全裁量の機会を提供し',        style:'経営レベルの課題として向き合わせながら' },
+  S2: { approach:'戦略立案を主導するプロジェクトを任せ',                       style:'上位者との協働機会を意識的に用意しながら' },
+  S3: { approach:'精緻な分析と設計に専念できる専門的課題を与え',               style:'アウトプット品質を最大化できる環境を整えながら' },
+  S4: { approach:'知的探求と実行経験をバランスよく設計し',                     style:'主体性を引き出す成功体験を積ませながら' },
+  A1: { approach:'行動起点で解決策を自ら推進できる場を作り',                   style:'達成感を感じられる明確なゴールを設定しながら' },
+  A2: { approach:'チームをリードしながら解決に当たる機会を与え',               style:'視座を上げる経験を意識して組み込みながら' },
+  A3: { approach:'明確な目標とリソースを提供し着実に進める環境を整え',         style:'強みを活かせる領域を見極めながら' },
+  A4: { approach:'小さな成功体験を積みながら自信をつける機会を設計し',         style:'適切なフィードバックを丁寧に続けながら' },
+  B1: { approach:'行動量を正しい方向に向けるための明確なKPIを設定し',          style:'振り返りの習慣を意識的に作りながら' },
+  B2: { approach:'具体的な目標と即時フィードバックで動ける環境を整え',         style:'PDCAを意識させながら' },
+  B3: { approach:'明確な指示と定期的なサポートで一歩ずつ進める体制を作り',     style:'得意領域に集中させながら' },
+  B4: { approach:'ステップ・バイ・ステップの具体的支援を設計し',               style:'経験を着実に積ませながら' },
+  C1: { approach:'エネルギーを正しい方向に向ける明確なタスクを毎日設計し',     style:'日次チェックインで方向修正を継続しながら' },
+  C2: { approach:'マニュアル化された手順と日次確認を徹底し',                   style:'判断を求めない設計を維持しながら' },
+  C3: { approach:'シンプルな役割定義と手厚いフォローアップを行い',             style:'小さな成功体験を丁寧に積み上げながら' },
+  C4: { approach:'最も基本的なステップに分解した伴走支援を続け',               style:'毎日の短いチェックインで軌道修正しながら' },
+};
+
+// ===== MBTIタイプ別コミュニケーション・動機づけスタイル =====
+const mbtiActionGuide = {
+  INTJ: { style:'論理的な根拠と長期的な意義を明確に示す形で',       note:'自律性を尊重した環境で、感情論ではなく構造的な問題解決として伝える' },
+  INTP: { style:'知的な問題として構造化し分析の機会を与える形で',   note:'理論と実践を結びつけ、「なぜ」を丁寧に説明しながら進める' },
+  ENTJ: { style:'目標と成果を明確にしリーダーシップを発揮できる場を作る形で', note:'効率と合理性を重視し、裁量を与えながら結果で評価する' },
+  ENTP: { style:'創造的な解決策を探索できる自由度を持たせる形で',   note:'新しい視点からの挑戦として位置づけ、多様な選択肢を提示する' },
+  INFJ: { style:'個人の成長とチームへの貢献意義を丁寧に結びつける形で', note:'静かな1on1で深く向き合い、ビジョンとの接続を大切にする' },
+  INFP: { style:'価値観との接続と自己表現の機会を大切にする形で',   note:'無理のないペースで進め、強制よりも内発的動機を引き出す' },
+  ENFJ: { style:'周囲への貢献と人間関係改善への影響を中心に据える形で', note:'人の成長に寄り添いながら、チームへのポジティブな影響を伝える' },
+  ENFP: { style:'可能性と多様な選択肢を示しながら自由に動ける環境を作る形で', note:'創造性と行動力を活かし、ルーティンではなく挑戦として提示する' },
+  ISTJ: { style:'明確な期待値と実績に基づく評価基準を示す形で',     note:'安定した環境を維持し、手順と根拠を明確に示しながら進める' },
+  ISFJ: { style:'安心できる環境と細やかな承認を丁寧に与える形で',   note:'サポートと信頼関係を通じて、急がず丁寧に向き合う' },
+  ESTJ: { style:'効率と成果を数値で示し明確なルールを設ける形で',   note:'組織の秩序と目標を軸に据え、達成基準を具体的に提示する' },
+  ESFJ: { style:'人間関係の改善と周囲からの承認に積極的に働きかける形で', note:'チームのハーモニーを重視し、貢献が認められる場を作る' },
+  ISTP: { style:'実践的な問題解決と自律性を最大限尊重する形で',     note:'具体的な行動から始め、余計な制約を排除した環境を整える' },
+  ISFP: { style:'自分のペースと個人の価値観を大切にする形で',       note:'穏やかな対話を通じて信頼関係を築き、押しつけを避ける' },
+  ESTP: { style:'即効性のある解決と現場での行動を最優先する形で',   note:'スピード感を持ちながら、短期的な結果から自信を積み上げる' },
+  ESFP: { style:'楽しさと人とのつながりを最大限活かす形で',         note:'ポジティブな関係性と即時の承認を通じて動機づける' },
+};
+
+// ===== スコア別 × ランク × MBTI 個別アクション生成 =====
+function getPersonalizedCategoryAction(cat, level, rank, mbtiType) {
+  const base = categoryGuide[cat]?.[level];
+  if (!base) return null;
+  const rg = rank    ? rankActionGuide[rank]    : null;
+  const mg = mbtiType ? mbtiActionGuide[mbtiType] : null;
+  if (!rg && !mg) return { eval: base.eval, action: base.action, personalized: false };
+  const action = [
+    rg ? `【${rank}ランク向け】${rg.approach}、${rg.style}対応します。` : '',
+    mg ? `【${mbtiType}タイプ向け】${mg.style}アプローチします。` : '',
+    `具体的には：${base.action}`,
+    mg ? `※ ${mg.note}。` : '',
+  ].filter(Boolean).join('\n');
+  return { eval: base.eval, action, personalized: true, rankNote: rg?.approach, mbtiNote: mg?.note };
+}
+
 const catKeys = ['やりがい', '成長', '健康', '上司', 'チーム', '承認', '信頼', '組織', '業務'];
 const catNames = { やりがい:'職務', 成長:'自己成長', 健康:'健康', 上司:'支援', チーム:'人間関係', 承認:'承認', 信頼:'理念戦略', 組織:'組織風土', 業務:'環境' };
 
@@ -1274,6 +1373,9 @@ function showDetail(empId) {
   document.getElementById('detail-name').textContent = emp?.name || empId;
   document.getElementById('detail-dept').textContent = emp?.dept || '';
 
+  const empProfile = getProfile(empId);
+  const empRank = calcRank(empProfile.iq, empProfile.battlePower);
+
   const data = empData[empId];
   const latestMonth = months[months.length - 1];
   const latestScores = data[latestMonth];
@@ -1504,9 +1606,8 @@ function showDetail(empId) {
           </div>`).join('')}
     </div>
     <div class="recommend-section">
-      <h3>💡 推奨対応</h3>
+      <h3>💡 推奨対応${empProfile.mbti && empRank ? `<span style="font-size:12px;font-weight:500;color:#94a3b8;margin-left:10px">ランク ${empRank} × ${empProfile.mbti} 個別カスタマイズ済み</span>` : ''}</h3>
       ${(() => {
-        const prevMonth = months[months.length - 2];
         const items = catKeys.map(k => {
           const score = latestScores[k];
           const prevScore = prevScores ? prevScores[k] : null;
@@ -1515,9 +1616,20 @@ function showDetail(empId) {
           return { k, score, diff, st };
         }).filter(item => item.st !== 'ok');
         if (items.length === 0) return '<div class="no-alert">✅ 現在すべてのカテゴリが良好です。</div>';
+        const rankTierClass = { S:'ptag-rank-s', A:'ptag-rank-a', B:'ptag-rank-b', C:'ptag-rank-c' };
         return items.map(({ k, score, diff, st }) => {
-          const guide = categoryGuide[k][st];
+          const guide = getPersonalizedCategoryAction(k, st, empRank, empProfile.mbti);
           const diffText = diff !== null ? `（前月比 ${diff > 0 ? '+' : ''}${diff}点）` : '';
+          const tierClass = empRank ? (rankTierClass[empRank[0]] || 'ptag-rank-a') : '';
+          const personalizedBlock = guide?.personalized ? `
+            <div class="personalized-action-wrap">
+              <div class="personalized-tags">
+                ${empRank ? `<span class="personalized-tag ${tierClass}">🏆 ${empRank}</span>` : ''}
+                ${empProfile.mbti ? `<span class="personalized-tag ptag-mbti">🧠 ${empProfile.mbti}</span>` : ''}
+                <span style="font-size:10px;font-weight:700;color:#6366f1;align-self:center;letter-spacing:0.3px">個別推奨アクション</span>
+              </div>
+              <div class="personalized-action-text">${guide.action}</div>
+            </div>` : `<div class="recommend-action">${guide?.action || ''}</div>`;
           return `
             <div class="recommend-item ${st}">
               <div class="recommend-item-header">
@@ -1525,8 +1637,8 @@ function showDetail(empId) {
                 <span class="score ${st}">${score}点${diffText}</span>
                 <span class="badge badge-${st}" style="margin-left:auto">${st === 'alert' ? '⚠️ 要対応' : '注意'}</span>
               </div>
-              <div class="recommend-eval">${guide.eval}</div>
-              <div class="recommend-action">${guide.action}</div>
+              <div class="recommend-eval">${guide?.eval || ''}</div>
+              ${personalizedBlock}
             </div>`;
         }).join('');
       })()}
@@ -1917,20 +2029,39 @@ function issueNewId() {
   const dept = document.getElementById('new-emp-dept').value.trim();
   if (!name) { showToast('⚠️ 氏名を入力してください'); return; }
   if (!dept) { showToast('⚠️ 所属部署を入力してください'); return; }
+  const iq         = parseInt(document.getElementById('new-emp-iq').value) || null;
+  const battlePower = parseInt(document.getElementById('new-emp-bp').value) || null;
+  const mbti       = document.getElementById('new-emp-mbti').value || null;
   const newId = nextEmpId();
   const now = new Date();
   const issuedAt = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
-  employees[newId] = { name, dept, issuedAt, isNew: true };
+  employees[newId] = { name, dept, issuedAt, isNew: true, iq: iq||0, battlePower: battlePower||0, mbti: mbti||'' };
+  // プロフィールをlocalStorageに即時保存
+  if (iq || battlePower || mbti) {
+    const profile = {};
+    if (iq)          profile.iq = iq;
+    if (battlePower) profile.battlePower = battlePower;
+    if (mbti)        profile.mbti = mbti;
+    localStorage.setItem(`es_profile_${newId}`, JSON.stringify(profile));
+  }
   lastIssuedId = newId;
+  const rank = calcRank(iq, battlePower);
   const result = document.getElementById('issued-result');
   result.style.display = 'block';
   result.style.animation = 'none';
-  result.offsetHeight; // reflow
+  result.offsetHeight;
   result.style.animation = '';
   document.getElementById('issued-id-value').textContent = newId;
-  document.getElementById('issued-name-value').textContent = `${name}（${dept}）`;
+  const subParts = [`${name}（${dept}）`];
+  if (rank) subParts.push(`ランク ${rank}`);
+  if (mbti) subParts.push(mbti);
+  document.getElementById('issued-name-value').textContent = subParts.join(' ／ ');
   document.getElementById('new-emp-name').value = '';
   document.getElementById('new-emp-dept').value = '';
+  document.getElementById('new-emp-iq').value = '';
+  document.getElementById('new-emp-bp').value = '';
+  document.getElementById('new-emp-mbti').value = '';
+  rebuildEmpData();
   renderIdList();
   showToast('✅ IDを発行しました');
 }
@@ -1938,18 +2069,36 @@ function issueNewId() {
 function renderIdList() {
   const table = document.getElementById('id-table');
   const rows = Object.entries(employees).map(([id, emp]) => {
+    const profile  = getProfile(id);
+    const rank     = calcRank(profile.iq, profile.battlePower);
+    const mbtiType = profile.mbti;
+    const mbtiInfo = mbtiType ? mbtiData[mbtiType] : null;
     const issuedAt = emp.issuedAt || '既存';
-    const newMark = emp.isNew ? '<span class="new-badge">NEW</span>' : '';
+    const newMark  = emp.isNew ? '<span class="new-badge">NEW</span>' : '';
+    const rankBadge = rank ? `<span class="rank-badge-sm rank-${rank[0].toLowerCase()}" style="margin-left:4px">${rank}</span>` : '';
+    const mbtiBadge = mbtiInfo ? `<span class="mbti-badge mbti-${mbtiInfo.group.toLowerCase()}" style="font-size:11px;padding:2px 8px">${mbtiType}</span>` : '';
+    const statsRow  = (profile.iq || profile.battlePower) ? `
+      <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap">
+        ${profile.iq ? `<span style="font-size:11px;background:#f5f3ff;color:#7c3aed;padding:2px 7px;border-radius:10px;font-weight:700">🧠 ${profile.iq}</span>` : ''}
+        ${profile.battlePower ? `<span style="font-size:11px;background:#fff7ed;color:#ea580c;padding:2px 7px;border-radius:10px;font-weight:700">⚡ ${profile.battlePower.toLocaleString()}</span>` : ''}
+        ${rank ? `<span style="font-size:11px;background:#f8fafc;color:#64748b;padding:2px 7px;border-radius:10px;font-weight:600">${rankData[rank]?.copy||''}</span>` : ''}
+      </div>` : '';
     return `<tr>
       <td><span class="id-badge">${id}</span>${newMark}</td>
-      <td style="font-weight:600;color:#1e293b">${emp.name}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-weight:600;color:#1e293b">${emp.name}</span>
+          ${rankBadge}${mbtiBadge}
+        </div>
+        ${statsRow}
+      </td>
       <td><span class="dept-chip">${emp.dept}</span></td>
       <td style="color:#94a3b8;font-size:13px">${issuedAt}</td>
       <td><button class="copy-btn" onclick="copyIdToClipboard('${id}')">📋 コピー</button></td>
     </tr>`;
   });
   table.innerHTML = `<table>
-    <thead><tr><th>社員ID</th><th>氏名</th><th>所属部署</th><th>発行日</th><th>操作</th></tr></thead>
+    <thead><tr><th>社員ID</th><th>氏名 ／ ランク・MBTI</th><th>所属部署</th><th>発行日</th><th>操作</th></tr></thead>
     <tbody>${rows.join('')}</tbody>
   </table>`;
 }
