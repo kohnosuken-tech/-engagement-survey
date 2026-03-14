@@ -380,6 +380,28 @@
   .personalized-action-text { font-size: 12px; color: #374151; line-height: 1.8; white-space: pre-line; }
   .personalized-note { font-size: 11px; color: #64748b; background: #f1f5f9; border-radius: 6px; padding: 6px 10px; margin-top: 6px; line-height: 1.6; }
   .generic-action-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+@media (max-width: 640px) {
+  #screen-login .card { width: 92vw; padding: 28px 20px; }
+  #screen-survey { padding: 16px 12px; }
+  #screen-survey .card { padding: 24px 16px; }
+  .rating-scale { gap: 4px; }
+  .rating-btn { padding: 12px 2px; font-size: 13px; border-radius: 8px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .category-scores { grid-template-columns: 1fr; }
+  .admin-body { padding: 16px; }
+  .admin-nav { padding: 0 16px; height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding-top: 10px; padding-bottom: 10px; }
+  .admin-tabs { padding: 0 8px; overflow-x: auto; white-space: nowrap; }
+  .tab-btn { padding: 14px 12px; font-size: 12px; }
+  .detail-body { padding: 16px; }
+  .form-row { flex-direction: column; }
+  .profile-display { flex-direction: column; }
+  .rank-info-grid { grid-template-columns: 1fr; }
+  .mbti-group-grid { grid-template-columns: 1fr; }
+  .mbti-detail-grid { grid-template-columns: 1fr; }
+  #screen-done .card, #screen-already .card { width: 92vw; padding: 32px 20px; }
+  .issued-id-big { font-size: 26px; }
+  .response-table { overflow-x: auto; }
+}
 </style>
 </head>
 <body>
@@ -390,7 +412,8 @@
     <div class="login-icon">📊</div>
     <h1>月次エンゲージメントサーベイ</h1>
     <p>2026年3月 回答期間：3/1〜3/15</p>
-    <input type="text" id="login-id" placeholder="社員ID を入力" maxlength="6">
+    <input type="text" id="login-id" placeholder="社員ID を入力" maxlength="6" oninput="document.getElementById('admin-pw-row').style.display=this.value.trim().toUpperCase()==='ADMIN'?'block':'none'">
+    <div id="admin-pw-row" style="display:none"><input type="password" id="admin-pw" placeholder="管理者パスワード" style="width:100%;padding:14px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:15px;margin-bottom:16px;font-family:inherit"></div>
     <button class="btn btn-primary" style="width:100%" onclick="doLogin()">ログイン</button>
     <p class="login-error" id="login-error"></p>
     <div class="demo-ids">
@@ -399,7 +422,6 @@
         <code onclick="setId('EMP001')">EMP001</code>
         <code onclick="setId('EMP042')">EMP042</code>
         <code onclick="setId('EMP099')">EMP099</code>
-        <code onclick="setId('ADMIN')" style="color:#7c3aed">ADMIN（管理者）</code>
       </div>
     </div>
   </div>
@@ -430,6 +452,7 @@
     <div class="done-icon">✅</div>
     <h2>回答が完了しました</h2>
     <p style="margin-top:8px">ご協力ありがとうございます。<br>結果は人事部が集計し、来月にフィードバックします。</p>
+    <div id="done-scores" style="margin-top:24px;text-align:left"></div>
     <button class="btn btn-primary" style="margin-top:28px;width:100%" onclick="goToLogin()">ログアウト</button>
   </div>
 </div>
@@ -477,6 +500,7 @@
     <div class="stats-grid" id="kpi-grid"></div>
     <div id="unsubmitted-section" style="display:none">
       <div class="section-title">📬 未回答者一覧 <span id="unsubmitted-count-label" style="font-size:13px;color:#94a3b8;font-weight:500"></span></div>
+      <button onclick="copyUnsubmittedList()" class="btn btn-secondary btn-sm" style="margin-bottom:12px">📋 リストをコピー</button>
       <div id="unsubmitted-list" style="margin-bottom:32px"></div>
     </div>
     <div class="section-title">⚠️ アラート</div>
@@ -485,6 +509,8 @@
     <div class="category-scores" id="category-grid"></div>
     <div class="section-title">📋 評価基準・推奨アクション</div>
     <div id="action-guide-list"></div>
+    <div class="section-title">🏢 部署別スコア</div>
+    <div id="dept-scores-grid" style="margin-bottom:32px"></div>
   </div>
 
   <!-- 社員一覧 -->
@@ -499,6 +525,21 @@
         <option value="2026-02">2026年2月</option>
         <option value="2026-03" selected>2026年3月</option>
       </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+      <input type="text" id="emp-search" placeholder="名前・IDで検索..." oninput="renderEmployeeList()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;width:180px;font-family:inherit">
+      <select id="emp-dept-filter" onchange="renderEmployeeList()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit">
+        <option value="">すべての部署</option>
+        <option>営業部</option><option>開発部</option><option>総務部</option><option>マーケ部</option><option>人事部</option><option>経理部</option>
+      </select>
+      <select id="emp-rank-filter" onchange="renderEmployeeList()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit">
+        <option value="">すべてのランク</option>
+        <option>S1</option><option>S2</option><option>S3</option><option>S4</option>
+        <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+        <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+        <option>C1</option><option>C2</option><option>C3</option><option>C4</option>
+      </select>
+      <button onclick="exportEmployeeCSV()" class="btn btn-secondary btn-sm">📥 CSV出力</button>
     </div>
     <div class="section-title">社員別スコア一覧</div>
     <div class="response-table" id="emp-table"></div>
@@ -726,6 +767,10 @@
 </div>
 
 <script>
+// ===== セキュリティ設定 =====
+const ADMIN_PASSWORD = 'admin1234';
+const SURVEY_PERIOD = { start: '2026-03-01', end: '2026-03-15' };
+
 // ===== マスタデータ =====
 const employees = {
   'EMP001': { name: '田中 一郎',   dept: '営業部',  iq: 110, battlePower:  8500, mbti: 'ESTJ' },
@@ -1308,13 +1353,53 @@ function renderDashboard() {
         </div>`;
     }).join('');
   }
+
+  // 部署別スコア
+  const deptScoresGrid = document.getElementById('dept-scores-grid');
+  if (deptScoresGrid) {
+    const deptMap = {};
+    Object.entries(employees).forEach(([id, emp]) => {
+      const dept = emp.dept;
+      if (!dept) return;
+      const scores = empData[id]?.[month];
+      if (!scores) return;
+      if (!deptMap[dept]) deptMap[dept] = { totals: [], count: 0 };
+      deptMap[dept].totals.push(getTotal(scores));
+      deptMap[dept].count++;
+    });
+    const deptHtml = Object.entries(deptMap).map(([dept, info]) => {
+      const avg = Math.round(info.totals.reduce((a,b) => a+b, 0) / info.totals.length);
+      const count = info.count;
+      let color1, color2, textColor;
+      if (avg >= 70) { color1 = '#4ade80'; color2 = '#22c55e'; textColor = '#16a34a'; }
+      else if (avg >= 60) { color1 = '#fbbf24'; color2 = '#f59e0b'; textColor = '#d97706'; }
+      else { color1 = '#f87171'; color2 = '#ef4444'; textColor = '#dc2626'; }
+      return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:16px">
+        <div style="width:100px;font-size:13px;font-weight:700;color:#374151">${dept}</div>
+        <div style="flex:1;background:#f1f5f9;border-radius:4px;height:12px;overflow:hidden">
+          <div style="height:100%;width:${avg}%;background:linear-gradient(90deg,${color1},${color2});border-radius:4px;transition:width 0.5s"></div>
+        </div>
+        <div style="font-size:16px;font-weight:800;width:50px;text-align:right;color:${textColor}">${avg}点</div>
+        <div style="font-size:12px;color:#94a3b8">${count}名</div>
+      </div>`;
+    }).join('');
+    deptScoresGrid.innerHTML = deptHtml || '<div style="color:#94a3b8;font-size:14px">データがありません</div>';
+  }
 }
 
 // ===== 社員一覧描画 =====
 function renderEmployeeList() {
   const month = document.getElementById('emp-month-select').value;
   const prev = months[months.indexOf(month) - 1];
-  const rows = Object.entries(empData).map(([id, data]) => {
+  const search = (document.getElementById('emp-search')||{}).value?.toLowerCase()||'';
+  const deptFilter = (document.getElementById('emp-dept-filter')||{}).value||'';
+  const rankFilter = (document.getElementById('emp-rank-filter')||{}).value||'';
+  const rows = Object.entries(empData).filter(([id]) => {
+    if (search && !id.toLowerCase().includes(search) && !(employees[id]?.name||'').toLowerCase().includes(search)) return false;
+    if (deptFilter && employees[id]?.dept !== deptFilter) return false;
+    if (rankFilter && calcRank(getProfile(id).iq, getProfile(id).battlePower) !== rankFilter) return false;
+    return true;
+  }).map(([id, data]) => {
     const scores = data[month];
     if (!scores) return null;
     const total = getTotal(scores);
@@ -1362,6 +1447,29 @@ function renderEmployeeList() {
       </tr>`).join('')}
     </tbody>
   </table>`;
+}
+
+function exportEmployeeCSV() {
+  const month = document.getElementById('emp-month-select')?.value || months[months.length-1];
+  const headers = ['社員ID','氏名','所属','ランク','MBTI','IQ','戦闘力','総合スコア','職務','自己成長','健康','支援','人間関係','承認','理念戦略','組織風土','環境'];
+  const rows = Object.entries(empData).map(([id, data]) => {
+    const emp = employees[id] || {};
+    const profile = getProfile(id);
+    const rank = calcRank(profile.iq, profile.battlePower) || '';
+    const scores = data[month] || {};
+    const total = Object.keys(scores).length > 0 ? getTotal(scores) : '';
+    return [id, emp.name||'', emp.dept||'', rank, profile.mbti||'', profile.iq||'', profile.battlePower||'', total,
+      scores['やりがい']||'', scores['成長']||'', scores['健康']||'', scores['上司']||'',
+      scores['チーム']||'', scores['承認']||'', scores['信頼']||'', scores['組織']||'', scores['業務']||''
+    ].join(',');
+  });
+  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `engagement_${month}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('📥 CSVをダウンロードしました');
 }
 
 // ===== 社員詳細 =====
@@ -1567,11 +1675,17 @@ function showDetail(empId) {
         </div>`;
       });
       if (currentCat) groupsHtml += `<div class="answer-group"><div class="answer-group-title">${currentCat}</div>${groupBuf}</div>`;
+      const freeText = ans['q34'];
+      const freeTextHtml = freeText ? `
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f1f5f9">
+          <div class="answer-group-title">💬 自由記述</div>
+          <div style="background:#f8fafc;border-left:3px solid #6366f1;padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#374151;line-height:1.75;margin-top:8px">${freeText}</div>
+        </div>` : '';
       answerDetailHtml = `
         <div class="answer-detail-card">
           <h3>📝 今月の回答データ（実データ）</h3>
           <div class="answer-submitted-at">2026年3月 ／ 実際に提出された回答 ／ 7段階評価（1=全くそう思わない ／ 7=強くそう思う）</div>
-          ${groupsHtml}
+          ${groupsHtml}${freeTextHtml}
         </div>`;
     } catch(e) {}
   }
@@ -1799,20 +1913,44 @@ function setId(id) { document.getElementById('login-id').value = id; }
 function doLogin() {
   const id = document.getElementById('login-id').value.trim().toUpperCase();
   if (id === 'ADMIN') {
+    const pw = document.getElementById('admin-pw').value;
+    if (pw !== ADMIN_PASSWORD) {
+      document.getElementById('login-error').textContent = '管理者パスワードが正しくありません。';
+      return;
+    }
     showScreen('admin');
     renderDashboard();
     return;
   }
   if (employees[id]) {
+    // 回答期間チェック
+    const today = new Date();
+    const start = new Date(SURVEY_PERIOD.start);
+    const end = new Date(SURVEY_PERIOD.end);
+    end.setHours(23,59,59);
+    if (today < start || today > end) {
+      const s = SURVEY_PERIOD.start.replace(/\d{4}-0?/, '').replace('-0?', '/').replace(/-(\d)$/, '/$1');
+      const e = SURVEY_PERIOD.end.replace(/\d{4}-0?/, '').replace('-0?', '/').replace(/-(\d)$/, '/$1');
+      const sm = SURVEY_PERIOD.start.slice(5).replace('-', '/').replace(/^0/, '');
+      const em = SURVEY_PERIOD.end.slice(5).replace('-', '/').replace(/^0/, '');
+      document.getElementById('login-error').textContent = `現在は回答期間外です（3/1〜3/15）`;
+      return;
+    }
     if (hasSubmittedThisMonth(id)) {
       document.getElementById('already-name').textContent = employees[id].name;
       showScreen('already');
       return;
     }
     currentEmpId = id;
+    // ドラフト復元
+    const draft = localStorage.getItem('es_draft_' + id);
+    answers = {};
+    if (draft) {
+      try { answers = JSON.parse(draft); showToast('⏳ 前回の途中保存データを復元しました'); } catch(e) {}
+    }
     showScreen('survey');
     document.getElementById('survey-user-name').textContent = `${employees[id].name}（${employees[id].dept}）`;
-    currentPage = 0; answers = {};
+    currentPage = 0;
     renderPage();
   } else {
     document.getElementById('login-error').textContent = '社員IDが見つかりません。もう一度確認してください。';
@@ -1831,7 +1969,6 @@ function renderPage() {
     if (q.type === 'rating') {
       const saved = answers[q.id] || null;
       block.innerHTML = `
-        <div class="category">${q.category}</div>
         <div class="question">${q.text}</div>
         <div class="rating-scale">
           ${[1,2,3,4,5,6,7].map(n => `<button class="rating-btn ${saved===n?'selected':''}" data-val="${n}" onclick="selectRating('${q.id}',${n},this)">${n}</button>`).join('')}
@@ -1839,7 +1976,6 @@ function renderPage() {
         <div class="rating-labels"><span>全くそう思わない</span><span>強くそう思う</span></div>`;
     } else {
       block.innerHTML = `
-        <div class="category">${q.category}</div>
         <div class="question">${q.text}</div>
         <div class="free-text"><textarea id="ta-${q.id}" placeholder="自由にご記入ください..."
           onchange="answers['${q.id}']=this.value">${answers[q.id]||''}</textarea></div>`;
@@ -1847,7 +1983,9 @@ function renderPage() {
     container.appendChild(block);
   });
   document.getElementById('progress-fill').style.width = (currentPage / questions.length * 100) + '%';
-  document.getElementById('progress-text').textContent = `${currentPage + 1} / ${questions.length}`;
+  const totalRatingQs = questions.reduce((s,p) => s + p.items.filter(q => q.type === 'rating').length, 0);
+  const answeredSoFar = questions.slice(0, currentPage + 1).reduce((s,p) => s + p.items.filter(q => q.type === 'rating').length, 0);
+  document.getElementById('progress-text').textContent = `Q${answeredSoFar} / ${totalRatingQs}問`;
   document.getElementById('btn-back').style.display = currentPage > 0 ? 'inline-block' : 'none';
   document.getElementById('btn-next').textContent = currentPage === questions.length - 1 ? '送信する ✓' : '次へ →';
 }
@@ -1856,15 +1994,33 @@ function selectRating(id, val, btn) {
   answers[id] = val;
   btn.closest('.rating-scale').querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
+  if (currentEmpId) localStorage.setItem('es_draft_' + currentEmpId, JSON.stringify(answers));
 }
 
 function nextPage() {
   const unanswered = questions[currentPage].items.filter(q => q.type === 'rating' && !answers[q.id]);
   if (unanswered.length > 0) { alert('すべての質問に回答してください。'); return; }
   if (currentPage === questions.length - 1) {
+    if (!confirm('回答を送信します。月1回のみ回答可能です。よろしいですか？')) return;
     const currentMonth = months[months.length - 1];
     localStorage.setItem(`es_${currentEmpId}_${currentMonth}`, JSON.stringify(answers));
+    localStorage.removeItem('es_draft_' + currentEmpId);
     rebuildEmpData();
+    // 提出後スコア表示
+    const doneScores = calcScoresFromAnswers(answers);
+    const doneHtml = catKeys.map(k => {
+      const v = doneScores[k] || 0;
+      const color = v >= 70 ? '#22c55e' : v >= 60 ? '#f59e0b' : '#ef4444';
+      return `<div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+        <div style="width:72px;font-size:11px;font-weight:600;color:#64748b;text-align:right">${catNames[k]}</div>
+        <div style="flex:1;background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden">
+          <div style="height:100%;width:${v}%;background:${color};border-radius:4px"></div>
+        </div>
+        <div style="font-size:13px;font-weight:800;width:36px;color:${color}">${v}</div>
+      </div>`;
+    }).join('');
+    const doneEl = document.getElementById('done-scores');
+    if (doneEl) doneEl.innerHTML = '<div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px">📊 今月のあなたのスコア</div>' + doneHtml;
     showScreen('done');
   }
   else { currentPage++; renderPage(); window.scrollTo(0,0); }
@@ -2094,13 +2250,23 @@ function renderIdList() {
       </td>
       <td><span class="dept-chip">${emp.dept}</span></td>
       <td style="color:#94a3b8;font-size:13px">${issuedAt}</td>
-      <td><button class="copy-btn" onclick="copyIdToClipboard('${id}')">📋 コピー</button></td>
+      <td><button class="copy-btn" onclick="copyIdToClipboard('${id}')">📋 コピー</button><button onclick="deleteEmployee('${id}')" class="copy-btn" style="color:#dc2626;border-color:#fecaca;margin-left:6px">🗑 削除</button></td>
     </tr>`;
   });
   table.innerHTML = `<table>
     <thead><tr><th>社員ID</th><th>氏名 ／ ランク・MBTI</th><th>所属部署</th><th>発行日</th><th>操作</th></tr></thead>
     <tbody>${rows.join('')}</tbody>
   </table>`;
+}
+
+function deleteEmployee(id) {
+  const emp = employees[id];
+  if (!confirm(`${id}（${emp?.name||''}）を削除しますか？\nこの操作は取り消せません。`)) return;
+  delete employees[id];
+  delete empData[id];
+  localStorage.removeItem(`es_profile_${id}`);
+  renderIdList();
+  showToast('🗑 削除しました');
 }
 
 function copyIssuedId() { copyIdToClipboard(lastIssuedId); }
@@ -2116,6 +2282,18 @@ function copyIdToClipboard(id) {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(id).then(() => showToast(`📋 ${id} をコピーしました`)).catch(fallback);
   } else { fallback(); }
+}
+
+function copyUnsubmittedList() {
+  const month = document.getElementById('month-select')?.value || months[months.length-1];
+  const submitted = getSubmittedIds(month);
+  const unsubmitted = Object.entries(employees)
+    .filter(([id]) => !submitted.includes(id))
+    .map(([id, emp]) => `${id} ${emp.name}（${emp.dept}）`)
+    .join('\n');
+  if (!unsubmitted) { showToast('未回答者はいません'); return; }
+  navigator.clipboard?.writeText(unsubmitted).then(() => showToast('📋 コピーしました'))
+    .catch(() => { const el=document.createElement('textarea'); el.value=unsubmitted; document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove(); showToast('📋 コピーしました'); });
 }
 
 let toastTimer;
