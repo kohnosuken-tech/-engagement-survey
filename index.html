@@ -1,0 +1,3083 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>エンゲージメントサーベイ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; background: #f1f5f9; color: #1e293b; }
+
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; }
+  .card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04); padding: 40px; }
+  .btn { padding: 12px 28px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; }
+  .btn-primary { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; box-shadow: 0 4px 0 #3730a3, 0 6px 16px rgba(79,70,229,0.3); transform: translateY(0); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 0 #3730a3, 0 8px 20px rgba(79,70,229,0.35); }
+  .btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #3730a3, 0 2px 8px rgba(79,70,229,0.2); }
+  .btn-secondary { background: linear-gradient(180deg, #ffffff, #f1f5f9); color: #475569; box-shadow: 0 3px 0 #cbd5e1, 0 4px 10px rgba(0,0,0,0.06); transform: translateY(0); border: 1px solid #e2e8f0; }
+  .btn-secondary:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #cbd5e1, 0 6px 14px rgba(0,0,0,0.08); }
+  .btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 #cbd5e1; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .badge-alert { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+  .badge-ok { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+  .badge-warn { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+
+  /* ログイン */
+  #screen-login { align-items: center; justify-content: center; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%); position: relative; overflow: hidden; }
+  #screen-login::before { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; background: rgba(255,255,255,0.05); top: -200px; right: -150px; pointer-events: none; }
+  #screen-login::after { content: ''; position: absolute; width: 400px; height: 400px; border-radius: 50%; background: rgba(255,255,255,0.04); bottom: -150px; left: -100px; pointer-events: none; }
+  #screen-login .card { width: 420px; text-align: center; position: relative; z-index: 1; border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.25), 0 8px 24px rgba(0,0,0,0.15); }
+  #screen-login .login-icon { font-size: 48px; margin-bottom: 12px; }
+  #screen-login h1 { font-size: 22px; margin-bottom: 6px; color: #1e1b4b; font-weight: 800; }
+  #screen-login > .card > p { color: #6b7280; margin-bottom: 28px; font-size: 14px; }
+  #screen-login input { width: 100%; padding: 14px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 18px; text-align: center; letter-spacing: 6px; margin-bottom: 16px; transition: all 0.2s; font-family: 'Inter', monospace; font-weight: 700; }
+  #screen-login input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.12); }
+  .login-error { color: #dc2626; font-size: 13px; margin-top: 8px; font-weight: 500; }
+  .demo-ids { margin-top: 24px; padding: 16px; background: #f8faff; border-radius: 10px; text-align: left; border: 1px solid #e0e7ff; }
+  .demo-ids p { font-size: 12px; color: #9ca3af; margin-bottom: 8px; font-weight: 500; }
+  .demo-ids code { font-size: 13px; color: #4f46e5; font-weight: 700; cursor: pointer; padding: 3px 8px; background: #eef2ff; border-radius: 6px; transition: background 0.15s; display: inline-block; }
+  .demo-ids code:hover { background: #e0e7ff; }
+
+  /* サーベイ */
+  #screen-survey { align-items: flex-start; justify-content: center; padding: 40px 20px; background: linear-gradient(160deg, #eef2ff 0%, #faf5ff 50%, #f0fdf4 100%); }
+  #screen-survey .card { width: 100%; max-width: 660px; border-radius: 20px; }
+  .survey-header { margin-bottom: 32px; border-bottom: 1px solid #f1f5f9; padding-bottom: 24px; }
+  .survey-header h2 { font-size: 20px; color: #1e1b4b; font-weight: 800; }
+  .survey-header p { color: #6b7280; font-size: 14px; margin-top: 4px; font-weight: 500; }
+  .progress-wrap { margin-top: 18px; }
+  .progress-bar { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); border-radius: 4px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+  .progress-text { font-size: 12px; color: #94a3b8; margin-top: 6px; text-align: right; font-weight: 500; }
+  .question-block { margin-bottom: 36px; }
+  .question-block .category { display: inline-block; font-size: 11px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; background: #eef2ff; padding: 4px 12px; border-radius: 20px; }
+  .question-block .question { font-size: 16px; font-weight: 600; margin-bottom: 20px; color: #1e1b4b; line-height: 1.55; }
+  .rating-scale { display: flex; gap: 7px; }
+  .rating-btn {
+    flex: 1; padding: 15px 4px; border: none; border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+    cursor: pointer; text-align: center; font-size: 15px; font-weight: 800; color: #64748b;
+    box-shadow: 0 5px 0 #cbd5e1, 0 6px 14px rgba(0,0,0,0.07);
+    transform: translateY(0);
+    transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease, color 0.12s ease;
+  }
+  .rating-btn:hover {
+    background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+    color: #6366f1; transform: translateY(-3px);
+    box-shadow: 0 8px 0 #c4b5fd, 0 10px 20px rgba(99,102,241,0.15);
+  }
+  .rating-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 #cbd5e1, 0 2px 4px rgba(0,0,0,0.08); }
+  .rating-btn[data-val="1"].selected { background: linear-gradient(180deg, #f87171, #ef4444); box-shadow: 0 2px 0 #b91c1c; transform: translateY(4px); color: white; }
+  .rating-btn[data-val="2"].selected { background: linear-gradient(180deg, #fb923c, #f97316); box-shadow: 0 2px 0 #c2410c; transform: translateY(4px); color: white; }
+  .rating-btn[data-val="3"].selected { background: linear-gradient(180deg, #fbbf24, #f59e0b); box-shadow: 0 2px 0 #92400e; transform: translateY(4px); color: #451a03; }
+  .rating-btn[data-val="4"].selected { background: linear-gradient(180deg, #facc15, #eab308); box-shadow: 0 2px 0 #713f12; transform: translateY(4px); color: #422006; }
+  .rating-btn[data-val="5"].selected { background: linear-gradient(180deg, #86efac, #22c55e); box-shadow: 0 2px 0 #166534; transform: translateY(4px); color: white; }
+  .rating-btn[data-val="6"].selected { background: linear-gradient(180deg, #4ade80, #16a34a); box-shadow: 0 2px 0 #14532d; transform: translateY(4px); color: white; }
+  .rating-btn[data-val="7"].selected { background: linear-gradient(180deg, #34d399, #059669); box-shadow: 0 2px 0 #064e3b; transform: translateY(4px); color: white; }
+  .rating-labels { display: flex; justify-content: space-between; margin-top: 10px; }
+  .rating-labels span { font-size: 11px; color: #94a3b8; font-weight: 500; }
+  .free-text textarea { width: 100%; padding: 14px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 14px; resize: vertical; min-height: 110px; font-family: inherit; transition: all 0.2s; color: #1e293b; line-height: 1.6; }
+  .free-text textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99,102,241,0.1); }
+  .survey-footer { display: flex; justify-content: space-between; margin-top: 12px; padding-top: 20px; border-top: 1px solid #f1f5f9; }
+
+  /* 完了 */
+  #screen-done { align-items: center; justify-content: center; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%); }
+  #screen-done .card { width: 420px; text-align: center; border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
+  .done-icon { font-size: 72px; margin-bottom: 16px; animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+  @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  #screen-done h2 { font-size: 24px; color: #1e1b4b; margin-bottom: 8px; font-weight: 800; }
+  #screen-done p { color: #6b7280; font-size: 14px; line-height: 1.7; }
+
+  /* 回答済み */
+  #screen-already { align-items: center; justify-content: center; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%); }
+  #screen-already .card { width: 420px; text-align: center; border-radius: 20px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); }
+  .already-icon { font-size: 72px; margin-bottom: 16px; }
+  #screen-already h2 { font-size: 22px; color: #1e1b4b; margin-bottom: 8px; font-weight: 800; }
+  #screen-already p { color: #6b7280; font-size: 14px; line-height: 1.7; }
+
+  /* 管理者共通 */
+  #screen-admin { flex-direction: column; }
+  .admin-nav { background: linear-gradient(90deg, #1e1b4b 0%, #2e1065 100%); color: white; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 64px; flex-shrink: 0; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+  .admin-nav .logo { font-size: 16px; font-weight: 800; letter-spacing: -0.3px; }
+  .admin-nav .user-info { font-size: 13px; color: #a5b4fc; display: flex; align-items: center; gap: 12px; font-weight: 500; }
+  .admin-nav .logout-btn { background: rgba(255,255,255,0.1); color: white; padding: 7px 16px; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600; transition: background 0.15s; }
+  .admin-nav .logout-btn:hover { background: rgba(255,255,255,0.18); }
+
+  /* タブ */
+  .admin-tabs { background: white; border-bottom: 1px solid #e5e7eb; padding: 0 32px; display: flex; gap: 0; flex-shrink: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .tab-btn { padding: 16px 26px; background: none; border: none; border-bottom: 3px solid transparent; font-size: 14px; font-weight: 700; color: #94a3b8; cursor: pointer; transition: all 0.2s; letter-spacing: 0.2px; }
+  .tab-btn.active { color: #6366f1; border-bottom-color: #6366f1; }
+  .tab-btn:hover { color: #6366f1; }
+
+  .admin-body { padding: 32px; max-width: 1200px; margin: 0 auto; width: 100%; overflow-y: auto; }
+
+  /* 月セレクター */
+  .month-selector { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .month-selector label { font-size: 14px; font-weight: 600; color: #374151; }
+  .month-selector select { padding: 8px 14px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-weight: 600; color: #374151; cursor: pointer; }
+  .month-selector select:focus { outline: none; border-color: #4f46e5; }
+
+  /* KPIカード */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: white; border-radius: 14px; padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); transition: transform 0.15s, box-shadow 0.15s; }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .stat-card .label { font-size: 12px; color: #94a3b8; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 30px; font-weight: 800; color: #1e293b; letter-spacing: -1px; }
+  .stat-card .sub { font-size: 12px; margin-top: 6px; font-weight: 600; }
+  .stat-card .sub.up { color: #16a34a; }
+  .stat-card .sub.down { color: #dc2626; }
+  .stat-card .sub.neutral { color: #94a3b8; }
+
+  .section-title { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 16px; letter-spacing: -0.2px; }
+
+  /* カテゴリスコア */
+  .category-scores { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  .score-card { background: white; border-radius: 14px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); transition: transform 0.15s, box-shadow 0.15s; }
+  .score-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .score-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .score-card-header .cat-name { font-size: 14px; font-weight: 700; color: #475569; }
+  .score-card-header .score-num { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .score-card-header .score-num.alert { color: #dc2626; }
+  .score-card-header .score-num.warn { color: #d97706; }
+  .score-card-header .score-num.ok { color: #16a34a; }
+  .score-bar-wrap { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+  .score-bar { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+  .score-bar.alert { background: linear-gradient(90deg, #f87171, #ef4444); }
+  .score-bar.warn { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+  .score-bar.ok { background: linear-gradient(90deg, #4ade80, #22c55e); }
+  .score-trend { font-size: 12px; color: #94a3b8; margin-top: 8px; font-weight: 500; }
+  .score-trend .down { color: #dc2626; font-weight: 700; }
+  .score-trend .up { color: #16a34a; font-weight: 700; }
+  .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 40px; margin-top: 10px; }
+  .mini-bar { flex: 1; border-radius: 3px 3px 0 0; }
+
+  /* アラート */
+  .alert-section { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.04); }
+  .alert-item { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid #f8fafc; transition: background 0.15s; }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-icon { font-size: 22px; flex-shrink: 0; }
+  .alert-content .title { font-size: 14px; font-weight: 700; color: #1e293b; }
+  .alert-content .detail { font-size: 12px; color: #94a3b8; margin-top: 3px; font-weight: 500; }
+  .no-alert { text-align: center; padding: 24px; color: #94a3b8; font-size: 14px; font-weight: 500; }
+
+  /* 回答一覧テーブル */
+  .response-table { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.04); }
+  .response-table table { width: 100%; border-collapse: collapse; }
+  .response-table th { background: #f8fafc; padding: 13px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .response-table td { padding: 13px 16px; font-size: 14px; border-top: 1px solid #f8fafc; color: #334155; }
+  .response-table tr.clickable:hover td { background: #f5f3ff; cursor: pointer; }
+  .detail-link { color: #6366f1; font-size: 13px; font-weight: 700; background: none; border: none; cursor: pointer; text-decoration: none; padding: 5px 12px; background: #eef2ff; border-radius: 8px; transition: background 0.15s; }
+  .detail-link:hover { background: #e0e7ff; }
+
+  /* 社員詳細画面 */
+  #screen-detail { flex-direction: column; }
+  .detail-body { padding: 32px; max-width: 1000px; margin: 0 auto; width: 100%; }
+  .detail-header { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+  .detail-header .back-btn { background: linear-gradient(180deg, #ffffff, #f1f5f9); border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 18px; font-size: 14px; cursor: pointer; color: #475569; font-weight: 600; box-shadow: 0 2px 0 #cbd5e1; transition: all 0.1s; }
+  .detail-header .back-btn:hover { transform: translateY(-1px); box-shadow: 0 3px 0 #cbd5e1; color: #6366f1; }
+  .detail-header .back-btn:active { transform: translateY(2px); box-shadow: 0 0px 0 #cbd5e1; }
+  .detail-header h2 { font-size: 22px; font-weight: 800; color: #1e293b; }
+  .detail-header .dept-badge { background: linear-gradient(135deg, #ede9fe, #ddd6fe); color: #7c3aed; padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+
+  /* SVGライングラフ */
+  .chart-card { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .chart-card h3 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
+  .svg-chart { width: 100%; overflow: visible; }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #374151; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* 月別カテゴリ表 */
+  .monthly-table-card { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 24px; }
+  .monthly-table-card h3 { font-size: 15px; font-weight: 700; color: #1f2937; padding: 20px 24px 0; }
+  .monthly-table-card table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  .monthly-table-card th { background: #f9fafb; padding: 10px 16px; text-align: center; font-size: 12px; font-weight: 600; color: #6b7280; }
+  .monthly-table-card th:first-child { text-align: left; }
+  .monthly-table-card td { padding: 10px 16px; font-size: 13px; border-top: 1px solid #f3f4f6; text-align: center; font-weight: 600; }
+  .monthly-table-card td:first-child { text-align: left; color: #374151; }
+  .cell-ok { color: #16a34a; }
+  .cell-warn { color: #d97706; }
+  .cell-alert { color: #dc2626; }
+  .cell-diff-up { color: #16a34a; font-size: 11px; }
+  .cell-diff-down { color: #dc2626; font-size: 11px; }
+
+  /* アラート履歴 */
+  .alert-history { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .alert-history h3 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
+
+  /* 評価・推奨アクション */
+  .guide-card { background: white; border-radius: 10px; padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 12px; border-left: 5px solid #e5e7eb; display: flex; gap: 24px; align-items: flex-start; }
+  .guide-card.alert { border-left-color: #ef4444; }
+  .guide-card.warn { border-left-color: #f59e0b; }
+  .guide-card.ok { border-left-color: #22c55e; }
+  .guide-card-score { flex: 0 0 110px; }
+  .guide-score-num { font-size: 26px; font-weight: 700; }
+  .guide-score-num.alert { color: #dc2626; }
+  .guide-score-num.warn { color: #d97706; }
+  .guide-score-num.ok { color: #16a34a; }
+  .guide-cat-name { font-size: 12px; color: #6b7280; margin-top: 2px; font-weight: 600; }
+  .guide-diff { font-size: 12px; margin-top: 4px; font-weight: 600; }
+  .guide-card-body { flex: 1; }
+  .guide-eval { font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 10px; }
+  .guide-action-label { font-size: 11px; font-weight: 700; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .guide-action-text { font-size: 13px; color: #6b7280; line-height: 1.7; }
+  .no-guide { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 32px; }
+
+  /* ID管理 */
+  .id-issue-card { background: white; border-radius: 14px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+  .id-issue-card h3 { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 20px; }
+  .form-row { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 160px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-family: inherit; transition: all 0.2s; color: #1e293b; font-weight: 500; }
+  .form-group input:focus, .form-group select:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+  .issued-result { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 12px; padding: 20px 24px; margin-top: 20px; display: none; animation: fadeSlideIn 0.3s ease; }
+  @keyframes fadeSlideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  .issued-result-label { font-size: 13px; color: #16a34a; font-weight: 700; margin-bottom: 10px; }
+  .issued-id-big { font-size: 34px; font-weight: 800; color: #15803d; letter-spacing: 3px; font-family: 'Inter', monospace; }
+  .issued-sub { font-size: 14px; color: #374151; margin-top: 4px; font-weight: 500; }
+  .copy-btn { padding: 8px 16px; background: linear-gradient(180deg, #fff, #f1f5f9); border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 700; color: #475569; cursor: pointer; box-shadow: 0 3px 0 #cbd5e1; transition: all 0.1s; white-space: nowrap; }
+  .copy-btn:hover { background: linear-gradient(180deg, #f5f3ff, #ede9fe); color: #6366f1; border-color: #c4b5fd; box-shadow: 0 3px 0 #c4b5fd; }
+  .copy-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #cbd5e1; }
+  .id-table-wrap { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.04); }
+  .id-table-wrap table { width: 100%; border-collapse: collapse; }
+  .id-table-wrap th { background: #f8fafc; padding: 13px 16px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .id-table-wrap td { padding: 13px 16px; font-size: 14px; border-top: 1px solid #f8fafc; color: #334155; }
+  .id-badge { font-size: 14px; font-weight: 800; color: #6366f1; background: #eef2ff; padding: 4px 10px; border-radius: 8px; font-family: 'Inter', monospace; letter-spacing: 1px; }
+  .dept-chip { background: #f1f5f9; padding: 3px 10px; border-radius: 20px; font-size: 12px; color: #64748b; font-weight: 600; }
+  .new-badge { background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-left: 6px; }
+  /* トースト通知 */
+  .toast { position: fixed; bottom: 36px; left: 50%; transform: translateX(-50%) translateY(16px); background: #1e293b; color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; opacity: 0; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 9999; pointer-events: none; box-shadow: 0 8px 24px rgba(0,0,0,0.25); white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ランクバッジ */
+  .rank-badge-lg { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 16px; font-size: 22px; font-weight: 900; color: white; flex-shrink: 0; letter-spacing: -0.5px; }
+  .rank-badge-sm { display: inline-flex; align-items: center; justify-content: center; padding: 3px 10px; border-radius: 8px; font-size: 12px; font-weight: 900; color: white; }
+  .rank-s { background: linear-gradient(135deg, #7c3aed, #4f46e5); box-shadow: 0 4px 14px rgba(124,58,237,0.4); }
+  .rank-a { background: linear-gradient(135deg, #1d4ed8, #0284c7); box-shadow: 0 4px 14px rgba(29,78,216,0.4); }
+  .rank-b { background: linear-gradient(135deg, #15803d, #059669); box-shadow: 0 4px 14px rgba(21,128,61,0.4); }
+  .rank-c { background: linear-gradient(135deg, #b45309, #dc2626); box-shadow: 0 4px 14px rgba(180,83,9,0.4); }
+  .rank-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .rank-copy { font-size: 18px; font-weight: 800; color: #1e293b; }
+  .rank-label { font-size: 12px; color: #94a3b8; font-weight: 500; }
+  .rank-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .rank-info-item { background: #f8fafc; border-radius: 10px; padding: 12px 14px; }
+  .rank-info-item .ri-label { font-size: 11px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+  .rank-info-item .ri-text { font-size: 13px; color: #374151; line-height: 1.6; }
+  .rank-info-item.full { grid-column: 1 / -1; }
+  .rank-info-item.growth { background: linear-gradient(135deg, #fefce8, #fef9c3); }
+  .rank-info-item.growth .ri-label { color: #a16207; }
+
+  /* MBTI */
+  .mbti-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .mbti-nt { background: #e9d8f5; color: #5b21b6; border: 1px solid #c4a8e0; }   /* 分析家：薄い紫 */
+  .mbti-nf { background: #d4f0b0; color: #2d6a1f; border: 1px solid #96d468; }   /* 外交官：薄い黄緑 */
+  .mbti-sj { background: #c0d8f0; color: #1a3a6e; border: 1px solid #7ab0d8; }   /* 番人：薄い青 */
+  .mbti-sp { background: #fde5c0; color: #7c3100; border: 1px solid #f5a855; }   /* 探検家：薄いオレンジ */
+  .persona-card { background: linear-gradient(135deg, #fafafa, #f5f3ff); border: 1px solid #e0e7ff; border-radius: 12px; padding: 16px 18px; margin-top: 16px; }
+  .persona-title { font-size: 16px; font-weight: 800; color: #1e1b4b; margin-bottom: 6px; }
+  .persona-desc { font-size: 13px; color: #374151; line-height: 1.75; margin-bottom: 10px; }
+  .persona-watch { background: #fef2f2; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #dc2626; font-weight: 600; line-height: 1.6; }
+  .mbti-detail-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 14px; }
+  .mbti-detail-item { background: white; border-radius: 10px; padding: 10px 12px; border: 1px solid #f1f5f9; }
+  .mbti-detail-item .mdi-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .mbti-detail-item .mdi-text { font-size: 12px; color: #374151; line-height: 1.5; }
+
+  /* プロフィールカード（IQ・戦闘力） */
+  .profile-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .profile-card h3 { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
+  .profile-display { display: flex; gap: 16px; margin-bottom: 18px; }
+  .profile-stat { flex: 1; border-radius: 12px; padding: 14px 18px; }
+  .profile-stat.iq-stat { background: linear-gradient(135deg, #f5f3ff, #ede9fe); border: 1px solid #ddd6fe; }
+  .profile-stat.bp-stat { background: linear-gradient(135deg, #fff7ed, #ffedd5); border: 1px solid #fed7aa; }
+  .profile-stat .ps-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .profile-stat.iq-stat .ps-label { color: #7c3aed; }
+  .profile-stat.bp-stat .ps-label { color: #ea580c; }
+  .profile-stat .ps-value { font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+  .profile-stat.iq-stat .ps-value { color: #4c1d95; }
+  .profile-stat.bp-stat .ps-value { color: #9a3412; }
+  .profile-edit-row { display: flex; gap: 12px; align-items: flex-end; }
+  .profile-edit-field { flex: 1; }
+  .profile-edit-field label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px; }
+  .profile-edit-field input { width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: 'Inter', monospace; transition: all 0.2s; color: #1e293b; }
+  .profile-edit-field input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+
+  /* 実回答データカード */
+  .answer-detail-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .answer-detail-card h3 { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+  .answer-submitted-at { font-size: 12px; color: #94a3b8; font-weight: 500; margin-bottom: 20px; }
+  .answer-group { margin-bottom: 18px; }
+  .answer-group-title { font-size: 11px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; background: #eef2ff; display: inline-block; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+  .answer-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f8fafc; }
+  .answer-row:last-child { border-bottom: none; }
+  .answer-q { flex: 1; font-size: 13px; color: #475569; line-height: 1.4; }
+  .answer-bar-wrap { width: 130px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+  .answer-bar { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+  .answer-bar-fill { height: 100%; border-radius: 4px; }
+  .answer-val { font-size: 14px; font-weight: 800; width: 28px; text-align: right; }
+
+  /* ロジック一覧タブ */
+  .threshold-table { width: 100%; border-collapse: collapse; }
+  .threshold-table th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; }
+  .threshold-table td { padding: 10px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .threshold-table tr:hover td { background: #f9fafb; }
+  .threshold-input { width: 64px; padding: 5px 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; font-weight: 700; text-align: center; color: #1e293b; }
+  .threshold-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
+  .th-badge-alert { background: #fee2e2; color: #dc2626; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+  .th-badge-warn  { background: #fef9c3; color: #ca8a04; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+  .th-badge-ok    { background: #dcfce7; color: #16a34a; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+  .action-plan-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 18px; border: 1px solid rgba(0,0,0,0.04); }
+  .action-plan-card.done { opacity: 0.65; }
+  .action-rec-box { background: #f8fafc; border-left: 3px solid #94a3b8; padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 13px; color: #475569; line-height: 1.6; margin-bottom: 16px; }
+  .action-rec-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .action-actual-label { font-size: 11px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .action-textarea { width: 100%; padding: 10px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 72px; color: #1e293b; transition: border-color 0.15s; }
+  .action-textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+  .action-status-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .status-select { padding: 6px 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .status-select.pending { border-color: #e2e8f0; color: #64748b; background: #f8fafc; }
+  .status-select.in_progress { border-color: #f59e0b; color: #d97706; background: #fffbeb; }
+  .status-select.done { border-color: #22c55e; color: #16a34a; background: #f0fdf4; }
+  .action-save-btn { padding: 6px 16px; border: none; border-radius: 8px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: white; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .action-saved-chip { font-size: 12px; color: #16a34a; font-weight: 700; display: none; }
+  .logic-section { background: white; border-radius: 14px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 28px; border: 1px solid rgba(0,0,0,0.04); }
+  .logic-section h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
+  .logic-section .logic-desc { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
+  .rank-matrix-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .rank-matrix-table th, .rank-matrix-table td { border: 1px solid #e2e8f0; padding: 10px 14px; text-align: center; font-size: 13px; }
+  .rank-matrix-table th { background: #f8fafc; font-weight: 700; color: #475569; font-size: 12px; }
+  .rank-matrix-table .axis-label { background: #f1f5f9; font-weight: 700; color: #334155; font-size: 12px; }
+  .rank-cell { border-radius: 8px; padding: 6px 10px; font-weight: 900; font-size: 14px; color: white; display: inline-block; min-width: 44px; }
+  .rank-cell-s { background: linear-gradient(135deg,#7c3aed,#4f46e5); }
+  .rank-cell-a { background: linear-gradient(135deg,#1d4ed8,#0284c7); }
+  .rank-cell-b { background: linear-gradient(135deg,#15803d,#059669); }
+  .rank-cell-c { background: linear-gradient(135deg,#b45309,#dc2626); }
+  .rank-list-table { width: 100%; border-collapse: collapse; }
+  .rank-list-table th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; }
+  .rank-list-table td { padding: 12px 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #f8fafc; vertical-align: top; line-height: 1.55; }
+  .rank-list-table tr:hover td { background: #f9fafb; }
+  .mbti-group-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 8px; }
+  .mbti-group-block { border-radius: 12px; padding: 18px 20px; border: 1px solid #e2e8f0; }
+  .mbti-group-block .mg-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+  .mbti-group-block .mg-style { font-size: 12px; color: #64748b; margin-bottom: 12px; font-weight: 500; }
+  .mbti-type-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mbti-type-chip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+  .persona-matrix-table { width: 100%; border-collapse: collapse; }
+  .persona-matrix-table th { background: #f8fafc; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; }
+  .persona-matrix-table td { padding: 14px; font-size: 13px; color: #334155; border-bottom: 1px solid #f8fafc; vertical-align: top; }
+  .persona-matrix-table tr:hover td { background: #fafafa; }
+  .pm-tier { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; font-size: 13px; font-weight: 900; color: white; }
+  .pm-persona { font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 4px; }
+  .pm-desc { font-size: 12px; color: #475569; line-height: 1.6; }
+  .pm-watch { font-size: 11px; color: #dc2626; font-weight: 600; margin-top: 6px; background: #fef2f2; padding: 5px 8px; border-radius: 6px; line-height: 1.5; }
+  .iq-threshold-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .threshold-chip { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 14px; font-size: 13px; }
+  .threshold-chip .tc-rank { font-weight: 900; font-size: 14px; }
+  .threshold-chip .tc-range { color: #64748b; font-size: 12px; font-weight: 500; }
+
+  /* 社員詳細：推奨対応 */
+  .recommend-section { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
+  .recommend-section h3 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
+  .recommend-item { border-left: 4px solid #e5e7eb; padding: 14px 16px; margin-bottom: 12px; border-radius: 0 8px 8px 0; background: #fafafa; }
+  .recommend-item.alert { border-left-color: #ef4444; background: #fff5f5; }
+  .recommend-item.warn { border-left-color: #f59e0b; background: #fffbeb; }
+  .recommend-item-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+  .recommend-item-header .cat { font-size: 13px; font-weight: 700; color: #374151; }
+  .recommend-item-header .score { font-size: 13px; font-weight: 700; }
+  .recommend-item-header .score.alert { color: #dc2626; }
+  .recommend-item-header .score.warn { color: #d97706; }
+  .recommend-eval { font-size: 13px; color: #374151; margin-bottom: 10px; }
+  .recommend-action { font-size: 12px; color: #6b7280; line-height: 1.7; }
+  .recommend-action::before { content: '▶ '; color: #4f46e5; font-weight: 700; }
+  .personalized-action-wrap { margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 10px; }
+  .personalized-tags { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .personalized-tag { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .ptag-rank-s { background:#f5f3ff; color:#7c3aed; border:1px solid #ddd6fe; }
+  .ptag-rank-a { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+  .ptag-rank-b { background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; }
+  .ptag-rank-c { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
+  .ptag-mbti { background:#f8fafc; color:#475569; border:1px solid #e2e8f0; }
+  .personalized-action-text { font-size: 12px; color: #374151; line-height: 1.8; white-space: pre-line; }
+  .personalized-note { font-size: 11px; color: #64748b; background: #f1f5f9; border-radius: 6px; padding: 6px 10px; margin-top: 6px; line-height: 1.6; }
+  .generic-action-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+@media (max-width: 640px) {
+  #screen-login .card { width: 92vw; padding: 28px 20px; }
+  #screen-survey { padding: 16px 12px; }
+  #screen-survey .card { padding: 24px 16px; }
+  .rating-scale { gap: 4px; }
+  .rating-btn { padding: 12px 2px; font-size: 13px; border-radius: 8px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .category-scores { grid-template-columns: 1fr; }
+  .admin-body { padding: 16px; }
+  .admin-nav { padding: 0 16px; height: auto; min-height: 64px; flex-wrap: wrap; gap: 8px; padding-top: 10px; padding-bottom: 10px; }
+  .admin-tabs { padding: 0 8px; overflow-x: auto; white-space: nowrap; }
+  .tab-btn { padding: 14px 12px; font-size: 12px; }
+  .detail-body { padding: 16px; }
+  .form-row { flex-direction: column; }
+  .profile-display { flex-direction: column; }
+  .rank-info-grid { grid-template-columns: 1fr; }
+  .mbti-group-grid { grid-template-columns: 1fr; }
+  .mbti-detail-grid { grid-template-columns: 1fr; }
+  #screen-done .card, #screen-already .card { width: 92vw; padding: 32px 20px; }
+  .issued-id-big { font-size: 26px; }
+  .response-table { overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ログイン -->
+<div id="screen-login" class="screen active">
+  <div class="card">
+    <div class="login-icon">📊</div>
+    <h1>月次エンゲージメントサーベイ</h1>
+    <p id="login-period-label">2026年3月 回答期間：3/1〜3/15</p>
+    <input type="text" id="login-id" placeholder="ID を入力" maxlength="10" style="margin-bottom:10px">
+    <input type="password" id="login-pw" placeholder="パスワードを入力" style="width:100%;padding:14px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:15px;margin-bottom:16px;font-family:inherit;transition:all 0.2s" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">ログイン</button>
+    <p class="login-error" id="login-error"></p>
+  </div>
+</div>
+
+<!-- サーベイ -->
+<div id="screen-survey" class="screen">
+  <div class="card">
+    <div class="survey-header">
+      <h2>2026年3月 エンゲージメントサーベイ</h2>
+      <p id="survey-user-name"></p>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        <div class="progress-text" id="progress-text">1 / 12</div>
+      </div>
+    </div>
+    <div id="questions-container"></div>
+    <div class="survey-footer">
+      <button class="btn btn-secondary" id="btn-back" onclick="prevPage()" style="display:none">← 戻る</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextPage()">次へ →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 完了 -->
+<div id="screen-done" class="screen">
+  <div class="card">
+    <div class="done-icon">✅</div>
+    <h2>回答が完了しました</h2>
+    <p style="margin-top:8px">ご協力ありがとうございます。<br>結果は人事部が集計し、来月にフィードバックします。</p>
+    <div id="done-scores" style="margin-top:24px;text-align:left"></div>
+    <button class="btn btn-primary" style="margin-top:28px;width:100%" onclick="goToLogin()">ログアウト</button>
+  </div>
+</div>
+
+<!-- 回答済み -->
+<div id="screen-already" class="screen">
+  <div class="card">
+    <div class="already-icon">📋</div>
+    <h2><span id="already-name"></span> さん</h2>
+    <p>今月のサーベイはすでに回答済みです。</p>
+    <p style="margin-top:8px;color:#94a3b8;font-size:13px">2026年3月のサーベイへのご協力ありがとうございました。<br>来月もよろしくお願いします。</p>
+    <button class="btn btn-primary" style="margin-top:28px;width:100%" onclick="goToLogin()">ログアウト</button>
+  </div>
+</div>
+
+<!-- 管理者ダッシュボード -->
+<div id="screen-admin" class="screen">
+  <nav class="admin-nav">
+    <div class="logo">エンゲージメントサーベイ 管理画面</div>
+    <div class="user-info">
+      <span>人事部 管理者</span>
+      <button class="logout-btn" onclick="goToLogin()">ログアウト</button>
+    </div>
+  </nav>
+  <div class="admin-tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard', this)">月次ダッシュボード</button>
+    <button class="tab-btn" onclick="switchTab('employees', this)">社員一覧</button>
+    <button class="tab-btn" onclick="switchTab('idmgmt', this)">ID管理</button>
+    <button class="tab-btn" onclick="switchTab('logic', this)">📖 ロジック一覧</button>
+    <button class="tab-btn" onclick="switchTab('settings', this)">⚙️ 設定</button>
+    <button class="tab-btn" onclick="switchTab('actions', this)">📋 アクションプラン</button>
+  </div>
+
+  <!-- 月次ダッシュボード -->
+  <div id="tab-dashboard" class="admin-body">
+    <div class="month-selector">
+      <label>表示月：</label>
+      <select id="month-select" onchange="renderDashboard()">
+        <option value="2025-10">2025年10月</option>
+        <option value="2025-11">2025年11月</option>
+        <option value="2025-12">2025年12月</option>
+        <option value="2026-01">2026年1月</option>
+        <option value="2026-02">2026年2月</option>
+        <option value="2026-03" selected>2026年3月</option>
+      </select>
+    </div>
+    <div class="stats-grid" id="kpi-grid"></div>
+    <div id="unsubmitted-section" style="display:none">
+      <div class="section-title">📬 未回答者一覧 <span id="unsubmitted-count-label" style="font-size:13px;color:#94a3b8;font-weight:500"></span></div>
+      <button onclick="copyUnsubmittedList()" class="btn btn-secondary btn-sm" style="margin-bottom:12px">📋 リストをコピー</button>
+      <div id="unsubmitted-list" style="margin-bottom:32px"></div>
+    </div>
+    <div class="section-title">⚠️ アラート</div>
+    <div class="alert-section" id="alert-list"></div>
+    <div class="section-title">カテゴリ別スコア</div>
+    <div class="category-scores" id="category-grid"></div>
+    <div class="section-title">📋 評価基準・推奨アクション</div>
+    <div id="action-guide-list"></div>
+    <div class="section-title">🏢 部署別スコア</div>
+    <div id="dept-scores-grid" style="margin-bottom:32px"></div>
+  </div>
+
+  <!-- 社員一覧 -->
+  <div id="tab-employees" class="admin-body" style="display:none">
+    <div class="month-selector">
+      <label>表示月：</label>
+      <select id="emp-month-select" onchange="renderEmployeeList()">
+        <option value="2025-10">2025年10月</option>
+        <option value="2025-11">2025年11月</option>
+        <option value="2025-12">2025年12月</option>
+        <option value="2026-01">2026年1月</option>
+        <option value="2026-02">2026年2月</option>
+        <option value="2026-03" selected>2026年3月</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+      <input type="text" id="emp-search" placeholder="名前・IDで検索..." oninput="renderEmployeeList()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;width:180px;font-family:inherit">
+      <select id="emp-dept-filter" onchange="renderEmployeeList()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit">
+        <option value="">すべての部署</option>
+        <option>営業部</option><option>開発部</option><option>総務部</option><option>マーケ部</option><option>人事部</option><option>経理部</option>
+      </select>
+      <select id="emp-rank-filter" onchange="renderEmployeeList()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit">
+        <option value="">すべてのランク</option>
+        <option>S1</option><option>S2</option><option>S3</option><option>S4</option>
+        <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+        <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+        <option>C1</option><option>C2</option><option>C3</option><option>C4</option>
+      </select>
+      <button onclick="exportEmployeeCSV()" class="btn btn-secondary btn-sm">📥 CSV出力</button>
+    </div>
+    <div class="section-title">社員別スコア一覧</div>
+    <div class="response-table" id="emp-table"></div>
+  </div>
+
+  <!-- ID管理 -->
+  <div id="tab-idmgmt" class="admin-body" style="display:none">
+    <div class="section-title">🆔 新規ID発行</div>
+    <div class="id-issue-card">
+      <div class="form-row" style="margin-bottom:14px">
+        <div class="form-group">
+          <label>氏名 <span style="color:#ef4444">*</span></label>
+          <input type="text" id="new-emp-name" placeholder="例：山田 太郎">
+        </div>
+        <div class="form-group">
+          <label>所属部署 <span style="color:#ef4444">*</span></label>
+          <input type="text" id="new-emp-dept" placeholder="例：営業部" list="dept-list">
+          <datalist id="dept-list">
+            <option value="営業部"><option value="開発部"><option value="総務部">
+            <option value="マーケ部"><option value="人事部"><option value="経理部">
+          </datalist>
+        </div>
+      </div>
+      <div class="form-row" style="margin-bottom:14px">
+        <div class="form-group" style="max-width:140px">
+          <label>IQスコア</label>
+          <input type="number" id="new-emp-iq" placeholder="例：115" min="60" max="200">
+        </div>
+        <div class="form-group" style="max-width:180px">
+          <label>戦闘力</label>
+          <input type="number" id="new-emp-bp" placeholder="例：8500" min="0">
+        </div>
+        <div class="form-group" style="max-width:160px">
+          <label>MBTIタイプ</label>
+          <select id="new-emp-mbti">
+            <option value="">未設定</option>
+            <optgroup label="NT（分析家）">
+              <option value="INTJ">INTJ 建築家</option><option value="INTP">INTP 論理学者</option>
+              <option value="ENTJ">ENTJ 指揮官</option><option value="ENTP">ENTP 討論者</option>
+            </optgroup>
+            <optgroup label="NF（外交官）">
+              <option value="INFJ">INFJ 提唱者</option><option value="INFP">INFP 仲介者</option>
+              <option value="ENFJ">ENFJ 主人公</option><option value="ENFP">ENFP 広報運動家</option>
+            </optgroup>
+            <optgroup label="SJ（番人）">
+              <option value="ISTJ">ISTJ 管理者</option><option value="ISFJ">ISFJ 擁護者</option>
+              <option value="ESTJ">ESTJ 幹部</option><option value="ESFJ">ESFJ 領事</option>
+            </optgroup>
+            <optgroup label="SP（探検家）">
+              <option value="ISTP">ISTP 巨匠</option><option value="ISFP">ISFP 冒険家</option>
+              <option value="ESTP">ESTP 起業家</option><option value="ESFP">ESFP エンターテイナー</option>
+            </optgroup>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="issueNewId()" style="flex-shrink:0;white-space:nowrap;height:44px;align-self:flex-end">IDを発行する ＋</button>
+      </div>
+      <div class="issued-result" id="issued-result">
+        <div class="issued-result-label">✅ IDを発行しました</div>
+        <div style="display:flex;align-items:center;gap:20px;margin-top:6px;flex-wrap:wrap">
+          <div>
+            <div class="issued-id-big" id="issued-id-value"></div>
+            <div style="font-size:15px;font-weight:700;color:#6366f1;margin-top:4px;font-family:'Inter',monospace;letter-spacing:1px" id="issued-pw-value"></div>
+            <div class="issued-sub" id="issued-name-value"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="copy-btn" onclick="copyIssuedId()">📋 IDをコピー</button>
+            <button class="copy-btn" onclick="copyIssuedPw()">📋 PASSをコピー</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section-title">👥 社員ID一覧</div>
+    <div class="id-table-wrap" id="id-table"></div>
+  </div>
+
+  <!-- ロジック一覧 -->
+  <div id="tab-logic" class="admin-body" style="display:none">
+    <div style="margin-bottom:28px">
+      <div class="section-title">📖 ランク・MBTIロジック一覧</div>
+      <p style="font-size:13px;color:#64748b;font-weight:500">ランク算出・MBTIペルソナの設計ロジックをまとめたリファレンスです。定期的に見直してブラッシュアップしてください。</p>
+    </div>
+
+    <!-- ランク算出ロジック -->
+    <div class="logic-section">
+      <h3>🧮 ランク算出マトリクス</h3>
+      <p class="logic-desc">IQスコア（縦軸）× 戦闘力（横軸）の組み合わせで16ランクを算出します。</p>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">IQティア基準</div>
+          <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
+            <div class="threshold-chip"><span class="tc-rank" style="color:#7c3aed">S</span><span class="tc-range">IQ 120以上</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#2563eb">A</span><span class="tc-range">IQ 105〜119</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#16a34a">B</span><span class="tc-range">IQ 90〜104</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#d97706">C</span><span class="tc-range">IQ 89以下</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">戦闘力ティア基準</div>
+          <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
+            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">1</span><span class="tc-range">7,000以上</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">2</span><span class="tc-range">6,000〜6,999</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">3</span><span class="tc-range">5,000〜5,999</span></div>
+            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">4</span><span class="tc-range">4,999以下</span></div>
+          </div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="rank-matrix-table">
+          <thead>
+            <tr>
+              <th style="width:120px">IQ ＼ 戦闘力</th>
+              <th>1<br><span style="font-weight:500;color:#94a3b8">7,000+</span></th>
+              <th>2<br><span style="font-weight:500;color:#94a3b8">6,000+</span></th>
+              <th>3<br><span style="font-weight:500;color:#94a3b8">5,000+</span></th>
+              <th>4<br><span style="font-weight:500;color:#94a3b8">〜4,999</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="axis-label">S（120+）</td>
+              <td><span class="rank-cell rank-cell-s">S1</span></td>
+              <td><span class="rank-cell rank-cell-s">S2</span></td>
+              <td><span class="rank-cell rank-cell-s">S3</span></td>
+              <td><span class="rank-cell rank-cell-s">S4</span></td>
+            </tr>
+            <tr>
+              <td class="axis-label">A（105〜119）</td>
+              <td><span class="rank-cell rank-cell-a">A1</span></td>
+              <td><span class="rank-cell rank-cell-a">A2</span></td>
+              <td><span class="rank-cell rank-cell-a">A3</span></td>
+              <td><span class="rank-cell rank-cell-a">A4</span></td>
+            </tr>
+            <tr>
+              <td class="axis-label">B（90〜104）</td>
+              <td><span class="rank-cell rank-cell-b">B1</span></td>
+              <td><span class="rank-cell rank-cell-b">B2</span></td>
+              <td><span class="rank-cell rank-cell-b">B3</span></td>
+              <td><span class="rank-cell rank-cell-b">B4</span></td>
+            </tr>
+            <tr>
+              <td class="axis-label">C（〜89）</td>
+              <td><span class="rank-cell rank-cell-c">C1</span></td>
+              <td><span class="rank-cell rank-cell-c">C2</span></td>
+              <td><span class="rank-cell rank-cell-c">C3</span></td>
+              <td><span class="rank-cell rank-cell-c">C4</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ランク詳細一覧 -->
+    <div class="logic-section">
+      <h3>🏆 ランク詳細定義（S1〜C4）</h3>
+      <p class="logic-desc">各ランクのキャッチコピー・思考力・実行力・推奨ロール・育成方針を定義します。</p>
+      <div style="overflow-x:auto">
+        <table class="rank-list-table" id="rank-detail-table"></table>
+      </div>
+    </div>
+
+    <!-- MBTIグループ -->
+    <div class="logic-section">
+      <h3>🧠 MBTIグループ定義</h3>
+      <p class="logic-desc">16種類のMBTIタイプを4グループに分類し、それぞれの傾向をまとめています。</p>
+      <div class="mbti-group-grid" id="mbti-group-grid"></div>
+    </div>
+
+    <!-- MBTI × Rank ペルソナ一覧 -->
+    <div class="logic-section">
+      <h3>🎭 ランク（S1〜C4）× MBTIタイプ　ペルソナ一覧（256パターン）</h3>
+      <p class="logic-desc">16ランク（S1〜C4）× MBTIタイプ（16種）の組み合わせで動的生成される256パターンのペルソナ定義です。特定の組み合わせは <code>rankMbtiOverrides</code> でカスタム上書き可能です。</p>
+      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:5px">ランクで絞り込み</label>
+          <select id="filter-rank" onchange="renderPersonaTable()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#334155">
+            <option value="">すべてのランク</option>
+            <optgroup label="S ティア（IQ120+）">
+              <option>S1</option><option>S2</option><option>S3</option><option>S4</option>
+            </optgroup>
+            <optgroup label="A ティア（IQ105〜119）">
+              <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
+            </optgroup>
+            <optgroup label="B ティア（IQ90〜104）">
+              <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
+            </optgroup>
+            <optgroup label="C ティア（IQ89以下）">
+              <option>C1</option><option>C2</option><option>C3</option><option>C4</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:5px">MBTIタイプで絞り込み</label>
+          <select id="filter-mbti" onchange="renderPersonaTable()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#334155">
+            <option value="">すべてのタイプ</option>
+            <optgroup label="NT（分析家）"><option>INTJ</option><option>INTP</option><option>ENTJ</option><option>ENTP</option></optgroup>
+            <optgroup label="NF（外交官）"><option>INFJ</option><option>INFP</option><option>ENFJ</option><option>ENFP</option></optgroup>
+            <optgroup label="SJ（番人）"><option>ISTJ</option><option>ISFJ</option><option>ESTJ</option><option>ESFJ</option></optgroup>
+            <optgroup label="SP（探検家）"><option>ISTP</option><option>ISFP</option><option>ESTP</option><option>ESFP</option></optgroup>
+          </select>
+        </div>
+        <button onclick="document.getElementById('filter-rank').value='';document.getElementById('filter-mbti').value='';renderPersonaTable()" class="btn btn-secondary btn-sm">リセット</button>
+        <span id="persona-count-label" style="font-size:12px;color:#94a3b8;font-weight:500;align-self:center"></span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="persona-matrix-table" id="persona-matrix-table"></table>
+      </div>
+    </div>
+
+    <!-- カテゴリ別目標スコア設定 -->
+    <div class="logic-section">
+      <h3>🎯 カテゴリ別目標スコア設定</h3>
+      <p class="logic-desc">各カテゴリのスコア目標値を設定します。スコアカードに目標ラインが表示され、達成状況を可視化します。</p>
+      <div id="target-editor"></div>
+      <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
+        <button class="btn btn-primary" onclick="applyTargets()">💾 保存して反映</button>
+        <button class="btn btn-secondary" onclick="resetTargets()">↩️ デフォルトに戻す</button>
+        <span id="target-save-msg" style="font-size:13px;color:#16a34a;font-weight:600;display:none">✅ 保存しました</span>
+      </div>
+    </div>
+
+    <!-- カテゴリ別閾値設定 -->
+    <div class="logic-section">
+      <h3>🎚️ カテゴリ別スコア閾値設定</h3>
+      <p class="logic-desc">各カテゴリの「健常 / 注意 / 危険」判定に使う閾値を設定します。スコアが「危険」閾値未満 → 危険（赤）、「注意」閾値未満 → 注意（黄）、それ以上 → 健常（緑）として扱います。</p>
+      <div id="threshold-editor"></div>
+      <div style="margin-top:20px;display:flex;gap:12px;align-items:center">
+        <button class="btn btn-primary" onclick="applyThresholds()">💾 保存して反映</button>
+        <button class="btn btn-secondary" onclick="resetThresholds()">↩️ デフォルトに戻す</button>
+        <span id="threshold-save-msg" style="font-size:13px;color:#16a34a;font-weight:600;display:none">✅ 保存しました</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 設定タブ内容 -->
+  <div id="tab-settings" class="admin-body" style="display:none">
+    <!-- サーベイ期間設定 -->
+    <div style="background:white;border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:28px;border:1px solid rgba(0,0,0,0.04)">
+      <div class="section-title" style="margin-bottom:8px">📅 サーベイ回答期間</div>
+      <p style="font-size:13px;color:#64748b;margin-bottom:20px">社員がアンケートに回答できる期間を設定します。</p>
+      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px">開始日</label>
+          <input type="date" id="period-start" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit;color:#1e293b">
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px">終了日</label>
+          <input type="date" id="period-end" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit;color:#1e293b">
+        </div>
+        <button class="btn btn-primary" onclick="saveSurveyPeriod()">💾 保存</button>
+        <span id="period-save-msg" style="font-size:13px;color:#16a34a;font-weight:600;display:none">✅ 保存しました</span>
+      </div>
+      <div id="period-current" style="margin-top:16px;font-size:13px;color:#64748b;background:#f8fafc;padding:10px 14px;border-radius:8px;display:inline-block"></div>
+    </div>
+
+    <!-- スコアデータインポート -->
+    <div style="background:white;border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:28px;border:1px solid rgba(0,0,0,0.04)">
+      <div class="section-title" style="margin-bottom:8px">📥 スコアデータ インポート</div>
+      <p style="font-size:13px;color:#64748b;margin-bottom:16px">CSVを貼り付けてスコアを一括登録します。既存データは上書きされます。</p>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#166534;font-family:monospace;line-height:1.7">
+        <strong>フォーマット（1行目はヘッダー）：</strong><br>
+        社員ID,年月,やりがい,成長,健康,上司,チーム,承認,信頼,組織,業務<br>
+        EMP001,2026-03,75,80,70,65,72,68,74,71,62
+      </div>
+      <textarea id="import-csv-area" rows="8" style="width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:monospace;resize:vertical;color:#1e293b" placeholder="ここにCSVを貼り付け..."></textarea>
+      <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="importScoreCSV()">📥 インポート実行</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('import-csv-area').value=''">クリア</button>
+        <span id="import-result-msg" style="font-size:13px;font-weight:600;display:none"></span>
+      </div>
+    </div>
+
+    <!-- 質問文カスタマイズ -->
+    <div style="background:white;border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:28px;border:1px solid rgba(0,0,0,0.04)">
+      <div class="section-title" style="margin-bottom:8px">📝 サーベイ質問文カスタマイズ</div>
+      <p style="font-size:13px;color:#64748b;margin-bottom:16px">質問文を編集できます。カテゴリ分類・スコア計算のロジックは変わりません。</p>
+      <div id="question-editor-list"></div>
+      <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="saveCustomQuestions()">💾 保存</button>
+        <button class="btn btn-secondary" onclick="resetCustomQuestions()">↩️ 初期値に戻す</button>
+        <span id="q-save-msg" style="font-size:13px;color:#16a34a;font-weight:600;display:none">✅ 保存しました</span>
+      </div>
+    </div>
+
+    <!-- 管理者アカウント管理 -->
+    <div style="background:white;border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:28px;border:1px solid rgba(0,0,0,0.04)">
+      <div class="section-title" style="margin-bottom:8px">👤 管理者アカウント管理</div>
+      <p style="font-size:13px;color:#64748b;margin-bottom:16px">管理者ログイン用のアカウントを管理します。ログインIDはすべて「ADMIN」です。</p>
+      <div id="admin-account-list" style="margin-bottom:16px"></div>
+      <div style="background:#f8fafc;border-radius:10px;padding:16px;border:1px solid #e2e8f0">
+        <div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:10px">新規アカウント追加</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px">表示名</label>
+            <input type="text" id="new-admin-name" placeholder="例：人事部 山田" style="padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;width:160px">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-bottom:4px">パスワード</label>
+            <input type="text" id="new-admin-pass" placeholder="例：pass2024" style="padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;width:140px">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addAdminAccount()">追加</button>
+          <span id="admin-add-msg" style="font-size:13px;font-weight:600;display:none"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- アクションプラン -->
+  <div id="tab-actions" class="admin-body" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="section-title" style="margin-bottom:4px">📋 アクションプラン管理</div>
+        <p style="font-size:13px;color:#64748b">対象者ごとに、推奨アクションを参考にしながら実際の対応を記録・進捗管理します。</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <label style="font-size:13px;font-weight:600;color:#475569">対象月：</label>
+        <select id="action-month-select" onchange="renderActionPlan()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit">
+          <option value="2025-10">2025年10月</option>
+          <option value="2025-11">2025年11月</option>
+          <option value="2025-12">2025年12月</option>
+          <option value="2026-01">2026年1月</option>
+          <option value="2026-02">2026年2月</option>
+          <option value="2026-03" selected>2026年3月</option>
+        </select>
+      </div>
+    </div>
+    <!-- 2ペインレイアウト -->
+    <div style="display:flex;gap:20px;align-items:flex-start">
+      <!-- 左：社員リスト -->
+      <div style="width:280px;flex-shrink:0">
+        <input type="text" id="action-emp-search" placeholder="名前・IDで検索..." oninput="renderActionPlan()" style="width:100%;padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:10px">
+        <div id="action-emp-list" style="display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 260px);overflow-y:auto"></div>
+      </div>
+      <!-- 右：選択社員のアクション詳細 -->
+      <div style="flex:1;min-width:0">
+        <div id="action-plan-detail" style="color:#94a3b8;font-size:14px;padding:40px;text-align:center">← 左の一覧から対象者を選択してください</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 社員詳細 -->
+<div id="screen-detail" class="screen">
+  <nav class="admin-nav">
+    <div class="logo">エンゲージメントサーベイ 管理画面</div>
+    <div class="user-info">
+      <span>人事部 管理者</span>
+      <button class="logout-btn" onclick="goToLogin()">ログアウト</button>
+    </div>
+  </nav>
+  <div class="detail-body">
+    <div class="detail-header">
+      <button class="back-btn" onclick="backToAdmin()">← 一覧に戻る</button>
+      <h2 id="detail-name"></h2>
+      <span class="dept-badge" id="detail-dept"></span>
+      <span id="detail-status-badge"></span>
+    </div>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+// ===== セキュリティ設定 =====
+const ADMIN_PASSWORD = 'admin1234';
+let surveyPeriod = (() => {
+  try {
+    const s = localStorage.getItem('es_survey_period');
+    return s ? JSON.parse(s) : { start: '2026-03-01', end: '2026-03-15' };
+  } catch(e) { return { start: '2026-03-01', end: '2026-03-15' }; }
+})();
+
+// ===== マスタデータ =====
+const employees = {
+  'EMP001': { name: '田中 一郎',   dept: '営業部',  iq: 110, battlePower:  8500, mbti: 'ESTJ' },
+  'EMP042': { name: '鈴木 花子',   dept: '開発部',  iq: 128, battlePower: 12000, mbti: 'ENFJ' },
+  'EMP099': { name: '佐藤 次郎',   dept: '総務部',  iq: 115, battlePower:  9500, mbti: 'ISTJ' },
+  'EMP017': { name: '山田 美咲',   dept: '営業部',  iq: 105, battlePower:  7000, mbti: 'ESFP' },
+  'EMP058': { name: '伊藤 健太',   dept: '開発部',  iq: 122, battlePower: 11000, mbti: 'ENTP' },
+  'EMP033': { name: '中村 陽子',   dept: 'マーケ部', iq: 135, battlePower: 15000, mbti: 'INTJ' },
+  'EMP071': { name: '小林 拓也',   dept: '総務部',  iq: 108, battlePower:  8000, mbti: 'ISTP' },
+  'EMP088': { name: '渡辺 さくら', dept: 'マーケ部', iq: 140, battlePower: 18000, mbti: 'ENFP' },
+};
+
+const categories = ['仕事のやりがい', '上司との関係性', 'チームワーク', '業務量・残業', '会社への信頼', '成長・キャリア'];
+const months = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'];
+const monthLabels = { '2025-10':'10月', '2025-11':'11月', '2025-12':'12月', '2026-01':'1月', '2026-02':'2月', '2026-03':'3月' };
+
+// 月次・社員別スコアデータ（モック）
+const empData = {
+  'EMP001': {
+    '2025-10': { やりがい:82, 上司:80, チーム:78, 業務:72, 信頼:75, 成長:80, 健康:70, 承認:75, 組織:72 },
+    '2025-11': { やりがい:80, 上司:79, チーム:80, 業務:70, 信頼:74, 成長:78, 健康:68, 承認:73, 組織:71 },
+    '2025-12': { やりがい:78, 上司:78, チーム:76, 業務:68, 信頼:72, 成長:76, 健康:65, 承認:71, 組織:70 },
+    '2026-01': { やりがい:76, 上司:78, チーム:75, 業務:66, 信頼:70, 成長:74, 健康:62, 承認:68, 組織:68 },
+    '2026-02': { やりがい:75, 上司:78, チーム:74, 業務:65, 信頼:70, 成長:73, 健康:59, 承認:65, 組織:66 },
+    '2026-03': { やりがい:70, 上司:45, チーム:72, 業務:60, 信頼:62, 成長:71, 健康:55, 承認:58, 組織:62 },
+  },
+  'EMP042': {
+    '2025-10': { やりがい:72, 上司:74, チーム:80, 業務:68, 信頼:70, 成長:72, 健康:75, 承認:76, 組織:76 },
+    '2025-11': { やりがい:74, 上司:75, チーム:82, 業務:66, 信頼:71, 成長:73, 健康:76, 承認:77, 組織:77 },
+    '2025-12': { やりがい:74, 上司:76, チーム:83, 業務:65, 信頼:72, 成長:74, 健康:77, 承認:78, 組織:78 },
+    '2026-01': { やりがい:75, 上司:77, チーム:84, 業務:64, 信頼:72, 成長:75, 健康:78, 承認:79, 組織:79 },
+    '2026-02': { やりがい:76, 上司:77, チーム:83, 業務:66, 信頼:73, 成長:75, 健康:78, 承認:80, 組織:80 },
+    '2026-03': { やりがい:78, 上司:79, チーム:85, 業務:67, 信頼:74, 成長:76, 健康:79, 承認:81, 組織:81 },
+  },
+  'EMP099': {
+    '2025-10': { やりがい:78, 上司:80, チーム:76, 業務:76, 信頼:78, 成長:76, 健康:80, 承認:80, 組織:82 },
+    '2025-11': { やりがい:79, 上司:80, チーム:78, 業務:76, 信頼:79, 成長:77, 健康:81, 承認:81, 組織:83 },
+    '2025-12': { やりがい:80, 上司:81, チーム:79, 業務:77, 信頼:79, 成長:78, 健康:82, 承認:82, 組織:84 },
+    '2026-01': { やりがい:81, 上司:82, チーム:80, 業務:78, 信頼:80, 成長:79, 健康:82, 承認:83, 組織:85 },
+    '2026-02': { やりがい:80, 上司:82, チーム:80, 業務:78, 信頼:80, 成長:79, 健康:83, 承認:83, 組織:85 },
+    '2026-03': { やりがい:82, 上司:84, チーム:82, 業務:80, 信頼:82, 成長:81, 健康:84, 承認:85, 組織:86 },
+  },
+  'EMP017': {
+    '2025-10': { やりがい:74, 上司:76, チーム:72, 業務:70, 信頼:72, 成長:70, 健康:68, 承認:68, 組織:70 },
+    '2025-11': { やりがい:73, 上司:75, チーム:71, 業務:68, 信頼:71, 成長:69, 健康:65, 承認:66, 組織:68 },
+    '2025-12': { やりがい:71, 上司:73, チーム:70, 業務:66, 信頼:70, 成長:68, 健康:61, 承認:63, 組織:66 },
+    '2026-01': { やりがい:68, 上司:70, チーム:68, 業務:62, 信頼:67, 成長:66, 健康:57, 承認:59, 組織:63 },
+    '2026-02': { やりがい:65, 上司:68, チーム:66, 業務:60, 信頼:65, 成長:64, 健康:53, 承認:55, 組織:60 },
+    '2026-03': { やりがい:60, 上司:52, チーム:62, 業務:52, 信頼:58, 成長:61, 健康:48, 承認:50, 組織:56 },
+  },
+  'EMP058': {
+    '2025-10': { やりがい:76, 上司:78, チーム:80, 業務:74, 信頼:74, 成長:76, 健康:73, 承認:74, 組織:76 },
+    '2025-11': { やりがい:75, 上司:77, チーム:79, 業務:72, 信頼:73, 成長:75, 健康:72, 承認:73, 組織:75 },
+    '2025-12': { やりがい:74, 上司:76, チーム:78, 業務:68, 信頼:72, 成長:74, 健康:71, 承認:72, 組織:74 },
+    '2026-01': { やりがい:74, 上司:75, チーム:77, 業務:65, 信頼:71, 成長:73, 健康:70, 承認:71, 組織:73 },
+    '2026-02': { やりがい:73, 上司:74, チーム:77, 業務:63, 信頼:70, 成長:72, 健康:69, 承認:70, 組織:72 },
+    '2026-03': { やりがい:72, 上司:74, チーム:76, 業務:55, 信頼:68, 成長:71, 健康:67, 承認:69, 組織:71 },
+  },
+  'EMP033': {
+    '2025-10': { やりがい:80, 上司:82, チーム:84, 業務:78, 信頼:80, 成長:80, 健康:82, 承認:84, 組織:83 },
+    '2025-11': { やりがい:81, 上司:82, チーム:84, 業務:79, 信頼:81, 成長:80, 健康:83, 承認:84, 組織:84 },
+    '2025-12': { やりがい:82, 上司:83, チーム:85, 業務:80, 信頼:82, 成長:81, 健康:84, 承認:85, 組織:85 },
+    '2026-01': { やりがい:82, 上司:84, チーム:85, 業務:80, 信頼:82, 成長:82, 健康:84, 承認:86, 組織:86 },
+    '2026-02': { やりがい:83, 上司:84, チーム:86, 業務:81, 信頼:83, 成長:82, 健康:85, 承認:86, 組織:87 },
+    '2026-03': { やりがい:84, 上司:85, チーム:87, 業務:82, 信頼:84, 成長:83, 健康:86, 承認:87, 組織:88 },
+  },
+  'EMP071': {
+    '2025-10': { やりがい:68, 上司:70, チーム:72, 業務:66, 信頼:68, 成長:66, 健康:68, 承認:70, 組織:70 },
+    '2025-11': { やりがい:69, 上司:70, チーム:72, 業務:66, 信頼:68, 成長:67, 健康:69, 承認:71, 組織:71 },
+    '2025-12': { やりがい:70, 上司:71, チーム:73, 業務:67, 信頼:69, 成長:68, 健康:70, 承認:72, 組織:72 },
+    '2026-01': { やりがい:70, 上司:72, チーム:73, 業務:67, 信頼:69, 成長:68, 健康:70, 承認:72, 組織:72 },
+    '2026-02': { やりがい:71, 上司:72, チーム:74, 業務:68, 信頼:70, 成長:69, 健康:71, 承認:73, 組織:73 },
+    '2026-03': { やりがい:72, 上司:73, チーム:75, 業務:69, 信頼:71, 成長:70, 健康:72, 承認:74, 組織:74 },
+  },
+  'EMP088': {
+    '2025-10': { やりがい:85, 上司:86, チーム:88, 業務:82, 信頼:84, 成長:84, 健康:85, 承認:85, 組織:86 },
+    '2025-11': { やりがい:84, 上司:86, チーム:88, 業務:82, 信頼:84, 成長:84, 健康:86, 承認:86, 組織:87 },
+    '2025-12': { やりがい:85, 上司:86, チーム:88, 業務:83, 信頼:85, 成長:84, 健康:86, 承認:86, 組織:88 },
+    '2026-01': { やりがい:85, 上司:87, チーム:89, 業務:83, 信頼:85, 成長:85, 健康:87, 承認:87, 組織:88 },
+    '2026-02': { やりがい:86, 上司:87, チーム:89, 業務:84, 信頼:86, 成長:85, 健康:87, 承認:88, 組織:89 },
+    '2026-03': { やりがい:86, 上司:88, チーム:90, 業務:84, 信頼:86, 成長:86, 健康:88, 承認:88, 組織:90 },
+  },
+};
+
+// ===== 資質ランクマスタ =====
+const rankData = {
+  S1: { copy:'経営幹部候補',     thinking:'極めて高い。複雑な課題を構造化し、本質を見抜く力がある',             execution:'極めて高い。高い主体性と達成意欲で自走できる',                           role:'事業責任者、新規事業リーダー、経営幹部候補',                          growth:'制約を与えず、裁量と挑戦機会を最大化する' },
+  S2: { copy:'高精度プレイヤー', thinking:'高い。戦略立案とアウトプット品質に強み',                             execution:'高い。明確な目標設定下で安定した成果を出す',                             role:'プロジェクトリーダー、専門領域の責任者',                             growth:'曖昧な状況での意思決定経験を積ませる' },
+  S3: { copy:'戦略設計人材',     thinking:'非常に高い。緻密な設計と分析に秀でる',                               execution:'標準〜やや高い。スピードより質を重視する傾向',                          role:'企画職、専門職、クリエイティブ領域',                                growth:'実行フェーズへの関与を増やし、完遂経験を積む' },
+  S4: { copy:'高品質ワーカー',   thinking:'非常に高い。理解力・学習能力は傑出',                                 execution:'発展途上。主体性に課題があるが、依頼業務の品質は高い',                 role:'専門職、企画職、品質重視の業務',                                    growth:'小さな成功体験を積ませ、主体性を育む' },
+  A1: { copy:'突破推進リーダー', thinking:'標準〜やや高い。直感的な判断に強み、緻密さに波あり',                  execution:'極めて高い。圧倒的な行動量と達成意欲',                                  role:'営業エース、事業開発、スタートアップ向き',                           growth:'振り返り習慣をつけ、戦略的思考を補強する' },
+  A2: { copy:'組織中核メンバー', thinking:'標準的。実務レベルの判断は安定',                                     execution:'高い。継続的に成果を出す安定感',                                        role:'チームリーダー、プロジェクト推進の中核',                            growth:'視座を上げる経験（上位者との協働）を増やす' },
+  A3: { copy:'安定実務プレイヤー',thinking:'標準的。定型業務の遂行には十分',                                    execution:'標準的。指示に対して着実に動ける',                                      role:'チームメンバー、オペレーション担当',                                growth:'得意領域を見つけ、専門性を伸ばす' },
+  A4: { copy:'育成期待人材',     thinking:'標準的。基礎的な業務理解は可能',                                     execution:'発展途上。経験を積む段階',                                              role:'チームメンバー、オペレーション担当',                                growth:'成功体験と適切なフィードバックで自信をつける' },
+  B1: { copy:'行動突破型',       thinking:'やや課題あり。計画より行動が先行し、戦略の精度に波がある',            execution:'極めて高い。圧倒的な行動量と粘り強さを持つ',                            role:'テレアポ、飛び込み営業、高負荷オペレーション、現場の突破役',        growth:'思考フレームワークを叩き込み「考えてから動く」習慣をつける' },
+  B2: { copy:'現場実行メンバー', thinking:'やや課題あり。深い分析より即断即決型',                                execution:'高い。動きながら考えるスタイル',                                        role:'フィールドセールス、実行部隊のメンバー',                            growth:'PDCAの「P」と「C」を意識させる習慣づけ' },
+  B3: { copy:'業務補佐メンバー', thinking:'課題あり。複雑な判断は苦手',                                         execution:'標準的。明確な指示があれば動ける',                                      role:'チームメンバー、オペレーション担当',                                growth:'得意な作業領域を見つけ、反復で精度を上げる' },
+  B4: { copy:'定型業務担当',     thinking:'課題あり。ルーティン業務に限定',                                      execution:'低い。受動的な傾向',                                                    role:'チームメンバー、オペレーション担当',                                growth:'小さなタスクの完遂を繰り返し、責任感を醸成' },
+  C1: { copy:'馬力特化型',       thinking:'課題が大きい。方向性を見失いやすく、成果が空回りしがち',               execution:'極めて高い。行動量は突出するが、質への転換が難しい',                    role:'単純作業の大量処理、体力勝負の現場作業、明確なKPI下での実行',      growth:'毎日のタスクを細かく指示。判断を求めない設計' },
+  C2: { copy:'指示遂行メンバー', thinking:'課題が大きい。自律的な判断は困難',                                    execution:'高い。明確な指示があれば動ける行動力はある',                            role:'マニュアル化されたオペレーション、ルーティン業務の実行',            growth:'手順書を徹底整備し、判断ポイントを減らす。成功体験で自信を醸成' },
+  C3: { copy:'丁寧フォロー人材', thinking:'課題が大きい。問題解決に困難を伴う',                                  execution:'標準的。意欲はあるが成果に結びつきにくい',                              role:'マニュアル化されたオペレーション、ルーティン業務の実行',            growth:'手順書を徹底整備し、判断ポイントを減らす。成功体験で自信を醸成' },
+  C4: { copy:'伴走育成人材',     thinking:'課題が大きい。基礎的な業務理解にも時間を要する',                      execution:'低い。自発的な行動が起きにくい',                                        role:'マニュアル化されたオペレーション、ルーティン業務の実行',            growth:'手順書を徹底整備し、判断ポイントを減らす。成功体験で自信を醸成' },
+};
+
+const rankTierColor = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
+
+function calcRank(iq, bp) {
+  if (!iq || !bp) return null;
+  const iqTier = iq >= 120 ? 'S' : iq >= 105 ? 'A' : iq >= 90 ? 'B' : 'C';
+  const bpTier = bp >= 7000 ? '1' : bp >= 6000 ? '2' : bp >= 5000 ? '3' : '4';
+  return iqTier + bpTier;
+}
+
+const mbtiData = {
+  INTJ: { name:'建築家',        group:'NT', strength:'複雑な問題の構造化・長期計画', motivation:'知的達成・システム構築', blindspot:'対人関係・感情配慮' },
+  INTP: { name:'論理学者',      group:'NT', strength:'論理分析・概念設計',           motivation:'知的探求・真実追求',     blindspot:'実行・締切管理' },
+  ENTJ: { name:'指揮官',        group:'NT', strength:'リーダーシップ・戦略実行',     motivation:'目標達成・組織効率化',   blindspot:'感情的配慮・細部' },
+  ENTP: { name:'討論者',        group:'NT', strength:'創造的問題解決・アイデア発想', motivation:'挑戦・知的刺激',         blindspot:'継続性・ルーティン' },
+  INFJ: { name:'提唱者',        group:'NF', strength:'ビジョン設定・人材育成',       motivation:'意義・人の成長',         blindspot:'自己犠牲傾向・完璧主義' },
+  INFP: { name:'仲介者',        group:'NF', strength:'共感・クリエイティブ発想',     motivation:'価値観への貢献',         blindspot:'現実対処・対立回避' },
+  ENFJ: { name:'主人公',        group:'NF', strength:'人材育成・チームビルディング', motivation:'人の成功・社会貢献',     blindspot:'自己犠牲・過干渉傾向' },
+  ENFP: { name:'運動家',        group:'NF', strength:'発想・人脈構築・モチベート',   motivation:'可能性・自由・つながり', blindspot:'継続性・細部' },
+  ISTJ: { name:'管理者',        group:'SJ', strength:'確実な実行・品質管理',         motivation:'義務・安定・信頼',       blindspot:'変化適応・創造性' },
+  ISFJ: { name:'擁護者',        group:'SJ', strength:'細やかなサポート・チームケア', motivation:'人の役に立つこと',       blindspot:'自己主張・変化' },
+  ESTJ: { name:'幹部',          group:'SJ', strength:'組織管理・プロセス標準化',     motivation:'効率・秩序・達成',       blindspot:'感情的柔軟性・新アイデア' },
+  ESFJ: { name:'領事',          group:'SJ', strength:'関係構築・チームハーモニー',   motivation:'人の幸福・共同体貢献',   blindspot:'批判への弱さ・変化' },
+  ISTP: { name:'巨匠',          group:'SP', strength:'問題解決・実践スキル',         motivation:'効率・実用性・自律',     blindspot:'長期計画・感情表現' },
+  ISFP: { name:'冒険家',        group:'SP', strength:'適応力・現場力・美的センス',   motivation:'自由・現在の体験',       blindspot:'長期計画・自己主張' },
+  ESTP: { name:'起業家',        group:'SP', strength:'危機対応・営業・交渉',         motivation:'即時結果・スリル・影響', blindspot:'長期計画・感情への配慮' },
+  ESFP: { name:'エンターテイナー',group:'SP',strength:'人を引きつける・雰囲気作り', motivation:'楽しさ・人のつながり',   blindspot:'長期計画・構造化' },
+};
+
+const mbtiGroupData = {
+  NT: { name:'分析家（NT）',   style:'知的・戦略的',   color:'#e9d8f5' },
+  NF: { name:'外交官（NF）',   style:'共感・ビジョン的', color:'#d4f0b0' },
+  SJ: { name:'番人（SJ）',     style:'安定・実行的',   color:'#c0d8f0' },
+  SP: { name:'探検家（SP）',   style:'適応・実践的',   color:'#fde5c0' },
+};
+
+// 手動オーバーライド（特定の rank-MBTI に独自定義を入れたい場合はここに追記）
+// 例: 'S1-INTJ': { persona:'...', desc:'...', watch:'...' }
+const rankMbtiOverrides = {};
+
+// 動的生成: rankData[rank] × mbtiData[mbtiType] → 256パターン
+function getPersonaInsight(rank, mbtiType) {
+  const key = `${rank}-${mbtiType}`;
+  if (rankMbtiOverrides[key]) return rankMbtiOverrides[key];
+  const r = rankData[rank];
+  const m = mbtiData[mbtiType];
+  if (!r || !m) return null;
+  const tier = rank[0], num = rank[1];
+  const tierPrefix  = { S:'最高峰の知性と', A:'確かな思考力と', B:'成長途上の思考力と', C:'基礎を積み上げ中で' };
+  const numInfix    = { '1':'圧倒的な実行力を兼ね備えた', '2':'高い実行力を持ち合わせた', '3':'標準的な実行力を持つ', '4':'実行力をこれから伸ばす' };
+  const persona = `${r.copy}型 ${m.name}`;
+  const desc    = `${tierPrefix[tier]}${numInfix[num]}${m.name}タイプ（${mbtiType}）。「${m.strength}」を強みとし、${r.role}での活躍が期待される。${m.motivation}をモチベーション源とし、${r.execution}という実行特性を発揮する。`;
+  const watch   = `MBTIの盲点「${m.blindspot}」に加え、育成上は「${r.growth}」が重要。両面からのアプローチで成長を加速させる。`;
+  return { persona, desc, watch };
+}
+
+// ===== (旧 rankMbtiInsights は getPersonaInsight() に統合) =====
+const _REMOVED = {
+  'S-INTJ': { persona:'知的頂点の戦略設計者',       desc:'組織最高峰の知性で未来を体系的に設計する孤高の完璧主義者。長期ビジョンと精緻な構造化で、誰も描けなかった解を示す。自律駆動型で最も力を発揮する。',                    watch:'孤立・完璧主義・感情軽視に注意。言語化とチームへの共有が昇華の鍵。' },
+  'S-INTP': { persona:'天才的システム思考者',        desc:'複雑な問題を根本から分解し、誰も気づかない構造を見抜く稀有な存在。理論と実装を高次元で統合できる。知的自律性が最大のパフォーマンスを引き出す。',             watch:'実行への移行と締切管理が課題。理論を形にする仕組みを外部に持つこと。' },
+  'S-ENTJ': { persona:'最強の組織指揮官',            desc:'卓越した知性と圧倒的実行力で組織を牽引。目標達成への強い意志と論理的戦略で周囲を巻き込みながら成果を生む。経営幹部候補の最右翼。',                            watch:'感情的配慮と細部への関心が盲点。部下の心理安全性に意識的に向き合う。' },
+  'S-ENTP': { persona:'革新的問題解決の先駆者',      desc:'高い知性と創造性で既存の枠を超えた解を次々と生み出す。知的議論と新アイデアで組織を刺激し、イノベーションの火種になる。',                                   watch:'継続性と実装フォローが課題。アイデアを形にするパートナーか仕組みを持つこと。' },
+  'S-INFJ': { persona:'カリスマ的ビジョナリーリーダー',desc:'深い洞察と人間理解で組織の方向性を示す。意義ある目標に向かって人を鼓舞し変革を牽引する精神的支柱。静かな影響力が組織を動かす。',                        watch:'理想と現実のギャップ・自己犠牲傾向に注意。自分のリソース管理が必須。' },
+  'S-INFP': { persona:'深い使命感を持つ創造者',      desc:'高い知性と豊かな内的世界を組み合わせ独自の価値を生む。組織の意義や文化に深く貢献できる。本質的な問いへの探求が独自の成果物につながる。',                     watch:'現実的な成果へのコミットと自己アピールが課題。価値を外部に発信する習慣を。' },
+  'S-ENFJ': { persona:'最高水準の人材育成者',        desc:'人の可能性を最大化することへの強い動機と高い知性を持ち、チーム全体のパフォーマンスを底上げする。組織の文化を作るリーダー。',                              watch:'自己犠牲傾向・過干渉に注意。個人KPIの達成も同様に大切に。' },
+  'S-ENFP': { persona:'天才的インスパイアラー',      desc:'溢れる創造性と人を引きつける魅力で組織にエネルギーと革新をもたらす。高い知性がアイデアに深みを与え、周囲の可能性を解放する触媒になる。',                   watch:'継続性と細部への注意が課題。実行フェーズを担うバディの仕組みが必要。' },
+  'S-ISTJ': { persona:'卓越した組織システム構築者',  desc:'高い知性と徹底した実行力で組織の品質基準とプロセスを最高水準に引き上げる。信頼性の象徴として長期に渡り組織を支える存在。',                              watch:'変化への柔軟性と革新的アプローチへの開放性に意識的に取り組む。' },
+  'S-ISFJ': { persona:'最高水準の縁の下の力持ち',    desc:'細やかな配慮と高い知性を組み合わせ組織全体を支える。品質とチームケアにおいて群を抜き、誰よりも深く組織の痛みを察知できる。',                              watch:'自己主張と自分の成果のアピールが課題。過剰サポートで消耗しないよう注意。' },
+  'S-ESTJ': { persona:'卓越した経営管理者',          desc:'組織の効率と秩序を最高水準で管理する。明確な目標設定とプロセス管理でチームの生産性を最大化し、組織の機能美を実現する。',                                  watch:'感情的柔軟性と新しいアプローチへの開放性が課題。定期的に「例外」を許容する練習を。' },
+  'S-ESFJ': { persona:'組織の心を掌握するリーダー',  desc:'高い知性と深い人間理解で組織の文化とハーモニーを守りながら成果を出す。人心掌握と実務能力を兼ね備えた稀有な存在。',                                    watch:'批判への敏感さと変化への抵抗感に注意。フィードバックを客観的に受け取る練習を。' },
+  'S-ISTP': { persona:'問題解決の天才職人',          desc:'高い知性と実践的スキルを組み合わせ複雑な問題を鮮やかに解決する。現場での応用力と即興性が際立ち、理論と現場の橋渡しができる。',                            watch:'長期計画と感情表現・チームへの共有が課題。成果を言語化する習慣を持つ。' },
+  'S-ISFP': { persona:'感性と知性を持つ革新者',      desc:'独自の美的センスと高い知性でユニークな価値を生み出す。自分のペースで深く探求することで最大の成果が出る。創造的な領域で圧倒的な輝きを放つ。',              watch:'長期計画と自己主張が課題。価値を適切に発信するアウトプット習慣を。' },
+  'S-ESTP': { persona:'最強の実戦型リーダー',        desc:'高い知性と爆発的実行力を兼ね備え、危機的状況でも冷静に最善手を打つ。圧倒的な現場力と交渉力で組織の突破口を切り開く。',                                  watch:'長期計画と感情への配慮が課題。スピードと熟慮のバランスを意識的に設計する。' },
+  'S-ESFP': { persona:'天才的エンターテイナー兼統率者',desc:'人を惹きつける魅力と高い知性で組織に活力と革新をもたらす。チームの士気を最大化しながら実を取る唯一無二の存在。',                                     watch:'長期計画と構造化が課題。エネルギーを持続させる仕組みを組織に組み込む。' },
+
+  // ===== A ティア =====
+  'A-INTJ': { persona:'実力派戦略立案者',            desc:'論理的思考と安定した実行力で組織の戦略設計と実務を高い水準でこなす。信頼できる知的中核として上位層への梯子が見えている存在。',                             watch:'感情的側面の軽視・チーム配慮が昇格の鍵。意識的に「人」を見る時間を設ける。' },
+  'A-INTP': { persona:'分析力に優れた実務家',        desc:'深い分析力と実用的な問題解決で組織に貢献する。複雑な課題を整理し現実的な解を提示する安定した知的貢献者。',                                               watch:'実行への転換と期限管理が課題。完成度より速度を意識する場面を設ける。' },
+  'A-ENTJ': { persona:'頼れる推進リーダー',          desc:'戦略的思考と強い実行力でチームをゴールへ導く。意思決定が早く組織の推進力を担う。中規模以上のプロジェクトで最も輝く。',                                    watch:'細部への配慮と部下の感情への意識が課題。速さと丁寧さのバランスを意識する。' },
+  'A-ENTP': { persona:'創造的問題解決者',            desc:'多角的な視点と実行力で現場の課題に革新的な解をもたらす。アイデアマンかつ実行者として、組織に新しい風を吹き込む。',                                       watch:'継続性と一貫性が課題。アイデアを最後まで形にする完走経験を積む。' },
+  'A-INFJ': { persona:'信念を持つ育成者',            desc:'ビジョンと人への深い関心でチームの成長と組織文化に貢献する。静かなカリスマとして影響力を発揮し、組織の精神的な質を高める。',                              watch:'自己犠牲傾向と完璧主義に注意。自分の限界を設定することが重要。' },
+  'A-INFP': { persona:'価値観駆動の貢献者',          desc:'強い価値観と共感力で組織の意義ある仕事に深くコミットする。クリエイティブな領域で際立ち、品質への深いこだわりが組織の水準を上げる。',                      watch:'現実的な成果へのコミットと対立回避傾向が課題。数値目標との接続を意識する。' },
+  'A-ENFJ': { persona:'人材育成の核心人物',          desc:'チームの心理的安全性を高めながら安定した成果を出す。コーチング・育成役として最大の力を発揮し、組織の総合力を底上げする。',                                watch:'自身の成果より周囲を優先しすぎる傾向に注意。個人KPIも大切に。' },
+  'A-ENFP': { persona:'組織に活気をもたらす推進者',  desc:'熱意と実行力で周囲を巻き込みながら成果を出す。人のモチベーションを引き上げる天才的な存在で、停滞した組織の起爆剤になる。',                               watch:'継続性と細部への注意が課題。熱量が長期間持続する仕組みを組み込む。' },
+  'A-ISTJ': { persona:'組織の屋台骨',                desc:'堅実な判断と確実な実行でチームを支える。プロセス管理と品質維持において最も信頼できる存在で、嵐の中でも揺るがない安定感を持つ。',                            watch:'新しいアプローチへの柔軟性を意識的に高めること。定期的に「なぜ」を問う習慣を。' },
+  'A-ISFJ': { persona:'献身的な組織サポーター',      desc:'細やかなサポートと安定した実行力でチームを守る。縁の下の力持ちとして組織の安心感を作り、メンバーの心理的安全を底から支える。',                            watch:'自己主張と変化への適応が課題。自分の貢献を適切にアピールする習慣を。' },
+  'A-ESTJ': { persona:'効率的な組織管理者',          desc:'プロセスと効率を重視しチームの生産性を安定的に維持する。明確なルールと目標設定で組織を機能させる、信頼性の高い実行リーダー。',                            watch:'感情的柔軟性と新アイデアへの開放性に注意。例外を積極的に認める経験を積む。' },
+  'A-ESFJ': { persona:'チームハーモニーの守護者',    desc:'関係構築と調和を保ちながら安定した成果を出す。職場の雰囲気を良好に保ちながら実務もこなす、チームに不可欠な存在。',                                     watch:'批判への弱さと変化への抵抗感に注意。フィードバックを贈り物として受け取る練習を。' },
+  'A-ISTP': { persona:'現場の問題解決者',            desc:'実践的スキルと適度な分析力で現場の課題を素早く解決する。実用的なアプローチで確実な成果を出し、現場のモチベーションを引き上げる。',                        watch:'長期計画の欠如と感情表現が課題。振り返りと計画の習慣で精度を上げる。' },
+  'A-ISFP': { persona:'適応力高い現場貢献者',        desc:'柔軟な適応力と現場力でチームに貢献する。穏やかな存在感で職場の雰囲気を支えながら、自分のペースで着実に成果を積み上げる。',                              watch:'長期計画と自己主張が課題。自分の価値を積極的に発信する機会を意識的に作る。' },
+  'A-ESTP': { persona:'行動力ある現場リーダー',      desc:'素早い判断と高い実行力で現場を牽引する。危機対応と即時結果を出す力で組織の突破口を開く。営業・交渉・現場仕切りに最も力を発揮。',                        watch:'長期計画と感情への配慮が課題。振り返りの習慣で精度と信頼性を高める。' },
+  'A-ESFP': { persona:'現場を盛り上げるプレイヤー',  desc:'人を引きつける魅力と安定した実行力で現場のムードメーカーかつ成果者として活躍する。チームのエネルギーを最大化する存在。',                                watch:'長期計画と構造化が課題。エネルギーを成果に直結させる習慣を設計する。' },
+
+  // ===== B ティア =====
+  'B-INTJ': { persona:'潜在的な戦略分析者',          desc:'論理的思考の素地はあるが実行経験が成長の鍵。思考と行動をつなぐ経験で大きく飛躍できるポテンシャルを秘める。方向性さえ定まれば独走できる。',                  watch:'分析過多・行動の遅れに注意。「完璧な計画より速い実行」を意識的に刷り込む。' },
+  'B-INTP': { persona:'理論好きな成長途上',          desc:'分析・理論への強い関心はあるがアウトプットへの転換が課題。知識を実務に活かす経験を積むことで覚醒する。潜在的な専門家候補。',                              watch:'締切管理と実行への転換が最優先課題。小さなアウトプットを積み重ねる習慣を。' },
+  'B-ENTJ': { persona:'発展途上のリーダー候補',      desc:'リーダーシップ志向と行動力はあるが戦略の精度と感情管理が成長のカギ。経験を積めば大きく飛躍できるリーダーの素地を持つ。',                              watch:'感情的配慮と計画の精度を意識的に鍛える。小規模リーダー経験を積ませる設計を。' },
+  'B-ENTP': { persona:'アイデア豊富な実行者',        desc:'創造的なアイデアと行動力はあるが継続性に課題がある。アイデアを最後まで形にする完走経験の積み重ねが次のステージへの切符。',                              watch:'継続性とルーティンへの対応が課題。一つのプロジェクトを完走する経験を優先する。' },
+  'B-INFJ': { persona:'共感型成長人材',              desc:'人への気配りと意欲は本物。スキルの体系的積み上げと成功体験の蓄積で安定した成果者へと着実に成長できる素地がある。',                                      watch:'感情的疲弊と境界設定の弱さに注意。自分を守りながら貢献する術を先に学ぶ。' },
+  'B-INFP': { persona:'感受性豊かな貢献者候補',      desc:'価値観と共感力は強み。しかし現実的な成果への転換が課題。意義を感じられる仕事での活躍が期待でき、方向性が合えば深く貢献できる。',                      watch:'現実逃避傾向と対立回避に注意。小さな現実的成果を積み重ねる経験を設計する。' },
+  'B-ENFJ': { persona:'育成意欲のある成長人材',      desc:'人を助けたい気持ちは本物。チームワークと育成への関心を活かせる環境で力を発揮できる。自分のスキルを積み上げながら他者を支える役割が適合。',              watch:'自己犠牲傾向に注意。まず自分のスキルを高めることを優先させる設計を。' },
+  'B-ENFP': { persona:'元気者の発展途上プレイヤー',  desc:'エネルギーと人を引きつける力があるが継続性と集中力が課題。正しい方向への熱量が育てば大きな戦力になる可能性を秘める。',                               watch:'継続性と細部への注意が課題。一つのことを深める経験を意識的に設計する。' },
+  'B-ISTJ': { persona:'堅実な現場サポーター',        desc:'指示に対して着実に動ける実行者。ルーティン業務での信頼性は高く得意領域での専門性向上が有効。安定した行動そのものが組織への貢献になっている。',          watch:'主体的提案力の弱さが課題。自ら問題提起する小さな経験を積ませる設計を。' },
+  'B-ISFJ': { persona:'丁寧な業務遂行者',            desc:'細やかさと献身的な姿勢で業務を遂行する。チームのサポート役として安定した貢献ができ、誰かを助けることに深いやりがいを感じる。',                        watch:'自己主張と変化への適応が課題。適切にNoと言える環境と経験を整える。' },
+  'B-ESTJ': { persona:'実直な現場実行者',            desc:'ルールと手順を守りながら業務を進める。明確な指示とKPIの下で安定したパフォーマンスを発揮でき、信頼できる実務担当者。',                                  watch:'感情的柔軟性と創造性への開放性が課題。型を破る経験を意識的に与える。' },
+  'B-ESFJ': { persona:'チームワーカー',              desc:'協調性と人への気配りで職場の雰囲気に貢献する。明確な役割と良好な人間関係の下で力を発揮し、チームの潤滑油として機能する。',                              watch:'批判への弱さが課題。フィードバックを成長機会として受け取る習慣を育てる。' },
+  'B-ISTP': { persona:'現場突破の行動人材',          desc:'行動力と適応力は本物。思考の枠組みを身につけることで現場での爆発力がより高まる。正しい方向への行動力は組織の突破口になりうる。',                      watch:'場当たり的な判断が最大リスク。振り返りと計画の習慣が成長のカギ。' },
+  'B-ISFP': { persona:'現場フィット型貢献者',        desc:'状況への適応力と穏やかな現場力で貢献する。自分のペースで着実に成長できる環境が重要で、得意領域での専門性向上が最も有効。',                            watch:'長期計画と自己主張が課題。自分の強みを言語化する支援を継続的に行う。' },
+  'B-ESTP': { persona:'行動先行の現場プレイヤー',    desc:'エネルギーと行動力で現場を動かすが戦略性の補強が課題。正しい方向への行動力は組織の突破口になりうる、磨けば光る原石。',                               watch:'計画性と振り返りの習慣化が最優先。PDCAの「P」と「C」を意識させる。' },
+  'B-ESFP': { persona:'現場の盛り上げ役',            desc:'明るさと人を引きつける力で職場の雰囲気を作る。具体的な成果に繋げるための構造を整えることが、潜在力を解放する鍵。',                                   watch:'長期計画と構造化への意識が課題。エネルギーを成果に繋げる設計を整える。' },
+
+  // ===== C ティア =====
+  'C-INTJ': { persona:'理論先行の育成対象',          desc:'論理的な思考の萌芽はあるが実行経験と結果が伴っていない。適切な課題設定と失敗経験で覚醒する可能性を秘める。知的好奇心を行動の起爆剤に変える支援が必要。',    watch:'頭でっかちになるリスクが高い。まず動く経験を意識的に設計し続ける。' },
+  'C-INTP': { persona:'知的好奇心はあるが実行不足',  desc:'分析や理論への関心はあるが成果に結びついていない。実行経験の積み重ねが最優先課題で、小さなアウトプットを積み重ねる設計が必要。',                       watch:'実行への転換と期限遵守が最重要。タスクを小さく分解して成功体験を積む。' },
+  'C-ENTJ': { persona:'方向性を探すリーダー志向',    desc:'リーダーへの志向はあるがスキルと実績がまだ伴っていない。小規模なリーダー経験を積みながら着実に力をつける段階にある。',                                watch:'感情的配慮と現実的な自己評価が課題。まず実績を作ることに集中させる。' },
+  'C-ENTP': { persona:'アイデアはあるが結果が出ない段階',desc:'発想力の萌芽はあるが実行と継続に大きな課題を抱える。アイデアを形にする経験を段階的に設計することで成長できる。',                                    watch:'実行力と継続性が最大の課題。小さなプロジェクトの完遂体験から始める。' },
+  'C-INFJ': { persona:'感受性豊かな成長途上',        desc:'人への共感と意欲は持っているが成果への転換がまだ難しい。安全な環境での成功体験が成長の燃料となるタイプ。承認が行動のエネルギーになる。',                  watch:'失敗への過剰反応・萎縮に注意。丁寧な承認と小さな挑戦機会を提供し続ける。' },
+  'C-INFP': { persona:'内向き型の育成枠',            desc:'価値観と感受性は豊かだが現実的な成果への転換が大きな課題。役割を明確にし意義を感じられる業務設計が重要で、動機の源泉を丁寧に探る必要がある。',          watch:'現実逃避傾向と対立回避に注意。具体的で小さなKPIを与え続ける設計を。' },
+  'C-ENFJ': { persona:'承認欲求型の育成人材',        desc:'人に関わりたい気持ちは強いが自身のスキルと成果がまだ不足している。周囲からの承認が行動の燃料になるため、小さな成功体験の設計が最重要。',              watch:'過干渉傾向と自己評価の不安定さに注意。自分のKPIに集中させる環境を整える。' },
+  'C-ENFP': { persona:'エネルギーはあるが空回り気味', desc:'元気と意欲はあるが方向性が定まらず成果に繋がっていない。明確なKPIと毎日の小さな成功体験の積み重ねが最も効果的なアプローチ。',                           watch:'空回りリスクが最大の課題。細かいタスク管理と日次確認で軌道修正を継続。' },
+  'C-ISTJ': { persona:'ルーティン特化の実行者',      desc:'明確な手順と環境があれば確実に動ける。マニュアル化された業務での安定貢献が期待でき、職域の明確化がパフォーマンス最大化の鍵になる。',                  watch:'判断を求めない設計が効果的。責任範囲を段階的・慎重に拡大していく。' },
+  'C-ISFJ': { persona:'従順な現場サポーター',        desc:'指示に従い丁寧に動くことができる。明確な役割とサポート環境があれば安定して貢献でき、安心できる環境が最大のパフォーマンスを引き出す。',                  watch:'自己主張と問題提起が難しい状況。声を出しやすい環境づくりと1on1の設計を。' },
+  'C-ESTJ': { persona:'形式重視の指示遂行者',        desc:'ルールと手順に沿って動くことはできるが独自の判断や改善提案は難しい段階。明確なマニュアルが最大のパフォーマンスを引き出す。',                          watch:'新しいアプローチへの抵抗が課題。段階的な変化に慣れさせる設計で対応する。' },
+  'C-ESFJ': { persona:'協調性はあるが自立度が低い',  desc:'人間関係の維持は得意だが自律的な業務推進が難しい。関係性の良い環境で明確な指示の下での業務が最も適合するタイプ。',                                 watch:'批判への過剰反応と依存傾向に注意。自立的な小さな判断経験を積む機会を。' },
+  'C-ISTP': { persona:'行動力先行の育成人材',        desc:'動く意欲はあるが方向性が定まらない。明確なKPIと細かいタスク管理でエネルギーを正しい方向に向ける設計が必要。正しく使えば現場の突破力になる。',            watch:'場当たり的判断が最大リスク。毎日の細かいタスク確認と方向修正が必須。' },
+  'C-ISFP': { persona:'丁寧なフォローが必要な人材',  desc:'意欲は持っているが成果への転換に時間がかかる。安心できる環境と細やかなフィードバックで着実に成長できる。強みを見つけることが最初の仕事。',            watch:'長期計画と自己主張の弱さが課題。強みを見つけ小さな成功体験を丁寧に積む。' },
+  'C-ESTP': { persona:'馬力はあるが空回りしやすい',  desc:'行動量は突出するが方向性が定まらず成果が出にくい。明確な目標と細かい管理でエネルギーを正しく使う設計が重要で、方向さえ定まれば突破力になる。',        watch:'方向感の欠如が最大の課題。毎日タスクを細かく指示し、判断を求めない設計を。' },
+};
+
+const categoryGuide = {
+  やりがい: {
+    ok:   { eval: '職務満足度は良好な状態です。', action: '現状の業務環境・役割を維持し、強みを活かせる機会を継続的に提供しましょう。' },
+    warn: { eval: 'やりがいの低下傾向が見られます。', action: '1on1ミーティングで業務内容・役割の再確認を。プロジェクトへのアサインや担当変更も検討してください。' },
+    alert:{ eval: 'エンゲージメントが深刻に低下しています。離職リスクがあります。', action: '緊急面談を実施し、不満の根本原因を直接確認してください。配置転換や業務再設計の検討が必要です。' },
+  },
+  成長: {
+    ok:   { eval: '成長実感・自己効力感が高い状態です。', action: '研修機会・ストレッチアサインを継続し、キャリアモチベーションを維持しましょう。' },
+    warn: { eval: '成長機会の不足感が出ています。', action: 'スキルアップ研修やOJT機会の提供を検討。キャリアパスについて1on1で話し合いましょう。' },
+    alert:{ eval: '成長の見通しを失っています。キャリア不安が高まっています。', action: 'キャリア面談を早急に実施し、中長期の成長プランを一緒に描いてください。' },
+  },
+  健康: {
+    ok:   { eval: 'ストレス・疲労は許容範囲内です。', action: '定期的なコンディション確認を継続し、過負荷の予防に努めましょう。' },
+    warn: { eval: '心身の疲労兆候が見られます。', action: '業務量・残業状況を確認し、タスク分散や優先度見直しを推奨します。' },
+    alert:{ eval: 'バーンアウトリスクが高い状態です。', action: '産業医面談の設定を検討。業務量の緊急軽減と休暇取得の促進が必要です。' },
+  },
+  上司: {
+    ok:   { eval: '上司からのサポートが十分に機能しています。', action: '良好な関係を維持しつつ、定期的なフィードバックを継続しましょう。' },
+    warn: { eval: '上司とのコミュニケーションに課題が生じています。', action: '1on1の頻度・質を見直し、フィードバック機会を増やしましょう。マネジャーへのコーチング支援も検討を。' },
+    alert:{ eval: '上司関係が大きく損なわれています。離職の直接原因になりえます。', action: '人事介入による三者面談を検討。マネジャー研修または配置転換の緊急対応が必要です。' },
+  },
+  チーム: {
+    ok:   { eval: 'チームの連帯感・協力関係が高い状態です。', action: 'チームビルディング活動を継続し、良好な関係を育てましょう。' },
+    warn: { eval: '職場の人間関係に軽度の問題が生じています。', action: 'チームワークショップや交流機会を設けましょう。孤立しているメンバーがいないか確認を。' },
+    alert:{ eval: '職場内の孤立・摩擦が深刻です。', action: 'チームファシリテーションの専門家介入を検討。関係修復のための組織開発施策が必要です。' },
+  },
+  承認: {
+    ok:   { eval: '貢献が適切に評価・承認されています。', action: '表彰制度やサンクスメッセージの仕組みを継続・強化しましょう。' },
+    warn: { eval: '承認・評価への不足感が出ています。', action: '評価面談の実施と、日頃の貢献への言語的承認を増やしましょう。評価基準の透明性も確認を。' },
+    alert:{ eval: '評価への不満・不公平感が高まっています。', action: '評価制度・等級制度の見直しを検討。個別面談で不満の根拠を丁寧にヒアリングしてください。' },
+  },
+  信頼: {
+    ok:   { eval: '経営方針・理念への共感・信頼が高い状態です。', action: '経営方針の発信を継続し、現場への浸透活動を維持しましょう。' },
+    warn: { eval: '経営への疑問・不信感が芽生え始めています。', action: 'タウンホールミーティングや経営層との対話機会を増やし、情報開示を強化しましょう。' },
+    alert:{ eval: '経営への不信感が強く、組織コミットメントが大きく低下しています。', action: '全社説明会・Q&Aセッションを早急に実施。経営層が直接メッセージを発信する機会を設けてください。' },
+  },
+  組織: {
+    ok:   { eval: '心理的安全性が高く、挑戦できる組織風土です。', action: '挑戦・失敗を讃える文化を継続し、部門横断の協力体制を強化しましょう。' },
+    warn: { eval: '組織風土に課題感が出ています。', action: '職場環境改善ワークショップの実施を検討。部署間連携の障壁を確認しましょう。' },
+    alert:{ eval: '組織としての機能不全の兆候があります。', action: '文化変革プロジェクトの立ち上げを検討。外部組織開発コンサルタントの活用も視野に入れてください。' },
+  },
+  業務: {
+    ok:   { eval: '職場環境・報酬・ワークライフバランスに満足しています。', action: '柔軟な働き方の選択肢を拡充し、環境の質を継続的に改善しましょう。' },
+    warn: { eval: '職場環境・処遇への不満の萌芽があります。', action: '報酬水準のベンチマーク調査と、オフィス環境の改善検討を開始しましょう。' },
+    alert:{ eval: '処遇・環境への不満が深刻で、離職原因になりえます。', action: '報酬制度・福利厚生の緊急見直しを。ワークスタイル改革（リモートワーク・フレックス等）も並行して検討してください。' },
+  },
+};
+
+// ===== ランク別アクションアプローチ =====
+const rankActionGuide = {
+  S1: { approach:'自ら解決策を設計・主導できる完全裁量の機会を提供し',        style:'経営レベルの課題として向き合わせながら' },
+  S2: { approach:'戦略立案を主導するプロジェクトを任せ',                       style:'上位者との協働機会を意識的に用意しながら' },
+  S3: { approach:'精緻な分析と設計に専念できる専門的課題を与え',               style:'アウトプット品質を最大化できる環境を整えながら' },
+  S4: { approach:'知的探求と実行経験をバランスよく設計し',                     style:'主体性を引き出す成功体験を積ませながら' },
+  A1: { approach:'行動起点で解決策を自ら推進できる場を作り',                   style:'達成感を感じられる明確なゴールを設定しながら' },
+  A2: { approach:'チームをリードしながら解決に当たる機会を与え',               style:'視座を上げる経験を意識して組み込みながら' },
+  A3: { approach:'明確な目標とリソースを提供し着実に進める環境を整え',         style:'強みを活かせる領域を見極めながら' },
+  A4: { approach:'小さな成功体験を積みながら自信をつける機会を設計し',         style:'適切なフィードバックを丁寧に続けながら' },
+  B1: { approach:'行動量を正しい方向に向けるための明確なKPIを設定し',          style:'振り返りの習慣を意識的に作りながら' },
+  B2: { approach:'具体的な目標と即時フィードバックで動ける環境を整え',         style:'PDCAを意識させながら' },
+  B3: { approach:'明確な指示と定期的なサポートで一歩ずつ進める体制を作り',     style:'得意領域に集中させながら' },
+  B4: { approach:'ステップ・バイ・ステップの具体的支援を設計し',               style:'経験を着実に積ませながら' },
+  C1: { approach:'エネルギーを正しい方向に向ける明確なタスクを毎日設計し',     style:'日次チェックインで方向修正を継続しながら' },
+  C2: { approach:'マニュアル化された手順と日次確認を徹底し',                   style:'判断を求めない設計を維持しながら' },
+  C3: { approach:'シンプルな役割定義と手厚いフォローアップを行い',             style:'小さな成功体験を丁寧に積み上げながら' },
+  C4: { approach:'最も基本的なステップに分解した伴走支援を続け',               style:'毎日の短いチェックインで軌道修正しながら' },
+};
+
+// ===== MBTIタイプ別コミュニケーション・動機づけスタイル =====
+const mbtiActionGuide = {
+  INTJ: { style:'論理的な根拠と長期的な意義を明確に示す形で',       note:'自律性を尊重した環境で、感情論ではなく構造的な問題解決として伝える' },
+  INTP: { style:'知的な問題として構造化し分析の機会を与える形で',   note:'理論と実践を結びつけ、「なぜ」を丁寧に説明しながら進める' },
+  ENTJ: { style:'目標と成果を明確にしリーダーシップを発揮できる場を作る形で', note:'効率と合理性を重視し、裁量を与えながら結果で評価する' },
+  ENTP: { style:'創造的な解決策を探索できる自由度を持たせる形で',   note:'新しい視点からの挑戦として位置づけ、多様な選択肢を提示する' },
+  INFJ: { style:'個人の成長とチームへの貢献意義を丁寧に結びつける形で', note:'静かな1on1で深く向き合い、ビジョンとの接続を大切にする' },
+  INFP: { style:'価値観との接続と自己表現の機会を大切にする形で',   note:'無理のないペースで進め、強制よりも内発的動機を引き出す' },
+  ENFJ: { style:'周囲への貢献と人間関係改善への影響を中心に据える形で', note:'人の成長に寄り添いながら、チームへのポジティブな影響を伝える' },
+  ENFP: { style:'可能性と多様な選択肢を示しながら自由に動ける環境を作る形で', note:'創造性と行動力を活かし、ルーティンではなく挑戦として提示する' },
+  ISTJ: { style:'明確な期待値と実績に基づく評価基準を示す形で',     note:'安定した環境を維持し、手順と根拠を明確に示しながら進める' },
+  ISFJ: { style:'安心できる環境と細やかな承認を丁寧に与える形で',   note:'サポートと信頼関係を通じて、急がず丁寧に向き合う' },
+  ESTJ: { style:'効率と成果を数値で示し明確なルールを設ける形で',   note:'組織の秩序と目標を軸に据え、達成基準を具体的に提示する' },
+  ESFJ: { style:'人間関係の改善と周囲からの承認に積極的に働きかける形で', note:'チームのハーモニーを重視し、貢献が認められる場を作る' },
+  ISTP: { style:'実践的な問題解決と自律性を最大限尊重する形で',     note:'具体的な行動から始め、余計な制約を排除した環境を整える' },
+  ISFP: { style:'自分のペースと個人の価値観を大切にする形で',       note:'穏やかな対話を通じて信頼関係を築き、押しつけを避ける' },
+  ESTP: { style:'即効性のある解決と現場での行動を最優先する形で',   note:'スピード感を持ちながら、短期的な結果から自信を積み上げる' },
+  ESFP: { style:'楽しさと人とのつながりを最大限活かす形で',         note:'ポジティブな関係性と即時の承認を通じて動機づける' },
+};
+
+// ===== スコア別 × ランク × MBTI 個別アクション生成 =====
+function getPersonalizedCategoryAction(cat, level, rank, mbtiType) {
+  const base = categoryGuide[cat]?.[level];
+  if (!base) return null;
+  const rg = rank    ? rankActionGuide[rank]    : null;
+  const mg = mbtiType ? mbtiActionGuide[mbtiType] : null;
+  if (!rg && !mg) return { eval: base.eval, action: base.action, personalized: false };
+  const action = [
+    rg ? `【${rank}ランク向け】${rg.approach}、${rg.style}対応します。` : '',
+    mg ? `【${mbtiType}タイプ向け】${mg.style}アプローチします。` : '',
+    `具体的には：${base.action}`,
+    mg ? `※ ${mg.note}。` : '',
+  ].filter(Boolean).join('\n');
+  return { eval: base.eval, action, personalized: true, rankNote: rg?.approach, mbtiNote: mg?.note };
+}
+
+const catKeys = ['やりがい', '成長', '健康', '上司', 'チーム', '承認', '信頼', '組織', '業務'];
+const catNames = { やりがい:'職務', 成長:'自己成長', 健康:'健康', 上司:'支援', チーム:'人間関係', 承認:'承認', 信頼:'理念戦略', 組織:'組織風土', 業務:'環境' };
+
+const questionCatMap = {
+  q1:'やりがい', q2:'やりがい', q3:'やりがい', q4:'やりがい',
+  q5:'成長', q6:'成長', q7:'成長',
+  q8:'健康', q9:'健康', q10:'健康',
+  q11:'上司', q12:'上司', q13:'上司', q14:'上司', q15:'上司', q16:'上司',
+  q17:'チーム', q18:'チーム', q19:'チーム',
+  q20:'承認', q21:'承認',
+  q22:'信頼', q23:'信頼', q24:'信頼', q25:'信頼',
+  q26:'組織', q27:'組織', q28:'組織', q29:'組織',
+  q30:'業務', q31:'業務', q32:'業務', q33:'業務',
+};
+
+function calcScoresFromAnswers(answers) {
+  const catSums = {}, catCounts = {};
+  Object.entries(answers).forEach(([qId, val]) => {
+    if (typeof val !== 'number') return;
+    const cat = questionCatMap[qId];
+    if (!cat) return;
+    catSums[cat] = (catSums[cat] || 0) + val;
+    catCounts[cat] = (catCounts[cat] || 0) + 1;
+  });
+  const scores = {};
+  catKeys.forEach(k => {
+    if (catSums[k]) scores[k] = Math.round(catSums[k] / catCounts[k] / 7 * 100);
+  });
+  return scores;
+}
+
+function rebuildEmpData() {
+  Object.keys(employees).forEach(empId => {
+    if (!empData[empId]) empData[empId] = {};
+    months.forEach(m => {
+      const saved = localStorage.getItem(`es_${empId}_${m}`);
+      if (!saved) return;
+      try {
+        const scores = calcScoresFromAnswers(JSON.parse(saved));
+        if (Object.keys(scores).length > 0) empData[empId][m] = scores;
+      } catch(e) {}
+    });
+  });
+}
+
+function hasSubmittedThisMonth(empId) {
+  return !!localStorage.getItem(`es_${empId}_${months[months.length - 1]}`);
+}
+
+function getSubmittedIds(month) {
+  return Object.keys(employees).filter(id => !!localStorage.getItem(`es_${id}_${month}`));
+}
+
+function getTotal(scores) {
+  const vals = Object.values(scores);
+  return Math.round(vals.reduce((a,b) => a+b, 0) / vals.length);
+}
+
+function predictNextScore(pastScores) {
+  const pts = pastScores.filter(v => v > 0).slice(-4);
+  if (pts.length < 2) return null;
+  const n = pts.length;
+  const xMean = (n - 1) / 2;
+  const yMean = pts.reduce((a,b) => a+b, 0) / n;
+  let num = 0, den = 0;
+  pts.forEach((y, i) => { num += (i - xMean) * (y - yMean); den += (i - xMean) ** 2; });
+  if (den === 0) return null;
+  const slope = num / den;
+  const pred = Math.round(yMean + slope * (n / 2 + 0.5));
+  return Math.max(0, Math.min(100, pred));
+}
+
+function getStatus(score, diff) {
+  if (diff <= -10 || score < 60) return 'alert';
+  if (diff <= -5 || score < 70) return 'warn';
+  return 'ok';
+}
+
+// ===== カテゴリ別閾値設定 =====
+const defaultCategoryThresholds = {
+  やりがい: { alert: 60, warn: 70 },
+  成長:     { alert: 60, warn: 70 },
+  健康:     { alert: 65, warn: 75 },
+  上司:     { alert: 60, warn: 70 },
+  チーム:   { alert: 60, warn: 70 },
+  承認:     { alert: 60, warn: 70 },
+  信頼:     { alert: 60, warn: 70 },
+  組織:     { alert: 60, warn: 70 },
+  業務:     { alert: 55, warn: 65 },
+};
+
+let categoryThresholds = (() => {
+  try {
+    const saved = localStorage.getItem('es_cat_thresholds');
+    return saved ? { ...defaultCategoryThresholds, ...JSON.parse(saved) } : { ...defaultCategoryThresholds };
+  } catch(e) { return { ...defaultCategoryThresholds }; }
+})();
+
+// ===== カテゴリ別目標スコア =====
+const defaultCategoryTargets = {
+  やりがい:80, 成長:75, 健康:80, 上司:75, チーム:78, 承認:75, 信頼:75, 組織:75, 業務:72,
+};
+let categoryTargets = (() => {
+  try {
+    const s = localStorage.getItem('es_cat_targets');
+    return s ? { ...defaultCategoryTargets, ...JSON.parse(s) } : { ...defaultCategoryTargets };
+  } catch(e) { return { ...defaultCategoryTargets }; }
+})();
+function saveCategoryTargets() { localStorage.setItem('es_cat_targets', JSON.stringify(categoryTargets)); }
+
+function getCatStatus(cat, score, diff) {
+  const th = categoryThresholds[cat] || { alert: 60, warn: 70 };
+  if (diff !== null && (diff <= -10 || score < th.alert)) return 'alert';
+  if (diff !== null && (diff <= -5  || score < th.warn))  return 'warn';
+  if (diff === null && score < th.alert) return 'alert';
+  if (diff === null && score < th.warn)  return 'warn';
+  return 'ok';
+}
+
+function saveThresholds() {
+  localStorage.setItem('es_cat_thresholds', JSON.stringify(categoryThresholds));
+}
+
+function getMonthData(month) {
+  const prev = months[months.indexOf(month) - 1];
+  const cats = {};
+  catKeys.forEach(k => {
+    const scores = Object.values(empData).map(e => e[month]?.[k] || 0).filter(v => v > 0);
+    cats[k] = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+  });
+  const prevCats = prev ? (() => {
+    const pc = {};
+    catKeys.forEach(k => {
+      const scores = Object.values(empData).map(e => e[prev]?.[k] || 0).filter(v => v > 0);
+      pc[k] = Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+    });
+    return pc;
+  })() : null;
+  const total = Math.round(Object.values(cats).reduce((a,b) => a+b, 0) / catKeys.length);
+  const prevTotal = prevCats ? Math.round(Object.values(prevCats).reduce((a,b) => a+b, 0) / catKeys.length) : null;
+  return { cats, prevCats, total, prevTotal };
+}
+
+// ===== ダッシュボード描画 =====
+function renderDashboard() {
+  const month = document.getElementById('month-select').value;
+  const { cats, prevCats, total, prevTotal } = getMonthData(month);
+  const respRate = { '2025-10':80, '2025-11':82, '2025-12':84, '2026-01':85, '2026-02':82, '2026-03':87 };
+  const respCount = Math.round(200 * respRate[month] / 100);
+  const prevRate = months[months.indexOf(month)-1] ? respRate[months[months.indexOf(month)-1]] : null;
+
+  // KPI
+  const kpi = document.getElementById('kpi-grid');
+  const totalDiff = prevTotal !== null ? total - prevTotal : null;
+  const rateDiff = prevRate !== null ? respRate[month] - prevRate : null;
+
+  // アラートカウント
+  let alertCount = 0;
+  if (prevCats) {
+    catKeys.forEach(k => {
+      if (cats[k] - prevCats[k] <= -10 || cats[k] < 60) alertCount++;
+    });
+  }
+
+  kpi.innerHTML = `
+    <div class="stat-card"><div class="label">回答率</div><div class="value">${respRate[month]}%</div>
+      <div class="sub ${rateDiff > 0 ? 'up' : rateDiff < 0 ? 'down' : 'neutral'}">${rateDiff !== null ? (rateDiff > 0 ? '↑' : '↓') + ' 前月比 ' + (rateDiff > 0 ? '+' : '') + rateDiff + '%' : '初回データ'}</div></div>
+    <div class="stat-card"><div class="label">総合スコア</div><div class="value">${total}点</div>
+      <div class="sub ${totalDiff > 0 ? 'up' : totalDiff < 0 ? 'down' : 'neutral'}">${totalDiff !== null ? (totalDiff > 0 ? '↑ +' : '↓ ') + totalDiff + '点' : '初回データ'}</div></div>
+    <div class="stat-card"><div class="label">回答人数</div><div class="value">${respCount}名</div>
+      <div class="sub neutral">対象 200名</div></div>
+    <div class="stat-card"><div class="label">⚠️ アラート件数</div><div class="value" style="color:${alertCount > 0 ? '#dc2626' : '#16a34a'}">${alertCount}件</div>
+      <div class="sub ${alertCount > 0 ? 'down' : 'up'}">${alertCount > 0 ? '要対応あり' : '問題なし'}</div></div>
+  `;
+
+  // 未回答者一覧（当月のみ）
+  const currentMonth = months[months.length - 1];
+  const unsubSection = document.getElementById('unsubmitted-section');
+  if (month === currentMonth) {
+    const submittedIds = getSubmittedIds(month);
+    const unsubmitted = Object.entries(employees)
+      .filter(([id]) => !submittedIds.includes(id))
+      .map(([id, emp]) => ({ id, ...emp }));
+
+    unsubSection.style.display = 'block';
+    document.getElementById('unsubmitted-count-label').textContent =
+      `（デモ社員 ${submittedIds.length}/${Object.keys(employees).length}名 回答済み）`;
+
+    if (unsubmitted.length === 0) {
+      document.getElementById('unsubmitted-list').innerHTML =
+        '<div class="no-alert" style="background:white;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,0.06);padding:24px">✅ 全員が回答済みです</div>';
+    } else {
+      document.getElementById('unsubmitted-list').innerHTML = `
+        <div style="background:white;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,0.06);overflow:hidden;border:1px solid rgba(0,0,0,0.04)">
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr>
+              <th style="background:#f8fafc;padding:13px 16px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">社員ID</th>
+              <th style="background:#f8fafc;padding:13px 16px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">氏名</th>
+              <th style="background:#f8fafc;padding:13px 16px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">所属</th>
+              <th style="background:#f8fafc;padding:13px 16px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">ステータス</th>
+            </tr></thead>
+            <tbody>${unsubmitted.map(emp => `
+              <tr>
+                <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc;color:#334155">
+                  <span style="font-size:13px;font-weight:800;color:#6366f1;background:#eef2ff;padding:3px 8px;border-radius:6px;font-family:'Inter',monospace">${emp.id}</span>
+                </td>
+                <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc;font-weight:600;color:#1e293b">${emp.name}</td>
+                <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc">
+                  <span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;font-size:12px;color:#64748b;font-weight:600">${emp.dept}</span>
+                </td>
+                <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc">
+                  <span style="background:#fef2f2;color:#dc2626;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid #fecaca">未回答</span>
+                </td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`;
+    }
+  } else {
+    unsubSection.style.display = 'none';
+  }
+
+  // アラート
+  const alertList = document.getElementById('alert-list');
+  if (!prevCats) {
+    alertList.innerHTML = '<div class="no-alert">前月データがないためアラート判定できません</div>';
+  } else {
+    const alerts = [];
+    catKeys.forEach(k => {
+      const diff = cats[k] - prevCats[k];
+      if (diff <= -10) alerts.push({ icon:'🔴', name: catNames[k], score: cats[k], prev: prevCats[k], diff, type:'急落' });
+      else if (diff <= -5) alerts.push({ icon:'🟡', name: catNames[k], score: cats[k], prev: prevCats[k], diff, type:'低下' });
+      else if (cats[k] < 60) alerts.push({ icon:'🟡', name: catNames[k], score: cats[k], prev: prevCats[k], diff, type:'基準値割れ' });
+    });
+    if (alerts.length === 0) {
+      alertList.innerHTML = '<div class="no-alert">✅ 今月はアラートなし</div>';
+    } else {
+      alertList.innerHTML = alerts.map(a => `
+        <div class="alert-item">
+          <div class="alert-icon">${a.icon}</div>
+          <div class="alert-content">
+            <div class="title">「${a.name}」スコア${a.type}</div>
+            <div class="detail">前月 ${a.prev}点 → 今月 ${a.score}点（${a.diff > 0 ? '+' : ''}${a.diff}点）</div>
+          </div>
+          <span class="badge ${a.diff <= -10 ? 'badge-alert' : 'badge-warn'}" style="margin-left:auto">${a.diff > 0 ? '+' : ''}${a.diff}点</span>
+        </div>`).join('');
+    }
+  }
+
+  // カテゴリスコア
+  const catGrid = document.getElementById('category-grid');
+  catGrid.innerHTML = catKeys.map((k, i) => {
+    const score = cats[k];
+    const prev = prevCats ? prevCats[k] : null;
+    const diff = prev !== null ? score - prev : null;
+    const status = getCatStatus(k, score, diff);
+    const alert = status !== 'ok' ? ' ⚠️' : '';
+    const pastScores = months.slice(0, months.indexOf(month) + 1).map(m => {
+      const s = Object.values(empData).map(e => e[m]?.[k] || 0).filter(v => v > 0);
+      return Math.round(s.reduce((a,b) => a+b, 0) / s.length);
+    }).slice(-6);
+    const maxS = Math.max(...pastScores);
+    return `
+      <div class="score-card">
+        <div class="score-card-header">
+          <span class="cat-name">${catNames[k]}</span>
+          <span class="score-num ${status}">${score}点${alert}</span>
+        </div>
+        <div class="score-bar-wrap" style="position:relative;overflow:visible"><div class="score-bar ${status}" style="width:${score}%"></div>${categoryTargets[k] ? `<div style="position:absolute;top:0;bottom:0;left:${Math.min(categoryTargets[k],100)}%;width:2px;background:#6366f1;opacity:0.8;border-radius:1px"></div>` : ''}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:4px 0">
+          <div class="score-trend" style="margin:0">前月比 ${diff !== null ? `<span class="${diff >= 0 ? 'up' : 'down'}">${diff > 0 ? '+' : ''}${diff}点</span>` : '初回'}</div>
+          ${categoryTargets[k] ? `<div style="font-size:10px;font-weight:700;color:${score>=categoryTargets[k]?'#16a34a':'#6366f1'}">目標${categoryTargets[k]}点 ${score>=categoryTargets[k]?'✅':'▲'+(categoryTargets[k]-score)}</div>` : ''}
+        </div>
+        <div class="mini-chart">${pastScores.map(v => `<div class="mini-bar" style="height:${(v/maxS)*100}%;background:${status==='alert'?'#ef4444':status==='warn'?'#f59e0b':'#22c55e'};opacity:0.7"></div>`).join('')}</div>
+        ${(() => { const pred = predictNextScore(pastScores); return pred !== null ? `<div style="font-size:10px;color:#6366f1;font-weight:700;margin-top:4px;text-align:right">予測 ${pred}点 →</div>` : ''; })()}
+      </div>`;
+  }).join('');
+
+  // 評価・推奨アクション
+  const guideList = document.getElementById('action-guide-list');
+  const guideItems = catKeys.map(k => {
+    const score = cats[k];
+    const prev = prevCats ? prevCats[k] : null;
+    const diff = prev !== null ? score - prev : null;
+    const status = getCatStatus(k, score, diff);
+    return { k, score, diff, status };
+  }).filter(item => item.status !== 'ok');
+
+  if (guideItems.length === 0) {
+    guideList.innerHTML = '<div class="no-guide">✅ 全カテゴリ良好。継続的なモニタリングを行いましょう。</div>';
+  } else {
+    guideList.innerHTML = guideItems.map(({ k, score, diff, status }) => {
+      const guide = categoryGuide[k][status];
+      const diffText = diff !== null ? `<span class="guide-diff" style="color:${diff < 0 ? '#dc2626' : '#16a34a'}">${diff > 0 ? '↑ +' : '↓ '}${diff}点</span>` : '';
+      return `
+        <div class="guide-card ${status}">
+          <div class="guide-card-score">
+            <div class="guide-score-num ${status}">${score}点</div>
+            <div class="guide-cat-name">${catNames[k]}</div>
+            ${diffText}
+          </div>
+          <div class="guide-card-body">
+            <div class="guide-eval">📊 ${guide.eval}</div>
+            <div class="guide-action-label">推奨アクション</div>
+            <div class="guide-action-text">${guide.action}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // 部署別スコア
+  const deptScoresGrid = document.getElementById('dept-scores-grid');
+  if (deptScoresGrid) {
+    const deptMap = {};
+    Object.entries(employees).forEach(([id, emp]) => {
+      const dept = emp.dept;
+      if (!dept) return;
+      const scores = empData[id]?.[month];
+      if (!scores) return;
+      if (!deptMap[dept]) deptMap[dept] = { totals: [], count: 0 };
+      deptMap[dept].totals.push(getTotal(scores));
+      deptMap[dept].count++;
+    });
+    const deptHtml = Object.entries(deptMap).map(([dept, info]) => {
+      const avg = Math.round(info.totals.reduce((a,b) => a+b, 0) / info.totals.length);
+      const count = info.count;
+      let color1, color2, textColor;
+      if (avg >= 70) { color1 = '#4ade80'; color2 = '#22c55e'; textColor = '#16a34a'; }
+      else if (avg >= 60) { color1 = '#fbbf24'; color2 = '#f59e0b'; textColor = '#d97706'; }
+      else { color1 = '#f87171'; color2 = '#ef4444'; textColor = '#dc2626'; }
+      return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:box-shadow 0.2s" onclick="showDeptDetail('${dept}', '${month}')" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+        <div style="width:100px;font-size:13px;font-weight:700;color:#374151">${dept}</div>
+        <div style="flex:1;background:#f1f5f9;border-radius:4px;height:12px;overflow:hidden">
+          <div style="height:100%;width:${avg}%;background:linear-gradient(90deg,${color1},${color2});border-radius:4px;transition:width 0.5s"></div>
+        </div>
+        <div style="font-size:16px;font-weight:800;width:50px;text-align:right;color:${textColor}">${avg}点</div>
+        <div style="font-size:12px;color:#94a3b8">${count}名</div>
+      </div>`;
+    }).join('');
+    deptScoresGrid.innerHTML = deptHtml || '<div style="color:#94a3b8;font-size:14px">データがありません</div>';
+  }
+}
+
+// ===== 社員一覧描画 =====
+function renderEmployeeList() {
+  const month = document.getElementById('emp-month-select').value;
+  const prev = months[months.indexOf(month) - 1];
+  const search = (document.getElementById('emp-search')||{}).value?.toLowerCase()||'';
+  const deptFilter = (document.getElementById('emp-dept-filter')||{}).value||'';
+  const rankFilter = (document.getElementById('emp-rank-filter')||{}).value||'';
+  const rows = Object.entries(empData).filter(([id]) => {
+    if (search && !id.toLowerCase().includes(search) && !(employees[id]?.name||'').toLowerCase().includes(search)) return false;
+    if (deptFilter && employees[id]?.dept !== deptFilter) return false;
+    if (rankFilter && calcRank(getProfile(id).iq, getProfile(id).battlePower) !== rankFilter) return false;
+    return true;
+  }).map(([id, data]) => {
+    const scores = data[month];
+    if (!scores) return null;
+    const total = getTotal(scores);
+    const prevTotal = prev && data[prev] ? getTotal(data[prev]) : null;
+    const diff = prevTotal !== null ? total - prevTotal : null;
+    const status = diff !== null ? getStatus(total, diff) : (total < 60 ? 'alert' : total < 70 ? 'warn' : 'ok');
+    const profile = getProfile(id);
+    const hasReal = !!localStorage.getItem(`es_${id}_${month}`);
+    const rank = calcRank(profile.iq, profile.battlePower);
+    const mbtiType = profile.mbti || employees[id]?.mbti;
+    return { id, name: employees[id]?.name || id, dept: employees[id]?.dept || '', total, diff, status,
+             iq: profile.iq, battlePower: profile.battlePower, hasReal, rank, profile };
+  }).filter(Boolean).sort((a,b) => a.total - b.total);
+
+  const table = document.getElementById('emp-table');
+  table.innerHTML = `<table>
+    <thead><tr>
+      <th>社員ID</th><th>氏名</th><th>所属</th><th>総合スコア</th><th>前月比</th><th>ステータス</th><th>詳細</th>
+    </tr></thead>
+    <tbody>${rows.map(r => `
+      <tr class="clickable" onclick="showDetail('${r.id}')">
+        <td><span style="font-size:13px;font-weight:800;color:#6366f1;background:#eef2ff;padding:3px 8px;border-radius:6px;font-family:'Inter',monospace">${r.id}</span></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-weight:600;color:#1e293b">${r.name}</span>
+            ${r.rank ? `<span class="rank-badge-sm rank-${r.rank[0].toLowerCase()}">${r.rank}</span>` : ''}
+            ${(() => { const mbtiType = r.profile?.mbti || employees[r.id]?.mbti; const mbtiInfo = mbtiType ? mbtiData[mbtiType] : null; return mbtiInfo ? `<span class="mbti-badge mbti-${mbtiInfo.group.toLowerCase()}" style="font-size:11px;padding:2px 8px">${mbtiType} ${mbtiInfo.name}</span>` : ''; })()}
+          </div>
+          <div style="display:flex;gap:5px;margin-top:4px">
+            ${r.iq ? `<span style="font-size:11px;background:#f5f3ff;color:#7c3aed;padding:2px 7px;border-radius:10px;font-weight:700">🧠 ${r.iq}</span>` : ''}
+            ${r.battlePower ? `<span style="font-size:11px;background:#fff7ed;color:#ea580c;padding:2px 7px;border-radius:10px;font-weight:700">⚡ ${r.battlePower.toLocaleString()}</span>` : ''}
+            ${r.rank ? `<span style="font-size:11px;background:#f8fafc;color:#64748b;padding:2px 7px;border-radius:10px;font-weight:600">${rankData[r.rank]?.copy || ''}</span>` : ''}
+          </div>
+        </td>
+        <td><span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;font-size:12px;color:#64748b;font-weight:600">${r.dept}</span></td>
+        <td>
+          <span style="font-weight:800;font-size:15px">${r.total}点</span>
+          ${r.hasReal ? `<span style="font-size:10px;background:#dcfce7;color:#16a34a;padding:2px 6px;border-radius:8px;margin-left:5px;font-weight:700;border:1px solid #bbf7d0">実データ</span>` : ''}
+        </td>
+        <td style="color:${r.diff === null ? '#6b7280' : r.diff >= 0 ? '#16a34a' : '#dc2626'};font-weight:700">
+          ${r.diff !== null ? (r.diff > 0 ? '+' : '') + r.diff + '点' : '―'}
+        </td>
+        <td><span class="badge badge-${r.status}">${r.status === 'alert' ? '⚠️ 要確認' : r.status === 'warn' ? '注意' : '良好'}</span></td>
+        <td><button class="detail-link" onclick="event.stopPropagation();showDetail('${r.id}')">詳細を見る</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function exportEmployeeCSV() {
+  const month = document.getElementById('emp-month-select')?.value || months[months.length-1];
+  const headers = ['社員ID','氏名','所属','ランク','MBTI','IQ','戦闘力','総合スコア','職務','自己成長','健康','支援','人間関係','承認','理念戦略','組織風土','環境'];
+  const rows = Object.entries(empData).map(([id, data]) => {
+    const emp = employees[id] || {};
+    const profile = getProfile(id);
+    const rank = calcRank(profile.iq, profile.battlePower) || '';
+    const scores = data[month] || {};
+    const total = Object.keys(scores).length > 0 ? getTotal(scores) : '';
+    return [id, emp.name||'', emp.dept||'', rank, profile.mbti||'', profile.iq||'', profile.battlePower||'', total,
+      scores['やりがい']||'', scores['成長']||'', scores['健康']||'', scores['上司']||'',
+      scores['チーム']||'', scores['承認']||'', scores['信頼']||'', scores['組織']||'', scores['業務']||''
+    ].join(',');
+  });
+  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `engagement_${month}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('📥 CSVをダウンロードしました');
+}
+
+// ===== 社員詳細 =====
+let lastTab = 'employees';
+
+function showDetail(empId) {
+  lastTab = document.getElementById('tab-employees').style.display !== 'none' ? 'employees' : 'dashboard';
+  const emp = employees[empId];
+  document.getElementById('detail-name').textContent = emp?.name || empId;
+  document.getElementById('detail-dept').textContent = emp?.dept || '';
+
+  const empProfile = getProfile(empId);
+  const empRank = calcRank(empProfile.iq, empProfile.battlePower);
+
+  const data = empData[empId];
+  const latestMonth = months[months.length - 1];
+  const latestScores = data[latestMonth];
+  const latestTotal = getTotal(latestScores);
+  const prevMonth = months[months.length - 2];
+  const prevScores = data[prevMonth];
+  const prevTotal = getTotal(prevScores);
+  const diff = latestTotal - prevTotal;
+  const status = getStatus(latestTotal, diff);
+
+  const badge = document.getElementById('detail-status-badge');
+  badge.className = `badge badge-${status}`;
+  badge.textContent = status === 'alert' ? '⚠️ 要確認' : status === 'warn' ? '注意' : '良好';
+
+  // ライングラフ（SVG）
+  const svgW = 700, svgH = 200, padL = 40, padR = 20, padT = 20, padB = 30;
+  const chartW = svgW - padL - padR;
+  const chartH = svgH - padT - padB;
+  const xStep = chartW / (months.length - 1);
+
+  const colors = ['#4f46e5','#ef4444','#22c55e','#f59e0b','#06b6d4','#ec4899'];
+  const lines = catKeys.map((k, ci) => {
+    const pts = months.map((m, mi) => {
+      const v = data[m]?.[k] || null;
+      if (v === null) return null;
+      const x = padL + mi * xStep;
+      const y = padT + chartH - (v / 100) * chartH;
+      return { x, y, v };
+    });
+    const validPts = pts.filter(Boolean);
+    const path = validPts.map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `L${p.x},${p.y}`)).join(' ');
+    return { key: k, path, pts: validPts, color: colors[ci] };
+  });
+
+  // Y軸グリッド
+  const gridLines = [40,60,80,100].map(v => {
+    const y = padT + chartH - (v / 100) * chartH;
+    return `<line x1="${padL}" y1="${y}" x2="${padL+chartW}" y2="${y}" stroke="#f3f4f6" stroke-width="1"/>
+            <text x="${padL-6}" y="${y+4}" font-size="10" fill="#9ca3af" text-anchor="end">${v}</text>`;
+  }).join('');
+
+  // X軸ラベル
+  const xLabels = months.map((m, mi) => {
+    const x = padL + mi * xStep;
+    return `<text x="${x}" y="${svgH-4}" font-size="11" fill="#6b7280" text-anchor="middle">${monthLabels[m]}</text>`;
+  }).join('');
+
+  const svgContent = `
+    <svg class="svg-chart" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">
+      ${gridLines}
+      <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+chartH}" stroke="#e5e7eb" stroke-width="1"/>
+      ${xLabels}
+      ${lines.map(l => `<path d="${l.path}" fill="none" stroke="${l.color}" stroke-width="2.5" stroke-linejoin="round"/>`).join('')}
+      ${lines.map(l => l.pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${l.color}"/>`).join('')).join('')}
+    </svg>
+    <div class="chart-legend">${lines.map(l => `
+      <div class="legend-item"><div class="legend-dot" style="background:${l.color}"></div>${catNames[l.key]}</div>`).join('')}
+    </div>`;
+
+  // 月別カテゴリ表
+  const tableRows = catKeys.map((k, ci) => {
+    const cells = months.map((m, mi) => {
+      const v = data[m]?.[k];
+      if (!v) return '<td>―</td>';
+      const prev2 = mi > 0 ? data[months[mi-1]]?.[k] : null;
+      const d = prev2 ? v - prev2 : null;
+      const cls = v < 60 ? 'cell-alert' : v < 70 ? 'cell-warn' : 'cell-ok';
+      const diff2 = d !== null ? `<br><span class="${d >= 0 ? 'cell-diff-up' : 'cell-diff-down'}">${d > 0 ? '+' : ''}${d}</span>` : '';
+      return `<td class="${cls}">${v}${diff2}</td>`;
+    }).join('');
+    return `<tr><td>${catNames[k]}</td>${cells}</tr>`;
+  });
+
+  const totalRow = months.map((m, mi) => {
+    const v = data[m] ? getTotal(data[m]) : null;
+    if (!v) return '<td>―</td>';
+    const prev2 = mi > 0 && data[months[mi-1]] ? getTotal(data[months[mi-1]]) : null;
+    const d = prev2 !== null ? v - prev2 : null;
+    const cls = v < 60 ? 'cell-alert' : v < 70 ? 'cell-warn' : 'cell-ok';
+    const diff2 = d !== null ? `<br><span class="${d >= 0 ? 'cell-diff-up' : 'cell-diff-down'}">${d > 0 ? '+' : ''}${d}</span>` : '';
+    return `<td class="${cls}" style="font-weight:700">${v}${diff2}</td>`;
+  }).join('');
+
+  // アラート履歴
+  const alertHistory = [];
+  months.forEach((m, mi) => {
+    if (mi === 0 || !data[m] || !data[months[mi-1]]) return;
+    catKeys.forEach(k => {
+      const cur = data[m][k], prev2 = data[months[mi-1]][k];
+      const d = cur - prev2;
+      if (d <= -10) alertHistory.push({ month: m, cat: catNames[k], score: cur, prev: prev2, diff: d, level: 'alert' });
+      else if (d <= -5 || cur < 60) alertHistory.push({ month: m, cat: catNames[k], score: cur, prev: prev2, diff: d, level: 'warn' });
+    });
+  });
+
+  // プロフィールカード
+  const profile = getProfile(empId);
+  const initRank = calcRank(profile.iq, profile.battlePower);
+  const profileHtml = `
+    <div class="profile-card">
+      <h3>👤 社員プロフィール</h3>
+      <div class="profile-display">
+        <div class="profile-stat iq-stat">
+          <div class="ps-label">🧠 IQスコア</div>
+          <div class="ps-value" id="pdiq-${empId}">${profile.iq ? profile.iq.toLocaleString() : '―'}</div>
+        </div>
+        <div class="profile-stat bp-stat">
+          <div class="ps-label">⚡ 戦闘力</div>
+          <div class="ps-value" id="pdbp-${empId}">${profile.battlePower ? profile.battlePower.toLocaleString() : '―'}</div>
+        </div>
+        <div class="profile-stat" style="background:linear-gradient(135deg,#f8faff,#eef2ff);border-color:#c7d2fe">
+          <div class="ps-label" style="color:#4f46e5">🧬 MBTI</div>
+          <div id="pmbti-${empId}" style="margin-top:4px">
+            ${profile.mbti && mbtiData[profile.mbti]
+              ? `<span class="mbti-badge mbti-${mbtiData[profile.mbti].group.toLowerCase()}">${profile.mbti} / ${mbtiData[profile.mbti].name}</span>`
+              : '<span style="color:#94a3b8;font-size:14px">未設定</span>'}
+          </div>
+        </div>
+      </div>
+      <div class="profile-edit-row">
+        <div class="profile-edit-field">
+          <label>🧠 IQスコア を編集</label>
+          <input type="number" id="profile-iq-${empId}" value="${profile.iq || ''}" placeholder="例: 120" min="0" max="300">
+        </div>
+        <div class="profile-edit-field">
+          <label>⚡ 戦闘力 を編集</label>
+          <input type="number" id="profile-bp-${empId}" value="${profile.battlePower || ''}" placeholder="例: 10000" min="0">
+        </div>
+        <div class="profile-edit-field" style="min-width:200px">
+          <label>🧬 MBTI タイプ</label>
+          <select id="profile-mbti-${empId}" style="width:100%;padding:10px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;transition:all 0.2s;color:#1e293b;font-weight:500;background:white">
+            <option value="">選択してください</option>
+            <optgroup label="分析家（NT）">
+              <option value="INTJ" ${profile.mbti==='INTJ'?'selected':''}>INTJ / 建築家</option>
+              <option value="INTP" ${profile.mbti==='INTP'?'selected':''}>INTP / 論理学者</option>
+              <option value="ENTJ" ${profile.mbti==='ENTJ'?'selected':''}>ENTJ / 指揮官</option>
+              <option value="ENTP" ${profile.mbti==='ENTP'?'selected':''}>ENTP / 討論者</option>
+            </optgroup>
+            <optgroup label="外交官（NF）">
+              <option value="INFJ" ${profile.mbti==='INFJ'?'selected':''}>INFJ / 提唱者</option>
+              <option value="INFP" ${profile.mbti==='INFP'?'selected':''}>INFP / 仲介者</option>
+              <option value="ENFJ" ${profile.mbti==='ENFJ'?'selected':''}>ENFJ / 主人公</option>
+              <option value="ENFP" ${profile.mbti==='ENFP'?'selected':''}>ENFP / 広報運動家</option>
+            </optgroup>
+            <optgroup label="番人（SJ）">
+              <option value="ISTJ" ${profile.mbti==='ISTJ'?'selected':''}>ISTJ / 管理者</option>
+              <option value="ISFJ" ${profile.mbti==='ISFJ'?'selected':''}>ISFJ / 擁護者</option>
+              <option value="ESTJ" ${profile.mbti==='ESTJ'?'selected':''}>ESTJ / 幹部</option>
+              <option value="ESFJ" ${profile.mbti==='ESFJ'?'selected':''}>ESFJ / 領事</option>
+            </optgroup>
+            <optgroup label="探検家（SP）">
+              <option value="ISTP" ${profile.mbti==='ISTP'?'selected':''}>ISTP / 巨匠</option>
+              <option value="ISFP" ${profile.mbti==='ISFP'?'selected':''}>ISFP / 冒険家</option>
+              <option value="ESTP" ${profile.mbti==='ESTP'?'selected':''}>ESTP / 起業家</option>
+              <option value="ESFP" ${profile.mbti==='ESFP'?'selected':''}>ESFP / エンターテイナー</option>
+            </optgroup>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveProfile('${empId}')" style="white-space:nowrap;height:42px;align-self:flex-end">保存する</button>
+      </div>
+      <div id="rank-display-${empId}" style="margin-top:20px;padding-top:20px;border-top:1px solid #f1f5f9">
+        ${initRank ? renderRankBlock(initRank, empId) : '<div style="color:#94a3b8;font-size:13px;text-align:center;padding:8px">IQと戦闘力を入力・保存するとランクが算出されます</div>'}
+      </div>
+    </div>`;
+
+  // 実回答データカード
+  const ansColors = ['','#ef4444','#f97316','#f59e0b','#eab308','#22c55e','#16a34a','#059669'];
+  const rawAnswers = localStorage.getItem(`es_${empId}_${latestMonth}`);
+  let answerDetailHtml = '';
+  if (rawAnswers) {
+    try {
+      const ans = JSON.parse(rawAnswers);
+      const allQs = questions.reduce((acc, p) => [...acc, ...p.items.filter(q => q.type === 'rating')], []);
+      let groupsHtml = '', currentCat = '', groupBuf = '';
+      allQs.forEach(q => {
+        const val = ans[q.id];
+        if (val === undefined) return;
+        if (q.category !== currentCat) {
+          if (currentCat) groupsHtml += `<div class="answer-group"><div class="answer-group-title">${currentCat}</div>${groupBuf}</div>`;
+          currentCat = q.category; groupBuf = '';
+        }
+        const c = ansColors[val] || '#94a3b8';
+        groupBuf += `<div class="answer-row">
+          <div class="answer-q">${q.text}</div>
+          <div class="answer-bar-wrap">
+            <div class="answer-bar"><div class="answer-bar-fill" style="width:${val/7*100}%;background:${c}"></div></div>
+            <div class="answer-val" style="color:${c}">${val}</div>
+          </div>
+        </div>`;
+      });
+      if (currentCat) groupsHtml += `<div class="answer-group"><div class="answer-group-title">${currentCat}</div>${groupBuf}</div>`;
+      const freeText = ans['q34'];
+      const freeTextHtml = freeText ? `
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f1f5f9">
+          <div class="answer-group-title">💬 自由記述</div>
+          <div style="background:#f8fafc;border-left:3px solid #6366f1;padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#374151;line-height:1.75;margin-top:8px">${freeText}</div>
+        </div>` : '';
+      answerDetailHtml = `
+        <div class="answer-detail-card">
+          <h3>📝 今月の回答データ（実データ）</h3>
+          <div class="answer-submitted-at">2026年3月 ／ 実際に提出された回答 ／ 7段階評価（1=全くそう思わない ／ 7=強くそう思う）</div>
+          ${groupsHtml}${freeTextHtml}
+        </div>`;
+    } catch(e) {}
+  }
+
+  document.getElementById('detail-content').innerHTML = profileHtml + answerDetailHtml + `
+    <div class="chart-card">
+      <h3>カテゴリ別スコア推移（過去6ヶ月）</h3>
+      ${svgContent}
+    </div>
+    <div class="monthly-table-card">
+      <h3>月別スコア詳細</h3>
+      <table>
+        <thead><tr><th>カテゴリ</th>${months.map(m => `<th>${monthLabels[m]}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${tableRows.join('')}
+          <tr style="background:#f9fafb"><td style="font-weight:700">総合スコア</td>${totalRow}</tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert-history">
+      <h3>⚠️ アラート履歴</h3>
+      ${alertHistory.length === 0
+        ? '<div class="no-alert">過去6ヶ月にアラートはありません</div>'
+        : alertHistory.map(a => `
+          <div class="alert-item">
+            <div class="alert-icon">${a.level === 'alert' ? '🔴' : '🟡'}</div>
+            <div class="alert-content">
+              <div class="title">${monthLabels[a.month]} ／ 「${a.cat}」スコア${a.diff <= -10 ? '急落' : '低下'}</div>
+              <div class="detail">${a.prev}点 → ${a.score}点（${a.diff > 0 ? '+' : ''}${a.diff}点）</div>
+            </div>
+            <span class="badge badge-${a.level}" style="margin-left:auto">${a.diff > 0 ? '+' : ''}${a.diff}点</span>
+          </div>`).join('')}
+    </div>
+    <div class="recommend-section">
+      <h3>💡 推奨対応${empProfile.mbti && empRank ? `<span style="font-size:12px;font-weight:500;color:#94a3b8;margin-left:10px">ランク ${empRank} × ${empProfile.mbti} 個別カスタマイズ済み</span>` : ''}</h3>
+      ${(() => {
+        const items = catKeys.map(k => {
+          const score = latestScores[k];
+          const prevScore = prevScores ? prevScores[k] : null;
+          const diff = prevScore !== null ? score - prevScore : null;
+          const st = getCatStatus(k, score, diff);
+          return { k, score, diff, st };
+        }).filter(item => item.st !== 'ok');
+        if (items.length === 0) return '<div class="no-alert">✅ 現在すべてのカテゴリが良好です。</div>';
+        const rankTierClass = { S:'ptag-rank-s', A:'ptag-rank-a', B:'ptag-rank-b', C:'ptag-rank-c' };
+        return items.map(({ k, score, diff, st }) => {
+          const guide = getPersonalizedCategoryAction(k, st, empRank, empProfile.mbti);
+          const diffText = diff !== null ? `（前月比 ${diff > 0 ? '+' : ''}${diff}点）` : '';
+          const tierClass = empRank ? (rankTierClass[empRank[0]] || 'ptag-rank-a') : '';
+          const personalizedBlock = guide?.personalized ? `
+            <div class="personalized-action-wrap">
+              <div class="personalized-tags">
+                ${empRank ? `<span class="personalized-tag ${tierClass}">🏆 ${empRank}</span>` : ''}
+                ${empProfile.mbti ? `<span class="personalized-tag ptag-mbti">🧠 ${empProfile.mbti}</span>` : ''}
+                <span style="font-size:10px;font-weight:700;color:#6366f1;align-self:center;letter-spacing:0.3px">個別推奨アクション</span>
+              </div>
+              <div class="personalized-action-text">${guide.action}</div>
+            </div>` : `<div class="recommend-action">${guide?.action || ''}</div>`;
+          return `
+            <div class="recommend-item ${st}">
+              <div class="recommend-item-header">
+                <span class="cat">${catNames[k]}</span>
+                <span class="score ${st}">${score}点${diffText}</span>
+                <span class="badge badge-${st}" style="margin-left:auto">${st === 'alert' ? '⚠️ 要対応' : '注意'}</span>
+              </div>
+              <div class="recommend-eval">${guide?.eval || ''}</div>
+              ${personalizedBlock}
+            </div>`;
+        }).join('');
+      })()}
+    </div>`;
+
+  showScreen('detail');
+}
+
+function backToAdmin() {
+  showScreen('admin');
+  if (lastTab === 'employees') {
+    switchTabById('employees');
+  }
+}
+
+// ===== タブ切替 =====
+const TAB_NAMES = ['dashboard', 'employees', 'idmgmt', 'logic', 'settings', 'actions'];
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  TAB_NAMES.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = (t === name) ? 'block' : 'none';
+  });
+  if (name === 'employees') renderEmployeeList();
+  if (name === 'idmgmt') renderIdList();
+  if (name === 'logic') renderLogicTab();
+  if (name === 'settings') renderSettingsTab();
+  if (name === 'actions') renderActionPlan();
+}
+
+function switchTabById(name) {
+  const btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(b => b.classList.remove('active'));
+  const idx = TAB_NAMES.indexOf(name);
+  if (btns[idx]) btns[idx].classList.add('active');
+  TAB_NAMES.forEach(t => {
+    const el = document.getElementById('tab-' + t);
+    if (el) el.style.display = (t === name) ? 'block' : 'none';
+  });
+}
+
+// ===== ロジック一覧タブ描画 =====
+function renderLogicTab() {
+  // ランク詳細テーブル
+  const rankTable = document.getElementById('rank-detail-table');
+  const tierColors = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
+  const tierClass  = { S:'rank-cell-s', A:'rank-cell-a', B:'rank-cell-b', C:'rank-cell-c' };
+  rankTable.innerHTML = `
+    <thead><tr>
+      <th style="width:60px">ランク</th>
+      <th style="width:130px">キャッチコピー</th>
+      <th>思考力</th><th>実行力</th><th>推奨ロール</th><th>育成方針</th>
+    </tr></thead>
+    <tbody>${Object.entries(rankData).map(([rank, d]) => {
+      const tier = rank[0];
+      return `<tr>
+        <td><span class="rank-cell ${tierClass[tier]}" style="min-width:40px;font-size:13px">${rank}</span></td>
+        <td style="font-weight:700;color:#1e293b">${d.copy}</td>
+        <td>${d.thinking}</td>
+        <td>${d.execution}</td>
+        <td style="color:#4f46e5;font-weight:600">${d.role}</td>
+        <td>${d.growth}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+
+  // MBTIグループ
+  const groupGrid = document.getElementById('mbti-group-grid');
+  const groupColorBg = { NT:'#e9d8f5', NF:'#d4f0b0', SJ:'#c0d8f0', SP:'#fde5c0' };
+  const groupColorText = { NT:'#5b21b6', NF:'#2d6a1f', SJ:'#1a3a6e', SP:'#7c3100' };
+  const groupColorBorder = { NT:'#c4a8e0', NF:'#96d468', SJ:'#7ab0d8', SP:'#f5a855' };
+  const chipBg = { NT:'#f0e4fa', NF:'#e2f5c8', SJ:'#d4e8f8', SP:'#fef0d8' };
+  const typesByGroup = {};
+  Object.entries(mbtiData).forEach(([type, d]) => {
+    if (!typesByGroup[d.group]) typesByGroup[d.group] = [];
+    typesByGroup[d.group].push({ type, name: d.name });
+  });
+  groupGrid.innerHTML = Object.entries(mbtiGroupData).map(([grp, gd]) => `
+    <div class="mbti-group-block" style="background:${groupColorBg[grp]};border-color:${groupColorBorder[grp]}">
+      <div class="mg-title" style="color:${groupColorText[grp]}">${grp} — ${gd.name}</div>
+      <div class="mg-style" style="color:${groupColorText[grp]};opacity:0.75">${gd.style}</div>
+      <div class="mbti-type-chips">
+        ${(typesByGroup[grp]||[]).map(t => `
+          <span class="mbti-type-chip" style="background:${chipBg[grp]};color:${groupColorText[grp]}">${t.type} <span style="font-weight:500;opacity:0.8">${t.name}</span></span>
+        `).join('')}
+      </div>
+    </div>`).join('');
+
+  // ペルソナテーブル（256パターン、フィルター付き）
+  renderPersonaTable();
+
+  // カテゴリ別目標スコアエディター
+  renderTargetEditor();
+
+  // カテゴリ別閾値エディター
+  renderThresholdEditor();
+}
+
+// ===== サーベイ =====
+const questions = [
+  { page:0, items:[
+    { id:'q1', category:'職務', text:'自社を働きがいのある会社として推薦出来ますか？', type:'rating' },
+    { id:'q2', category:'職務', text:'今の自分の職務内容にやりがいを感じていますか？', type:'rating' },
+  ]},
+  { page:1, items:[
+    { id:'q3', category:'職務', text:'今の職務を遂行するにあたって必要な裁量は与えられていますか？', type:'rating' },
+    { id:'q4', category:'職務', text:'活き活きと仕事に取り組めていると感じていますか？', type:'rating' },
+  ]},
+  { page:2, items:[
+    { id:'q5', category:'自己成長', text:'仕事を通じて自分の能力やスキルを高められていますか？', type:'rating' },
+    { id:'q6', category:'自己成長', text:'最近仕事をする中で、達成感を得ていますか？', type:'rating' },
+    { id:'q7', category:'自己成長', text:'仕事をする中で、自身の能力を活用できていると感じますか？', type:'rating' },
+  ]},
+  { page:3, items:[
+    { id:'q8', category:'健康', text:'最近些細なことでイライラするときがありますか？', type:'rating' },
+    { id:'q9', category:'健康', text:'最近頭が重いと感じるときがありますか？', type:'rating' },
+    { id:'q10', category:'健康', text:'最近、自身の仕事量についてどう感じていますか？', type:'rating' },
+  ]},
+  { page:4, items:[
+    { id:'q11', category:'支援', text:'上司は自分が職務を遂行する上で、必要な手助けをしてくれていると感じますか？', type:'rating' },
+    { id:'q12', category:'支援', text:'上司は自分の成長の手助けをしてくれていますか？', type:'rating' },
+    { id:'q13', category:'支援', text:'上司は部署やチームの使命や目標を分かりやすく伝えてくれていますか？', type:'rating' },
+  ]},
+  { page:5, items:[
+    { id:'q14', category:'支援', text:'自分が困っている時、仕事仲間は助けてくれると思いますか？', type:'rating' },
+    { id:'q15', category:'支援', text:'上司は誠実な態度で対応してくれていますか？', type:'rating' },
+    { id:'q16', category:'支援', text:'上司と仕事以外の事でも、気軽に話すことができますか？', type:'rating' },
+  ]},
+  { page:6, items:[
+    { id:'q17', category:'人間関係', text:'仕事仲間とは仕事をする上で良好な関係ですか？', type:'rating' },
+    { id:'q18', category:'人間関係', text:'仕事仲間と仕事以外の事でも、気軽に話すことができますか？', type:'rating' },
+    { id:'q19', category:'人間関係', text:'最近仕事仲間から仕事の成果を認められたり、褒められたりしましたか？', type:'rating' },
+  ]},
+  { page:7, items:[
+    { id:'q20', category:'承認', text:'自分の意見や提案に対して、仕事仲間がちゃんと耳を傾けてくれていると感じますか？', type:'rating' },
+    { id:'q21', category:'承認', text:'あなたの成果や貢献に見合った評価がされていますか？', type:'rating' },
+  ]},
+  { page:8, items:[
+    { id:'q22', category:'理念戦略', text:'あなたは会社のミッション・ビジョンに共感していますか？', type:'rating' },
+    { id:'q23', category:'理念戦略', text:'会社の事業戦略や方針に納得していますか？', type:'rating' },
+    { id:'q24', category:'理念戦略', text:'経営陣は、誠実で論理的に仕事を行っていると思いますか？', type:'rating' },
+    { id:'q25', category:'理念戦略', text:'自分が携わっている事業やサービスを親しい友人に進めることができますか？', type:'rating' },
+  ]},
+  { page:9, items:[
+    { id:'q26', category:'組織風土', text:'社内で誰かが称賛されたとき、それが適切であると感じていますか？', type:'rating' },
+    { id:'q27', category:'組織風土', text:'（会社・事業の）目標を遂行する上で、他の部署の人達は協力的だと感じますか？', type:'rating' },
+    { id:'q28', category:'組織風土', text:'自分が意欲的であれば、会社はチャンスを与えてくれていると感じますか？', type:'rating' },
+    { id:'q29', category:'組織風土', text:'この会社は例え失敗したとしても、挑戦したことを讃えられる会社だと思いますか？', type:'rating' },
+  ]},
+  { page:10, items:[
+    { id:'q30', category:'環境', text:'あなたにとって職場の環境（場所・オフィス等）は働きやすいですか？', type:'rating' },
+    { id:'q31', category:'環境', text:'この会社では、必要に応じて仕事と生活のバランスが取れると感じていますか？', type:'rating' },
+    { id:'q32', category:'環境', text:'この会社では、働きに見合った報酬が支払われていますか？', type:'rating' },
+    { id:'q33', category:'環境', text:'仕事をする中で、自分の強みを活かせていると感じていますか？', type:'rating' },
+  ]},
+  { page:11, items:[
+    { id:'q34', category:'自由記述', text:'職場環境や業務について、感じていることを自由に教えてください（任意）', type:'text' },
+  ]},
+];
+
+let currentPage = 0, answers = {};
+let currentEmpId = '';
+
+function setId(id) { document.getElementById('login-id').value = id; }
+function setLogin(id, pw) { document.getElementById('login-id').value = id; document.getElementById('login-pw').value = pw; }
+
+function doLogin() {
+  const id = document.getElementById('login-id').value.trim().toUpperCase();
+  const pw = document.getElementById('login-pw').value;
+  const errEl = document.getElementById('login-error');
+  if (!id) { errEl.textContent = 'IDを入力してください'; return; }
+  if (!pw) { errEl.textContent = 'パスワードを入力してください'; return; }
+
+  // 管理者ログイン
+  if (id === 'ADMIN') {
+    const accounts = getAdminAccounts();
+    const account = accounts.find(a => a.password === pw);
+    if (!account) { errEl.textContent = 'パスワードが正しくありません'; return; }
+    currentAdminName = account.name;
+    document.querySelectorAll('#screen-admin .user-info span, #screen-detail .user-info span').forEach(el => {
+      el.textContent = account.name;
+    });
+    showScreen('admin');
+    renderDashboard();
+    return;
+  }
+
+  // 社員ログイン
+  if (!employees[id]) { errEl.textContent = 'IDが見つかりません。もう一度確認してください。'; return; }
+  if (empPasswords[id] !== pw) { errEl.textContent = 'パスワードが正しくありません'; return; }
+
+  // 回答期間チェック
+  const today = new Date();
+  const start = new Date(surveyPeriod.start);
+  const end = new Date(surveyPeriod.end);
+  end.setHours(23,59,59);
+  if (today < start || today > end) {
+    const sm = surveyPeriod.start.slice(5).replace('-', '/').replace(/^0/, '');
+    const em = surveyPeriod.end.slice(5).replace('-', '/').replace(/^0/, '');
+    errEl.textContent = `現在は回答期間外です（${sm}〜${em}）`;
+    return;
+  }
+  if (hasSubmittedThisMonth(id)) {
+    document.getElementById('already-name').textContent = employees[id].name;
+    showScreen('already');
+    return;
+  }
+  currentEmpId = id;
+  const draft = localStorage.getItem('es_draft_' + id);
+  answers = {};
+  if (draft) { try { answers = JSON.parse(draft); showToast('⏳ 前回の途中保存データを復元しました'); } catch(e) {} }
+  showScreen('survey');
+  document.getElementById('survey-user-name').textContent = `${employees[id].name}（${employees[id].dept}）`;
+  currentPage = 0;
+  renderPage();
+}
+
+document.getElementById('login-id').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pw').focus(); });
+document.getElementById('login-pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+function renderPage() {
+  const container = document.getElementById('questions-container');
+  const pageData = questions[currentPage];
+  container.innerHTML = '';
+  pageData.items.forEach(q => {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    if (q.type === 'rating') {
+      const saved = answers[q.id] || null;
+      block.innerHTML = `
+        <div class="question">${getQuestionText(q.id, q.text)}</div>
+        <div class="rating-scale">
+          ${[1,2,3,4,5,6,7].map(n => `<button class="rating-btn ${saved===n?'selected':''}" data-val="${n}" onclick="selectRating('${q.id}',${n},this)">${n}</button>`).join('')}
+        </div>
+        <div class="rating-labels"><span>全くそう思わない</span><span>強くそう思う</span></div>`;
+    } else {
+      block.innerHTML = `
+        <div class="question">${q.text}</div>
+        <div class="free-text"><textarea id="ta-${q.id}" placeholder="自由にご記入ください..."
+          onchange="answers['${q.id}']=this.value">${answers[q.id]||''}</textarea></div>`;
+    }
+    container.appendChild(block);
+  });
+  document.getElementById('progress-fill').style.width = (currentPage / questions.length * 100) + '%';
+  const totalRatingQs = questions.reduce((s,p) => s + p.items.filter(q => q.type === 'rating').length, 0);
+  const answeredSoFar = questions.slice(0, currentPage + 1).reduce((s,p) => s + p.items.filter(q => q.type === 'rating').length, 0);
+  document.getElementById('progress-text').textContent = `Q${answeredSoFar} / ${totalRatingQs}問`;
+  document.getElementById('btn-back').style.display = currentPage > 0 ? 'inline-block' : 'none';
+  document.getElementById('btn-next').textContent = currentPage === questions.length - 1 ? '送信する ✓' : '次へ →';
+}
+
+function selectRating(id, val, btn) {
+  answers[id] = val;
+  btn.closest('.rating-scale').querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  if (currentEmpId) localStorage.setItem('es_draft_' + currentEmpId, JSON.stringify(answers));
+}
+
+function nextPage() {
+  const unanswered = questions[currentPage].items.filter(q => q.type === 'rating' && !answers[q.id]);
+  if (unanswered.length > 0) { alert('すべての質問に回答してください。'); return; }
+  if (currentPage === questions.length - 1) {
+    if (!confirm('回答を送信します。月1回のみ回答可能です。よろしいですか？')) return;
+    const currentMonth = months[months.length - 1];
+    localStorage.setItem(`es_${currentEmpId}_${currentMonth}`, JSON.stringify(answers));
+    localStorage.removeItem('es_draft_' + currentEmpId);
+    rebuildEmpData();
+    // 提出後スコア表示
+    const doneScores = calcScoresFromAnswers(answers);
+    const doneHtml = catKeys.map(k => {
+      const v = doneScores[k] || 0;
+      const color = v >= 70 ? '#22c55e' : v >= 60 ? '#f59e0b' : '#ef4444';
+      return `<div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+        <div style="width:72px;font-size:11px;font-weight:600;color:#64748b;text-align:right">${catNames[k]}</div>
+        <div style="flex:1;background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden">
+          <div style="height:100%;width:${v}%;background:${color};border-radius:4px"></div>
+        </div>
+        <div style="font-size:13px;font-weight:800;width:36px;color:${color}">${v}</div>
+      </div>`;
+    }).join('');
+    const doneEl = document.getElementById('done-scores');
+    if (doneEl) doneEl.innerHTML = '<div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px">📊 今月のあなたのスコア</div>' + doneHtml;
+    showScreen('done');
+  }
+  else { currentPage++; renderPage(); window.scrollTo(0,0); }
+}
+
+function prevPage() { currentPage--; renderPage(); window.scrollTo(0,0); }
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+}
+
+function goToLogin() {
+  document.getElementById('login-id').value = '';
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-error').textContent = '';
+  showScreen('login');
+}
+
+// ===== プロフィール管理（IQ・戦闘力）=====
+function getProfile(empId) {
+  const saved = localStorage.getItem(`es_profile_${empId}`);
+  const defaults = employees[empId] || {};
+  if (saved) { try { return { ...defaults, ...JSON.parse(saved) }; } catch(e) {} }
+  return defaults;
+}
+
+function saveProfile(empId) {
+  const iq = parseInt(document.getElementById(`profile-iq-${empId}`).value) || 0;
+  const bp = parseInt(document.getElementById(`profile-bp-${empId}`).value) || 0;
+  const mbti = document.getElementById(`profile-mbti-${empId}`).value;
+  localStorage.setItem(`es_profile_${empId}`, JSON.stringify({ iq, battlePower: bp, mbti }));
+  employees[empId].iq = iq;
+  employees[empId].battlePower = bp;
+  employees[empId].mbti = mbti;
+  document.getElementById(`pdiq-${empId}`).textContent = iq.toLocaleString();
+  document.getElementById(`pdbp-${empId}`).textContent = bp.toLocaleString();
+  const mbtiEl = document.getElementById(`pmbti-${empId}`);
+  if (mbtiEl) {
+    const m = mbtiData[mbti];
+    const group = m ? m.group.toLowerCase() : '';
+    mbtiEl.innerHTML = mbti && m ? `<span class="mbti-badge mbti-${group}">${mbti} / ${m.name}</span>` : '<span style="color:#94a3b8">未設定</span>';
+  }
+  // ランク再計算
+  const rank = calcRank(iq, bp);
+  const rankEl = document.getElementById(`rank-display-${empId}`);
+  if (rankEl) rankEl.innerHTML = rank ? renderRankBlock(rank, empId) : '<div style="color:#94a3b8;font-size:13px">IQと戦闘力を入力するとランクが算出されます</div>';
+  showToast('✅ プロフィールを保存しました');
+}
+
+function renderRankBlock(rank, empId) {
+  const r = rankData[rank];
+  const tier = rank[0];
+  const profile = getProfile(empId);
+  const mbtiType = profile.mbti;
+  const mbti = mbtiType ? mbtiData[mbtiType] : null;
+  const group = mbti ? mbti.group : null;
+
+  let personaHtml = '';
+  if (mbti && mbtiType) {
+    const insight = getPersonaInsight(rank, mbtiType);
+    const gData = mbtiGroupData[group];
+    if (insight) {
+      personaHtml = `
+        <div style="margin-top:18px;padding-top:18px;border-top:1px solid #f1f5f9">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <span style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px">🔬 MBTI × ランク 統合分析</span>
+            <span class="mbti-badge mbti-${group.toLowerCase()}">${mbtiType} / ${mbti.name}</span>
+            <span style="font-size:11px;color:#94a3b8">${gData.name}</span>
+          </div>
+          <div class="persona-card">
+            <div class="persona-title">「${insight.persona}」</div>
+            <div class="persona-desc">${insight.desc}</div>
+            <div class="persona-watch">⚠️ 注意点：${insight.watch}</div>
+          </div>
+          <div class="mbti-detail-grid">
+            <div class="mbti-detail-item"><div class="mdi-label">💪 強み</div><div class="mdi-text">${mbti.strength}</div></div>
+            <div class="mbti-detail-item"><div class="mdi-label">🔥 モチベーション源</div><div class="mdi-text">${mbti.motivation}</div></div>
+            <div class="mbti-detail-item"><div class="mdi-label">👁 盲点</div><div class="mdi-text">${mbti.blindspot}</div></div>
+          </div>
+        </div>`;
+    }
+  }
+
+  return `
+    <div class="rank-header">
+      <div class="rank-badge-lg rank-${tier.toLowerCase()}">${rank}</div>
+      <div>
+        <div class="rank-copy">${r.copy}</div>
+        <div class="rank-label">資質ランク ${rank} ／ IQ ${profile.iq || '―'} × 戦闘力 ${(profile.battlePower || 0).toLocaleString()}</div>
+      </div>
+    </div>
+    <div class="rank-info-grid">
+      <div class="rank-info-item"><div class="ri-label">🧠 思考資質</div><div class="ri-text">${r.thinking}</div></div>
+      <div class="rank-info-item"><div class="ri-label">⚡ 実行資質</div><div class="ri-text">${r.execution}</div></div>
+      <div class="rank-info-item full"><div class="ri-label">🎯 期待役割</div><div class="ri-text">${r.role}</div></div>
+      <div class="rank-info-item full growth"><div class="ri-label">🌱 育成ポイント</div><div class="ri-text">${r.growth}</div></div>
+    </div>
+    ${personaHtml}`;
+}
+
+// ===== カテゴリ閾値エディター =====
+function renderThresholdEditor() {
+  const el = document.getElementById('threshold-editor');
+  if (!el) return;
+  const catLabelMap = {
+    やりがい:'やりがい（職務）', 成長:'成長（キャリア）', 健康:'健康（ウェルビーイング）',
+    上司:'上司（支援）', チーム:'チーム（人間関係）', 承認:'承認', 信頼:'信頼（理念戦略）',
+    組織:'組織（風土）', 業務:'業務（環境）',
+  };
+  el.innerHTML = `
+    <table class="threshold-table">
+      <thead><tr>
+        <th>カテゴリ</th>
+        <th>危険（赤）閾値<br><span style="font-size:10px;font-weight:500;color:#94a3b8">スコアがこれ未満</span></th>
+        <th>注意（黄）閾値<br><span style="font-size:10px;font-weight:500;color:#94a3b8">スコアがこれ未満</span></th>
+        <th>現在の状態例</th>
+      </tr></thead>
+      <tbody>
+        ${catKeys.map(k => {
+          const th = categoryThresholds[k] || defaultCategoryThresholds[k];
+          const def = defaultCategoryThresholds[k];
+          const alertChanged = th.alert !== def.alert ? ' style="border-color:#6366f1"' : '';
+          const warnChanged  = th.warn  !== def.warn  ? ' style="border-color:#6366f1"' : '';
+          return `<tr>
+            <td style="font-weight:700;color:#334155">${catLabelMap[k] || k}</td>
+            <td><input class="threshold-input" type="number" min="0" max="100" id="th-alert-${k}" value="${th.alert}"${alertChanged}></td>
+            <td><input class="threshold-input" type="number" min="0" max="100" id="th-warn-${k}"  value="${th.warn}"${warnChanged}></td>
+            <td>
+              <span class="th-badge-alert">危険 &lt;${th.alert}</span>
+              <span style="margin:0 4px;color:#94a3b8">～</span>
+              <span class="th-badge-warn">注意 &lt;${th.warn}</span>
+              <span style="margin:0 4px;color:#94a3b8">～</span>
+              <span class="th-badge-ok">健常 ${th.warn}+</span>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+function applyThresholds() {
+  catKeys.forEach(k => {
+    const alertEl = document.getElementById(`th-alert-${k}`);
+    const warnEl  = document.getElementById(`th-warn-${k}`);
+    if (!alertEl || !warnEl) return;
+    const alertVal = parseInt(alertEl.value, 10);
+    const warnVal  = parseInt(warnEl.value, 10);
+    if (isNaN(alertVal) || isNaN(warnVal) || alertVal < 0 || warnVal > 100) return;
+    categoryThresholds[k] = { alert: alertVal, warn: warnVal };
+  });
+  saveThresholds();
+  renderThresholdEditor();
+  const msg = document.getElementById('threshold-save-msg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+}
+
+function resetThresholds() {
+  if (!confirm('閾値をデフォルト値にリセットしますか？')) return;
+  categoryThresholds = { ...defaultCategoryThresholds };
+  localStorage.removeItem('es_cat_thresholds');
+  renderThresholdEditor();
+  const msg = document.getElementById('threshold-save-msg');
+  if (msg) { msg.textContent = '↩️ リセットしました'; msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; msg.textContent = '✅ 保存しました'; }, 2500); }
+}
+
+// ===== ペルソナテーブル（フィルター付き 256パターン）=====
+function renderPersonaTable() {
+  const rankFilter  = (document.getElementById('filter-rank')  || {}).value || '';
+  const mbtiFilter  = (document.getElementById('filter-mbti')  || {}).value || '';
+  const rankOrder   = ['S1','S2','S3','S4','A1','A2','A3','A4','B1','B2','B3','B4','C1','C2','C3','C4'];
+  const mbtiOrder   = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
+  const tierGrad    = { S:'#7c3aed,#4f46e5', A:'#1d4ed8,#0284c7', B:'#15803d,#059669', C:'#b45309,#dc2626' };
+  const groupText   = { NT:'#7c3aed', NF:'#2563eb', SJ:'#16a34a', SP:'#d97706' };
+
+  const ranks  = rankFilter  ? [rankFilter]  : rankOrder;
+  const mbtis  = mbtiFilter  ? [mbtiFilter]  : mbtiOrder;
+  const rows   = ranks.flatMap(rank => mbtis.map(mbtiType => {
+    const insight = getPersonaInsight(rank, mbtiType) || {};
+    const r   = rankData[rank] || {};
+    const md  = mbtiData[mbtiType] || {};
+    const grp = md.group || '';
+    const tier = rank[0];
+    return `<tr>
+      <td>
+        <span style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,${tierGrad[tier]});color:white;font-weight:900;font-size:14px">${rank}</span>
+        <div style="font-size:10px;color:#94a3b8;margin-top:3px;font-weight:600">${r.copy||''}</div>
+      </td>
+      <td>
+        <span class="mbti-badge mbti-${grp.toLowerCase()}">${mbtiType}</span>
+        <div style="font-size:11px;color:#94a3b8;margin-top:3px">${md.name||''}</div>
+      </td>
+      <td><div class="pm-persona">${insight.persona||'—'}</div></td>
+      <td><div class="pm-desc">${insight.desc||'—'}</div></td>
+      <td><div class="pm-watch">${insight.watch||'—'}</div></td>
+    </tr>`;
+  }));
+
+  const total = rows.length;
+  const countEl = document.getElementById('persona-count-label');
+  if (countEl) countEl.textContent = `${total}件表示`;
+
+  const table = document.getElementById('persona-matrix-table');
+  if (!table) return;
+  table.innerHTML = `
+    <thead><tr>
+      <th style="width:80px">ランク</th>
+      <th style="width:90px">MBTIタイプ</th>
+      <th style="width:150px">ペルソナ</th>
+      <th>説明</th>
+      <th style="width:220px">⚠️ 注意点</th>
+    </tr></thead>
+    <tbody>${rows.join('')}</tbody>`;
+}
+
+// ===== 社員パスワード管理 =====
+let empPasswords = (() => {
+  try { return JSON.parse(localStorage.getItem('es_emp_passwords') || '{}'); } catch(e) { return {}; }
+})();
+
+function genPassword() {
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function initEmpPasswords() {
+  let changed = false;
+  Object.keys(employees).forEach(id => {
+    if (!empPasswords[id]) { empPasswords[id] = genPassword(); changed = true; }
+  });
+  if (changed) localStorage.setItem('es_emp_passwords', JSON.stringify(empPasswords));
+}
+
+function renderDemoIds() {
+  const el = document.getElementById('demo-id-list');
+  if (!el) return;
+  const demoIds = ['EMP001', 'EMP042', 'EMP099'];
+  el.innerHTML = demoIds.map(id => {
+    const pw = empPasswords[id] || '------';
+    return `<code onclick="setLogin('${id}','${pw}')" style="font-size:12px;letter-spacing:0.5px">${id} / ${pw}</code>`;
+  }).join('');
+}
+
+// ===== ID管理 =====
+let lastIssuedId = '';
+let lastIssuedPw = '';
+
+function nextEmpId() {
+  const nums = Object.keys(employees)
+    .filter(k => /^EMP\d+$/.test(k))
+    .map(k => parseInt(k.replace('EMP', '')));
+  return 'EMP' + String((nums.length > 0 ? Math.max(...nums) : 0) + 1).padStart(3, '0');
+}
+
+function issueNewId() {
+  const name = document.getElementById('new-emp-name').value.trim();
+  const dept = document.getElementById('new-emp-dept').value.trim();
+  if (!name) { showToast('⚠️ 氏名を入力してください'); return; }
+  if (!dept) { showToast('⚠️ 所属部署を入力してください'); return; }
+  const iq         = parseInt(document.getElementById('new-emp-iq').value) || null;
+  const battlePower = parseInt(document.getElementById('new-emp-bp').value) || null;
+  const mbti       = document.getElementById('new-emp-mbti').value || null;
+  const newId = nextEmpId();
+  const now = new Date();
+  const issuedAt = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+  employees[newId] = { name, dept, issuedAt, isNew: true, iq: iq||0, battlePower: battlePower||0, mbti: mbti||'' };
+  // プロフィールをlocalStorageに即時保存
+  if (iq || battlePower || mbti) {
+    const profile = {};
+    if (iq)          profile.iq = iq;
+    if (battlePower) profile.battlePower = battlePower;
+    if (mbti)        profile.mbti = mbti;
+    localStorage.setItem(`es_profile_${newId}`, JSON.stringify(profile));
+  }
+  // パスワード生成・保存
+  const newPw = genPassword();
+  empPasswords[newId] = newPw;
+  localStorage.setItem('es_emp_passwords', JSON.stringify(empPasswords));
+
+  lastIssuedId = newId;
+  lastIssuedPw = newPw;
+  const rank = calcRank(iq, battlePower);
+  const result = document.getElementById('issued-result');
+  result.style.display = 'block';
+  result.style.animation = 'none';
+  result.offsetHeight;
+  result.style.animation = '';
+  document.getElementById('issued-id-value').textContent = newId;
+  const subParts = [`${name}（${dept}）`];
+  if (rank) subParts.push(`ランク ${rank}`);
+  if (mbti) subParts.push(mbti);
+  document.getElementById('issued-name-value').textContent = subParts.join(' ／ ');
+  document.getElementById('issued-pw-value').textContent = `PW: ${newPw}`;
+  document.getElementById('new-emp-name').value = '';
+  document.getElementById('new-emp-dept').value = '';
+  document.getElementById('new-emp-iq').value = '';
+  document.getElementById('new-emp-bp').value = '';
+  document.getElementById('new-emp-mbti').value = '';
+  rebuildEmpData();
+  renderIdList();
+  showToast('✅ IDを発行しました');
+}
+
+function renderIdList() {
+  const table = document.getElementById('id-table');
+  const rows = Object.entries(employees).map(([id, emp]) => {
+    const profile  = getProfile(id);
+    const rank     = calcRank(profile.iq, profile.battlePower);
+    const mbtiType = profile.mbti;
+    const mbtiInfo = mbtiType ? mbtiData[mbtiType] : null;
+    const issuedAt = emp.issuedAt || '既存';
+    const newMark  = emp.isNew ? '<span class="new-badge">NEW</span>' : '';
+    const rankBadge = rank ? `<span class="rank-badge-sm rank-${rank[0].toLowerCase()}" style="margin-left:4px">${rank}</span>` : '';
+    const mbtiBadge = mbtiInfo ? `<span class="mbti-badge mbti-${mbtiInfo.group.toLowerCase()}" style="font-size:11px;padding:2px 8px">${mbtiType}</span>` : '';
+    const statsRow  = (profile.iq || profile.battlePower) ? `
+      <div style="display:flex;gap:5px;margin-top:4px;flex-wrap:wrap">
+        ${profile.iq ? `<span style="font-size:11px;background:#f5f3ff;color:#7c3aed;padding:2px 7px;border-radius:10px;font-weight:700">🧠 ${profile.iq}</span>` : ''}
+        ${profile.battlePower ? `<span style="font-size:11px;background:#fff7ed;color:#ea580c;padding:2px 7px;border-radius:10px;font-weight:700">⚡ ${profile.battlePower.toLocaleString()}</span>` : ''}
+        ${rank ? `<span style="font-size:11px;background:#f8fafc;color:#64748b;padding:2px 7px;border-radius:10px;font-weight:600">${rankData[rank]?.copy||''}</span>` : ''}
+      </div>` : '';
+    return `<tr>
+      <td><span class="id-badge">${id}</span>${newMark}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-weight:600;color:#1e293b">${emp.name}</span>
+          ${rankBadge}${mbtiBadge}
+        </div>
+        ${statsRow}
+      </td>
+      <td><span class="dept-chip">${emp.dept}</span></td>
+      <td style="font-family:'Inter',monospace;font-size:13px;font-weight:700;color:#6366f1">${empPasswords[id] || '—'}</td>
+      <td style="color:#94a3b8;font-size:13px">${issuedAt}</td>
+      <td>
+        <button class="copy-btn" onclick="copyIdToClipboard('${id}+${empPasswords[id]||''}')">📋 ID/PASS</button>
+        <button onclick="deleteEmployee('${id}')" class="copy-btn" style="color:#dc2626;border-color:#fecaca;margin-left:6px">🗑 削除</button>
+      </td>
+    </tr>`;
+  });
+  table.innerHTML = `<table>
+    <thead><tr><th>社員ID</th><th>氏名 ／ ランク・MBTI</th><th>所属部署</th><th>パスワード</th><th>発行日</th><th>操作</th></tr></thead>
+    <tbody>${rows.join('')}</tbody>
+  </table>`;
+}
+
+function deleteEmployee(id) {
+  const emp = employees[id];
+  if (!confirm(`${id}（${emp?.name||''}）を削除しますか？\nこの操作は取り消せません。`)) return;
+  delete employees[id];
+  delete empData[id];
+  localStorage.removeItem(`es_profile_${id}`);
+  renderIdList();
+  showToast('🗑 削除しました');
+}
+
+function copyIssuedId() { copyIdToClipboard(lastIssuedId); }
+function copyIssuedPw() { copyIdToClipboard(lastIssuedPw); }
+
+function copyIdToClipboard(id) {
+  const fallback = () => {
+    const el = document.createElement('textarea');
+    el.value = id; document.body.appendChild(el);
+    el.select(); document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast(`📋 ${id} をコピーしました`);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(id).then(() => showToast(`📋 ${id} をコピーしました`)).catch(fallback);
+  } else { fallback(); }
+}
+
+function copyUnsubmittedList() {
+  const month = document.getElementById('month-select')?.value || months[months.length-1];
+  const submitted = getSubmittedIds(month);
+  const unsubmitted = Object.entries(employees)
+    .filter(([id]) => !submitted.includes(id))
+    .map(([id, emp]) => `${id} ${emp.name}（${emp.dept}）`)
+    .join('\n');
+  if (!unsubmitted) { showToast('未回答者はいません'); return; }
+  navigator.clipboard?.writeText(unsubmitted).then(() => showToast('📋 コピーしました'))
+    .catch(() => { const el=document.createElement('textarea'); el.value=unsubmitted; document.body.appendChild(el); el.select(); document.execCommand('copy'); el.remove(); showToast('📋 コピーしました'); });
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== 設定タブ =====
+function renderSettingsTab() {
+  const ps = document.getElementById('period-start');
+  const pe = document.getElementById('period-end');
+  if (ps) ps.value = surveyPeriod.start;
+  if (pe) pe.value = surveyPeriod.end;
+  const cur = document.getElementById('period-current');
+  if (cur) cur.textContent = `現在の期間：${surveyPeriod.start} 〜 ${surveyPeriod.end}`;
+  renderQuestionEditor();
+  renderAdminAccountList();
+}
+
+function saveSurveyPeriod() {
+  const start = document.getElementById('period-start').value;
+  const end   = document.getElementById('period-end').value;
+  if (!start || !end) { alert('開始日と終了日を入力してください'); return; }
+  if (start > end) { alert('開始日は終了日より前にしてください'); return; }
+  surveyPeriod = { start, end };
+  localStorage.setItem('es_survey_period', JSON.stringify(surveyPeriod));
+  const cur = document.getElementById('period-current');
+  if (cur) cur.textContent = `現在の期間：${surveyPeriod.start} 〜 ${surveyPeriod.end}`;
+  const msg = document.getElementById('period-save-msg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+}
+
+function importScoreCSV() {
+  const raw = (document.getElementById('import-csv-area').value || '').trim();
+  if (!raw) { alert('CSVを入力してください'); return; }
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const header = lines[0].split(',').map(s => s.trim());
+  const idIdx = header.indexOf('社員ID');
+  const monthIdx = header.indexOf('年月');
+  if (idIdx < 0 || monthIdx < 0) { alert('ヘッダーに「社員ID」「年月」が必要です'); return; }
+  let imported = 0, errors = [];
+  lines.slice(1).forEach((line, i) => {
+    const cols = line.split(',').map(s => s.trim());
+    const empId = cols[idIdx];
+    const month = cols[monthIdx];
+    if (!empId || !month) { errors.push(`行${i+2}: 社員IDまたは年月が空`); return; }
+    if (!empData[empId]) empData[empId] = {};
+    const scores = {};
+    catKeys.forEach(k => {
+      const ci = header.indexOf(k);
+      if (ci >= 0 && cols[ci]) {
+        const v = parseInt(cols[ci], 10);
+        if (!isNaN(v) && v >= 0 && v <= 100) scores[k] = v;
+      }
+    });
+    if (Object.keys(scores).length === 0) { errors.push(`行${i+2}: スコアデータなし`); return; }
+    empData[empId][month] = scores;
+    if (!months.includes(month)) months.push(month);
+    imported++;
+  });
+  const msg = document.getElementById('import-result-msg');
+  if (msg) {
+    if (imported > 0) {
+      msg.style.color = '#16a34a';
+      msg.textContent = `✅ ${imported}件インポート完了${errors.length ? `（${errors.length}件エラー）` : ''}`;
+    } else {
+      msg.style.color = '#dc2626';
+      msg.textContent = `❌ インポート失敗：${errors[0] || '不明なエラー'}`;
+    }
+    msg.style.display = 'inline';
+    setTimeout(() => msg.style.display = 'none', 5000);
+  }
+  if (imported > 0) renderDashboard();
+}
+
+// ===== 部署別詳細モーダル =====
+function showDeptDetail(dept, month) {
+  const prev = months[months.indexOf(month) - 1];
+  const deptEmps = Object.entries(employees).filter(([,e]) => e.dept === dept);
+  const rows = deptEmps.map(([id, emp]) => {
+    const scores = empData[id]?.[month];
+    if (!scores) return null;
+    const total = getTotal(scores);
+    const prevTotal = prev && empData[id]?.[prev] ? getTotal(empData[id][prev]) : null;
+    const diff = prevTotal !== null ? total - prevTotal : null;
+    return { id, name: emp.name, scores, total, diff };
+  }).filter(Boolean).sort((a,b) => b.total - a.total);
+
+  const catCols = catKeys.map(k => `<th style="min-width:52px;font-size:11px;color:#94a3b8;font-weight:700;text-align:center;padding:8px 6px">${catNames[k]}</th>`).join('');
+  const dataRows = rows.map(r => {
+    const catCells = catKeys.map(k => {
+      const s = r.scores[k] || 0;
+      const st = getCatStatus(k, s, null);
+      const bg = st==='alert'?'#fef2f2':st==='warn'?'#fffbeb':'#f0fdf4';
+      const cl = st==='alert'?'#dc2626':st==='warn'?'#d97706':'#16a34a';
+      return `<td style="text-align:center;font-size:13px;font-weight:700;color:${cl};background:${bg};padding:8px 6px">${s}</td>`;
+    }).join('');
+    const diffText = r.diff !== null ? `<span style="color:${r.diff>=0?'#16a34a':'#dc2626'};font-size:12px;margin-left:4px">${r.diff>0?'+':''}${r.diff}</span>` : '';
+    return `<tr style="border-bottom:1px solid #f1f5f9">
+      <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#334155;white-space:nowrap">${r.name}</td>
+      <td style="padding:10px 12px;font-size:15px;font-weight:800;color:#1e293b">${r.total}点${diffText}</td>
+      ${catCells}
+    </tr>`;
+  }).join('');
+
+  document.getElementById('dept-modal-content').innerHTML = `
+    <div style="margin-bottom:20px">
+      <h2 style="font-size:20px;font-weight:800;color:#1e293b">🏢 ${dept} — 詳細分析</h2>
+      <p style="font-size:13px;color:#64748b;margin-top:4px">${month.replace('-', '年').replace(/-(\d+)$/, (_, m) => m + '月')} • ${rows.length}名が回答</p>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:2px solid #e5e7eb">
+          <th style="text-align:left;padding:8px 12px;font-size:12px;color:#94a3b8;font-weight:700">氏名</th>
+          <th style="text-align:left;padding:8px 12px;font-size:12px;color:#94a3b8;font-weight:700">総合</th>
+          ${catCols}
+        </tr></thead>
+        <tbody>${dataRows || '<tr><td colspan="11" style="text-align:center;padding:20px;color:#94a3b8">データがありません</td></tr>'}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('dept-modal-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDeptModal() {
+  document.getElementById('dept-modal-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ===== カテゴリ別目標スコアエディター =====
+function renderTargetEditor() {
+  const el = document.getElementById('target-editor');
+  if (!el) return;
+  const catLabelMap = {
+    やりがい:'やりがい（職務）', 成長:'成長（キャリア）', 健康:'健康（ウェルビーイング）',
+    上司:'上司（支援）', チーム:'チーム（人間関係）', 承認:'承認', 信頼:'信頼（理念戦略）',
+    組織:'組織（風土）', 業務:'業務（環境）',
+  };
+  el.innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      ${catKeys.map(k => {
+        const target = categoryTargets[k] ?? defaultCategoryTargets[k];
+        const changed = target !== defaultCategoryTargets[k];
+        return `<div style="background:#f8fafc;border-radius:10px;padding:14px 16px;min-width:130px;border:1.5px solid ${changed?'#6366f1':'#e2e8f0'}">
+          <div style="font-size:12px;font-weight:700;color:#475569;margin-bottom:8px">${catLabelMap[k]||k}</div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input class="threshold-input" type="number" min="0" max="100" id="tgt-${k}" value="${target}" style="width:58px">
+            <span style="font-size:12px;color:#94a3b8">点</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function applyTargets() {
+  catKeys.forEach(k => {
+    const el = document.getElementById(`tgt-${k}`);
+    if (!el) return;
+    const v = parseInt(el.value, 10);
+    if (!isNaN(v) && v >= 0 && v <= 100) categoryTargets[k] = v;
+  });
+  saveCategoryTargets();
+  renderTargetEditor();
+  const msg = document.getElementById('target-save-msg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+}
+
+function resetTargets() {
+  if (!confirm('目標スコアをデフォルトに戻しますか？')) return;
+  categoryTargets = { ...defaultCategoryTargets };
+  localStorage.removeItem('es_cat_targets');
+  renderTargetEditor();
+  const msg = document.getElementById('target-save-msg');
+  if (msg) { msg.textContent = '↩️ リセットしました'; msg.style.display = 'inline'; setTimeout(() => { msg.style.display = 'none'; msg.textContent = '✅ 保存しました'; }, 2500); }
+}
+
+// ===== 管理者アカウント =====
+let currentAdminName = '人事部 管理者';
+function getAdminAccounts() {
+  try {
+    const saved = localStorage.getItem('es_admin_accounts');
+    return saved ? JSON.parse(saved) : [{ id: 'admin', password: ADMIN_PASSWORD, name: '人事部 管理者', createdAt: '2026-01-01' }];
+  } catch(e) { return [{ id: 'admin', password: ADMIN_PASSWORD, name: '人事部 管理者', createdAt: '2026-01-01' }]; }
+}
+function saveAdminAccounts(accounts) { localStorage.setItem('es_admin_accounts', JSON.stringify(accounts)); }
+
+function renderAdminAccountList() {
+  const el = document.getElementById('admin-account-list');
+  if (!el) return;
+  const accounts = getAdminAccounts();
+  if (accounts.length === 0) { el.innerHTML = '<div style="color:#94a3b8;font-size:13px">アカウントがありません</div>'; return; }
+  el.innerHTML = `<table style="width:100%;border-collapse:collapse">
+    <thead><tr style="border-bottom:2px solid #e5e7eb">
+      <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:700;color:#94a3b8">表示名</th>
+      <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:700;color:#94a3b8">パスワード</th>
+      <th style="text-align:left;padding:8px 12px;font-size:11px;font-weight:700;color:#94a3b8">作成日</th>
+      <th style="padding:8px 12px;font-size:11px;font-weight:700;color:#94a3b8"></th>
+    </tr></thead>
+    <tbody>${accounts.map((a, i) => `
+      <tr style="border-bottom:1px solid #f1f5f9">
+        <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#334155">${a.name}</td>
+        <td style="padding:10px 12px;font-size:13px;font-family:monospace;color:#6366f1">${a.password}</td>
+        <td style="padding:10px 12px;font-size:12px;color:#94a3b8">${a.createdAt || '—'}</td>
+        <td style="padding:10px 12px;text-align:right">${accounts.length > 1 ? `<button onclick="deleteAdminAccount(${i})" style="background:none;border:1px solid #fecaca;color:#dc2626;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer">削除</button>` : ''}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function addAdminAccount() {
+  const name = document.getElementById('new-admin-name')?.value.trim();
+  const pass = document.getElementById('new-admin-pass')?.value.trim();
+  const msg = document.getElementById('admin-add-msg');
+  if (!name || !pass) { if(msg){msg.style.color='#dc2626';msg.textContent='表示名とパスワードを入力してください';msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);} return; }
+  const accounts = getAdminAccounts();
+  accounts.push({ id: 'admin', password: pass, name, createdAt: new Date().toISOString().slice(0,10) });
+  saveAdminAccounts(accounts);
+  document.getElementById('new-admin-name').value = '';
+  document.getElementById('new-admin-pass').value = '';
+  if(msg){msg.style.color='#16a34a';msg.textContent='✅ 追加しました';msg.style.display='inline';setTimeout(()=>msg.style.display='none',2500);}
+  renderAdminAccountList();
+}
+
+function deleteAdminAccount(idx) {
+  if (!confirm('このアカウントを削除しますか？')) return;
+  const accounts = getAdminAccounts();
+  accounts.splice(idx, 1);
+  saveAdminAccounts(accounts);
+  renderAdminAccountList();
+}
+
+// ===== 質問カスタマイズ =====
+let customQuestions = (() => {
+  try { return JSON.parse(localStorage.getItem('es_custom_questions') || '{}'); } catch(e) { return {}; }
+})();
+
+function getQuestionText(qId, defaultText) {
+  return customQuestions[qId] || defaultText;
+}
+
+function renderQuestionEditor() {
+  const el = document.getElementById('question-editor-list');
+  if (!el) return;
+  const allItems = questions.flatMap(p => p.items.filter(i => i.type === 'rating'));
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:10px">` +
+    allItems.map(item => `
+      <div style="display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+        <span style="font-size:12px;font-weight:700;color:#6366f1;background:#eef2ff;padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;margin-top:2px">${item.id.toUpperCase()}</span>
+        <input type="text" id="q-edit-${item.id}" value="${(customQuestions[item.id] || item.text).replace(/"/g,'&quot;')}" style="flex:1;padding:8px 10px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;font-family:inherit;color:#1e293b" placeholder="${item.text}">
+      </div>`).join('') + `</div>`;
+}
+
+function saveCustomQuestions() {
+  const allItems = questions.flatMap(p => p.items.filter(i => i.type === 'rating'));
+  allItems.forEach(item => {
+    const el = document.getElementById(`q-edit-${item.id}`);
+    if (!el) return;
+    const v = el.value.trim();
+    if (v && v !== item.text) customQuestions[item.id] = v;
+    else delete customQuestions[item.id];
+  });
+  localStorage.setItem('es_custom_questions', JSON.stringify(customQuestions));
+  const msg = document.getElementById('q-save-msg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+}
+
+function resetCustomQuestions() {
+  if (!confirm('質問文をすべて初期値に戻しますか？')) return;
+  customQuestions = {};
+  localStorage.removeItem('es_custom_questions');
+  renderQuestionEditor();
+}
+
+// ===== アクションプラン（対象者別）=====
+function getActionPlanData() {
+  try { return JSON.parse(localStorage.getItem('es_action_plan') || '{}'); } catch(e) { return {}; }
+}
+function saveActionPlanItem(empId, month, cat, status, note) {
+  const data = getActionPlanData();
+  data[`${empId}__${month}__${cat}`] = { status, note, updatedAt: new Date().toISOString() };
+  localStorage.setItem('es_action_plan', JSON.stringify(data));
+}
+let selectedActionEmpId = null;
+
+function renderActionPlan() {
+  const month = document.getElementById('action-month-select')?.value;
+  if (!month) return;
+  const prev = months[months.indexOf(month) - 1];
+  const search = (document.getElementById('action-emp-search')?.value || '').toLowerCase();
+  const planData = getActionPlanData();
+
+  // 社員リスト（当月データありのみ）
+  const empList = Object.entries(employees).filter(([id, emp]) => {
+    if (!empData[id]?.[month]) return false;
+    if (search && !emp.name.toLowerCase().includes(search) && !id.toLowerCase().includes(search)) return false;
+    return true;
+  }).map(([id, emp]) => {
+    const scores = empData[id][month];
+    const prevScores = prev ? empData[id]?.[prev] : null;
+    const alertCount = catKeys.filter(k => {
+      const diff = prevScores ? scores[k] - prevScores[k] : null;
+      return getCatStatus(k, scores[k], diff) !== 'ok';
+    }).length;
+    const actionKeys = catKeys.map(k => `${id}__${month}__${k}`);
+    const doneCount = actionKeys.filter(key => planData[key]?.status === 'done').length;
+    const actionCount = actionKeys.filter(key => planData[key]).length;
+    return { id, emp, scores, alertCount, doneCount, actionCount, total: getTotal(scores) };
+  }).sort((a, b) => b.alertCount - a.alertCount || a.total - b.total);
+
+  // 左：社員リスト描画
+  const empListEl = document.getElementById('action-emp-list');
+  if (empListEl) {
+    empListEl.innerHTML = empList.length ? empList.map(({ id, emp, alertCount, doneCount, actionCount, total }) => {
+      const isSelected = id === selectedActionEmpId;
+      const profile = getProfile(id);
+      const rankInfo = calcRank(profile.iq, profile.battlePower) || '';
+      return `<div onclick="selectActionEmployee('${id}')" style="background:${isSelected?'#eef2ff':'white'};border:2px solid ${isSelected?'#6366f1':'#e2e8f0'};border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1e293b">${emp.name}</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px">${emp.dept}${rankInfo ? ' · ' + rankInfo : ''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:14px;font-weight:800;color:#1e293b">${total}点</div>
+            ${alertCount > 0 ? `<div style="font-size:10px;color:#dc2626;font-weight:700">⚠️ ${alertCount}件</div>` : `<div style="font-size:10px;color:#16a34a;font-weight:700">✅</div>`}
+          </div>
+        </div>
+        ${actionCount > 0 ? `<div style="margin-top:8px;background:#f1f5f9;border-radius:4px;height:4px;overflow:hidden"><div style="height:100%;width:${Math.round(doneCount/actionCount*100)}%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:4px"></div></div>` : ''}
+      </div>`;
+    }).join('') : '<div style="color:#94a3b8;font-size:13px;padding:20px;text-align:center">該当者なし</div>';
+  }
+
+  // 右：選択中の社員がいれば詳細を再描画
+  if (selectedActionEmpId && empList.find(e => e.id === selectedActionEmpId)) {
+    renderActionDetail(selectedActionEmpId, month);
+  }
+}
+
+function selectActionEmployee(empId) {
+  selectedActionEmpId = empId;
+  const month = document.getElementById('action-month-select')?.value;
+  renderActionPlan();
+  if (month) renderActionDetail(empId, month);
+}
+
+function renderActionDetail(empId, month) {
+  const prev = months[months.indexOf(month) - 1];
+  const scores = empData[empId]?.[month];
+  const detail = document.getElementById('action-plan-detail');
+  if (!scores || !detail) return;
+  const prevScores = prev ? empData[empId]?.[prev] : null;
+  const emp = employees[empId] || {};
+  const profile = getProfile(empId);
+  const empRank = calcRank(profile.iq, profile.battlePower);
+  const mbtiType = profile.mbti || emp.mbti;
+  const planData = getActionPlanData();
+  const tierColorMap = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
+
+  const items = catKeys.map(k => {
+    const score = scores[k]; if (score == null) return null;
+    const diff = prevScores ? score - prevScores[k] : null;
+    const catStatus = getCatStatus(k, score, diff);
+    const saved = planData[`${empId}__${month}__${k}`] || { status: 'pending', note: '' };
+    return { k, score, diff, catStatus, saved };
+  }).filter(Boolean).sort((a, b) => ({ alert:0, warn:1, ok:2 }[a.catStatus]||3) - ({ alert:0, warn:1, ok:2 }[b.catStatus]||3));
+
+  const counts = { done:0, in_progress:0, pending:0 };
+  items.forEach(i => { counts[i.saved.status || 'pending']++; });
+  const total = items.length;
+
+  detail.innerHTML = `
+    <div style="background:white;border-radius:12px;padding:16px 20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+      <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="font-size:16px;font-weight:800;color:#1e293b">${emp.name || empId}</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:2px">${emp.dept || ''}${empRank ? ` · <span style="color:${tierColorMap[empRank[0]]||'#475569'};font-weight:700">${empRank}</span>` : ''}${mbtiType ? ` · ${mbtiType}` : ''}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto">
+          <span style="background:#f0fdf4;color:#16a34a;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">✅ ${counts.done}</span>
+          <span style="background:#fffbeb;color:#d97706;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">🔄 ${counts.in_progress}</span>
+          <span style="background:#f8fafc;color:#64748b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">⏳ ${counts.pending}</span>
+        </div>
+      </div>
+      <div style="background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden">
+        <div style="height:100%;width:${total?Math.round(counts.done/total*100):0}%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:4px;transition:width 0.5s"></div>
+      </div>
+    </div>
+    ${items.map(({ k, score, diff, catStatus, saved }) => {
+      const guide = getPersonalizedCategoryAction(k, catStatus, empRank, mbtiType);
+      const recText = guide?.action || categoryGuide[k]?.[catStatus]?.action || '現時点では問題ありません。';
+      const isPersonalized = guide?.personalized;
+      const diffText = diff !== null ? `前月比 ${diff >= 0 ? '+' : ''}${diff}点` : '初回';
+      const catStatusLabel = catStatus === 'alert' ? '🔴 要注意' : catStatus === 'warn' ? '🟡 注意' : '🟢 良好';
+      const statusCls = saved.status || 'pending';
+      return `
+      <div class="action-plan-card ${statusCls === 'done' ? 'done' : ''}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+          <div>
+            <span style="font-size:15px;font-weight:800;color:#1e293b">${catNames[k]}</span>
+            <span style="margin-left:10px;font-size:19px;font-weight:900;color:${catStatus==='alert'?'#dc2626':catStatus==='warn'?'#d97706':'#16a34a'}">${score}点</span>
+            <span style="margin-left:8px;font-size:12px;color:#94a3b8">${diffText}</span>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${catStatus==='alert'?'#fef2f2':catStatus==='warn'?'#fffbeb':'#f0fdf4'};color:${catStatus==='alert'?'#dc2626':catStatus==='warn'?'#d97706':'#16a34a'}">${catStatusLabel}</span>
+        </div>
+        <div class="action-rec-label">💡 推奨アクション（参考）${isPersonalized ? '<span style="font-size:10px;background:#eef2ff;color:#6366f1;padding:2px 7px;border-radius:10px;margin-left:6px;font-weight:700">個別カスタマイズ</span>' : ''}</div>
+        <div class="action-rec-box">${recText.replace(/\n/g, '<br>')}</div>
+        <div class="action-actual-label">✏️ 実行内容（自由記入）</div>
+        <textarea class="action-textarea" id="action-note-${empId}-${k}" placeholder="実際に行う対応内容を記入してください...">${saved.note || ''}</textarea>
+        <div class="action-status-row">
+          <select class="status-select ${statusCls}" id="action-status-${empId}-${k}" onchange="this.className='status-select '+this.value">
+            <option value="pending" ${statusCls==='pending'?'selected':''}>⏳ 未対応</option>
+            <option value="in_progress" ${statusCls==='in_progress'?'selected':''}>🔄 対応中</option>
+            <option value="done" ${statusCls==='done'?'selected':''}>✅ 完了</option>
+          </select>
+          <button class="action-save-btn" onclick="saveActionItem('${empId}','${month}','${k}')">保存</button>
+          <span class="action-saved-chip" id="action-saved-${empId}-${k}">✅ 保存済み</span>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+function saveActionItem(empId, month, cat) {
+  const note = document.getElementById(`action-note-${empId}-${cat}`)?.value || '';
+  const status = document.getElementById(`action-status-${empId}-${cat}`)?.value || 'pending';
+  saveActionPlanItem(empId, month, cat, status, note);
+  const chip = document.getElementById(`action-saved-${empId}-${cat}`);
+  if (chip) { chip.style.display = 'inline'; setTimeout(() => chip.style.display = 'none', 2000); }
+  renderActionPlan();
+}
+
+
+initEmpPasswords();
+rebuildEmpData();
+renderDemoIds();
+</script>
+<div id="toast" class="toast"></div>
+<div id="dept-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;overflow-y:auto;padding:40px 20px" onclick="if(event.target===this)closeDeptModal()">
+  <div style="background:white;border-radius:16px;max-width:900px;margin:0 auto;padding:32px;position:relative">
+    <button onclick="closeDeptModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    <div id="dept-modal-content"></div>
+  </div>
+</div>
+</body>
+</html>
