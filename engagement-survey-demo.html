@@ -403,6 +403,105 @@
   .personalized-action-text { font-size: 12px; color: #374151; line-height: 1.8; white-space: pre-line; }
   .personalized-note { font-size: 11px; color: #64748b; background: #f1f5f9; border-radius: 6px; padding: 6px 10px; margin-top: 6px; line-height: 1.6; }
   .generic-action-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+/* ===== RICH UI ENHANCEMENTS ===== */
+
+/* Screen fade+slide in */
+@keyframes screenFadeSlideIn { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+.screen.active { animation: screenFadeSlideIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+#screen-login .card { animation: screenFadeSlideIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* Survey page slide */
+@keyframes surveySlideInRight { from { opacity:0; transform:translateX(60px); } to { opacity:1; transform:translateX(0); } }
+@keyframes surveySlideInLeft  { from { opacity:0; transform:translateX(-60px); } to { opacity:1; transform:translateX(0); } }
+.survey-slide-next { animation: surveySlideInRight 0.32s cubic-bezier(0.4,0,0.2,1); }
+.survey-slide-prev { animation: surveySlideInLeft  0.32s cubic-bezier(0.4,0,0.2,1); }
+
+/* Tab fade */
+@keyframes tabFadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+.tab-fade { animation: tabFadeUp 0.28s cubic-bezier(0.4,0,0.2,1); }
+.tab-btn { transition: all 0.2s; }
+.tab-btn.active { background: linear-gradient(180deg, #f5f3ff, #ede9fe); }
+
+/* Card stagger */
+@keyframes cardFadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+.stat-card { animation: cardFadeUp 0.45s cubic-bezier(0.4,0,0.2,1) both; }
+.stat-card:nth-child(1) { animation-delay:0s; }
+.stat-card:nth-child(2) { animation-delay:0.09s; }
+.stat-card:nth-child(3) { animation-delay:0.18s; }
+.stat-card:nth-child(4) { animation-delay:0.27s; }
+
+/* KPI value pop */
+@keyframes kpiPop { from { opacity:0; transform:scale(0.65) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+.stat-card .value { animation: kpiPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; animation-delay:0.15s; }
+
+/* Score card stagger */
+.score-card { animation: cardFadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+.score-card:nth-child(1){animation-delay:0.08s}.score-card:nth-child(2){animation-delay:0.16s}
+.score-card:nth-child(3){animation-delay:0.24s}.score-card:nth-child(4){animation-delay:0.32s}
+.score-card:nth-child(5){animation-delay:0.40s}.score-card:nth-child(6){animation-delay:0.48s}
+.score-card:nth-child(7){animation-delay:0.56s}.score-card:nth-child(8){animation-delay:0.64s}
+.score-card:nth-child(9){animation-delay:0.72s}
+
+/* Progress bar glow + shimmer */
+.progress-fill { box-shadow: 0 0 12px rgba(99,102,241,0.55), 0 0 5px rgba(168,85,247,0.3); position:relative; overflow:hidden; }
+.progress-fill::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.45) 50%,transparent 100%); background-size:200% 100%; animation:shimmerBar 1.8s infinite; }
+@keyframes shimmerBar { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+
+/* Score bar shimmer */
+.score-bar { position:relative; overflow:hidden; }
+.score-bar::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent); background-size:200% 100%; animation:shimmerBar 2.2s infinite; }
+
+/* Rating button ripple */
+.rating-btn { position:relative; overflow:hidden; }
+.rating-btn::before { content:''; position:absolute; inset:0; border-radius:inherit; background:radial-gradient(circle at center,rgba(255,255,255,0.5) 0%,transparent 70%); opacity:0; transform:scale(0); transition:opacity 0.25s,transform 0.25s; }
+.rating-btn:active::before { opacity:1; transform:scale(2.5); }
+
+/* Alert items stagger */
+.alert-item { animation: cardFadeUp 0.35s ease both; }
+.alert-item:nth-child(1){animation-delay:0.04s}.alert-item:nth-child(2){animation-delay:0.10s}
+.alert-item:nth-child(3){animation-delay:0.16s}.alert-item:nth-child(4){animation-delay:0.22s}
+/* Guide card stagger */
+.guide-card { animation: cardFadeUp 0.4s ease both; }
+.guide-card:nth-child(1){animation-delay:0.05s}.guide-card:nth-child(2){animation-delay:0.13s}
+.guide-card:nth-child(3){animation-delay:0.21s}.guide-card:nth-child(4){animation-delay:0.29s}
+
+/* Confetti */
+.confetti-piece { position:fixed; pointer-events:none; z-index:9999; border-radius:2px; }
+@keyframes confettiFall {
+  0%   { transform:translateY(-30px) rotateZ(0deg) rotateX(0deg); opacity:1; }
+  100% { transform:translateY(105vh) rotateZ(720deg) rotateX(360deg); opacity:0; }
+}
+
+/* SVG chart line draw */
+.smooth-line { stroke-dasharray:2000; stroke-dashoffset:2000; animation:drawLine 1.3s cubic-bezier(0.4,0,0.2,1) forwards; }
+.smooth-line:nth-child(1){animation-delay:0s}.smooth-line:nth-child(2){animation-delay:0.1s}
+.smooth-line:nth-child(3){animation-delay:0.2s}.smooth-line:nth-child(4){animation-delay:0.3s}
+.smooth-line:nth-child(5){animation-delay:0.4s}.smooth-line:nth-child(6){animation-delay:0.5s}
+@keyframes drawLine { to { stroke-dashoffset:0; } }
+
+/* SVG area fill */
+.area-fill { opacity:0; animation:fadeInArea 0.8s ease 0.6s forwards; }
+@keyframes fadeInArea { to { opacity:0.13; } }
+
+/* SVG dot pop */
+.chart-dot { opacity:0; animation:dotPop 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+@keyframes dotPop { to { opacity:1; transform:scale(1); } }
+
+/* Radar chart */
+.radar-wrap { display:flex; justify-content:center; margin:0 0 20px; }
+.radar-polygon { transition: all 0.6s ease; }
+
+/* Done screen */
+#screen-done .done-icon { animation: bounceIn 0.7s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes bounceIn { 0%{transform:scale(0.3) rotate(-15deg);opacity:0} 60%{transform:scale(1.15) rotate(5deg)} 80%{transform:scale(0.95) rotate(-2deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+
+/* Mini bar hover */
+.mini-bar { cursor:default; }
+.mini-bar:hover { filter:brightness(1.2); transform:scaleY(1.15); transform-origin:bottom; }
+
+/* Dept bar hover */
+.dept-bar-card:hover { box-shadow:0 8px 24px rgba(0,0,0,0.14) !important; transform:translateY(-2px); transition:all 0.2s; }
+
 @media (max-width: 640px) {
   #screen-login .card { width: 92vw; padding: 28px 20px; }
   #screen-survey { padding: 16px 12px; }
@@ -526,6 +625,7 @@
     <div class="category-scores" id="category-grid"></div>
     <div class="section-title">📋 評価基準・推奨アクション</div>
     <div id="action-guide-list"></div>
+    <div id="radar-chart-section" style="margin-bottom:32px;background:white;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04)"></div>
     <div class="section-title">🏢 部署別スコア</div>
     <div id="dept-scores-grid" style="margin-bottom:32px"></div>
   </div>
@@ -1563,6 +1663,91 @@ function renderDashboard() {
     }).join('');
   }
 
+  // ===== レーダーチャート =====
+  const radarEl = document.getElementById('radar-chart-section');
+  if (radarEl) {
+    const radarSize = 280, cx = radarSize/2, cy = radarSize/2, R = 110;
+    const keys = catKeys;
+    const n = keys.length;
+    const angleStep = (2 * Math.PI) / n;
+    const startAngle = -Math.PI / 2;
+
+    // グリッドポリゴン
+    const gridLevels = [20, 40, 60, 80, 100];
+    const gridPolygons = gridLevels.map(level => {
+      const pts = keys.map((_, i) => {
+        const a = startAngle + i * angleStep;
+        const r = R * level / 100;
+        return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+      }).join(' ');
+      return `<polygon points="${pts}" fill="none" stroke="#e5e7eb" stroke-width="1"/>`;
+    }).join('');
+
+    // 軸ライン
+    const axisLines = keys.map((_, i) => {
+      const a = startAngle + i * angleStep;
+      return `<line x1="${cx}" y1="${cy}" x2="${cx + R * Math.cos(a)}" y2="${cy + R * Math.sin(a)}" stroke="#e5e7eb" stroke-width="1"/>`;
+    }).join('');
+
+    // データポリゴン
+    const dataPoints = keys.map((k, i) => {
+      const score = cats[k] || 0;
+      const a = startAngle + i * angleStep;
+      const r = R * score / 100;
+      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), score, key: k };
+    });
+    const polygonPts = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
+    const prevDataPoints = prevCats ? keys.map((k, i) => {
+      const score = prevCats[k] || 0;
+      const a = startAngle + i * angleStep;
+      const r = R * score / 100;
+      return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+    }).join(' ') : null;
+
+    // ラベル
+    const labels = keys.map((k, i) => {
+      const a = startAngle + i * angleStep;
+      const lr = R + 22;
+      const lx = cx + lr * Math.cos(a);
+      const ly = cy + lr * Math.sin(a);
+      const anchor = lx < cx - 5 ? 'end' : lx > cx + 5 ? 'start' : 'middle';
+      const score = cats[k] || 0;
+      const col = score < 60 ? '#dc2626' : score < 70 ? '#d97706' : '#16a34a';
+      return `<text x="${lx}" y="${ly}" font-size="10" font-weight="700" fill="${col}" text-anchor="${anchor}" dominant-baseline="middle">${catNames[k]}</text>
+              <text x="${lx}" y="${ly + 13}" font-size="9" fill="#94a3b8" text-anchor="${anchor}">${score}点</text>`;
+    }).join('');
+
+    // 中心スコア
+    const totalScore = Math.round(Object.values(cats).reduce((a,b)=>a+b,0)/catKeys.length);
+    const totalColor = totalScore >= 70 ? '#16a34a' : totalScore >= 60 ? '#d97706' : '#dc2626';
+
+    radarEl.innerHTML = `
+      <div class="section-title">📡 カテゴリ別レーダーチャート</div>
+      <div class="radar-wrap">
+        <svg width="${radarSize+80}" height="${radarSize+60}" viewBox="-40 -30 ${radarSize+80} ${radarSize+60}" style="overflow:visible">
+          ${gridPolygons}
+          ${axisLines}
+          ${prevDataPoints ? `<polygon points="${prevDataPoints}" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>` : ''}
+          <polygon class="radar-polygon" points="${polygonPts}" fill="url(#radarGrad)" stroke="url(#radarStroke)" stroke-width="2.5" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="radarGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#a855f7" stop-opacity="0.15"/>
+            </linearGradient>
+            <linearGradient id="radarStroke" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#a855f7"/>
+            </linearGradient>
+          </defs>
+          ${dataPoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#6366f1" stroke="white" stroke-width="2" opacity="0.9"/>`).join('')}
+          ${labels}
+          <text x="${cx}" y="${cy-8}" font-size="20" font-weight="900" fill="${totalColor}" text-anchor="middle">${totalScore}</text>
+          <text x="${cx}" y="${cy+10}" font-size="9" fill="#94a3b8" text-anchor="middle">総合スコア</text>
+          ${prevDataPoints ? `<text x="${radarSize-10}" y="${radarSize+20}" font-size="9" fill="#94a3b8">── 今月　- - 前月</text>` : ''}
+        </svg>
+      </div>`;
+  }
+
   // 部署別スコア
   const deptScoresGrid = document.getElementById('dept-scores-grid');
   if (deptScoresGrid) {
@@ -1583,7 +1768,7 @@ function renderDashboard() {
       if (avg >= 70) { color1 = '#4ade80'; color2 = '#22c55e'; textColor = '#16a34a'; }
       else if (avg >= 60) { color1 = '#fbbf24'; color2 = '#f59e0b'; textColor = '#d97706'; }
       else { color1 = '#f87171'; color2 = '#ef4444'; textColor = '#dc2626'; }
-      return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:box-shadow 0.2s" onclick="showDeptDetail('${dept}', '${month}')" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+      return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.2s" onclick="showDeptDetail('${dept}', '${month}')">
         <div style="width:100px;font-size:13px;font-weight:700;color:#374151">${dept}</div>
         <div style="flex:1;background:#f1f5f9;border-radius:4px;height:12px;overflow:hidden">
           <div style="height:100%;width:${avg}%;background:linear-gradient(90deg,${color1},${color2});border-radius:4px;transition:width 0.5s"></div>
@@ -1713,7 +1898,29 @@ function showDetail(empId) {
   const chartH = svgH - padT - padB;
   const xStep = chartW / (months.length - 1);
 
-  const colors = ['#4f46e5','#ef4444','#22c55e','#f59e0b','#06b6d4','#ec4899'];
+  const colors = ['#4f46e5','#ef4444','#22c55e','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#f97316','#10b981'];
+
+  function smoothCurve(pts) {
+    if (pts.length < 2) return pts.map((p,i) => i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
+    let d = `M${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i-1], curr = pts[i];
+      const tension = 0.38;
+      const cp1x = prev.x + (curr.x - prev.x) * tension;
+      const cp1y = prev.y;
+      const cp2x = curr.x - (curr.x - prev.x) * tension;
+      const cp2y = curr.y;
+      d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${curr.x},${curr.y}`;
+    }
+    return d;
+  }
+
+  function areaPath(pts, baseY) {
+    if (pts.length < 2) return '';
+    const line = smoothCurve(pts);
+    return `${line} L${pts[pts.length-1].x},${baseY} L${pts[0].x},${baseY} Z`;
+  }
+
   const lines = catKeys.map((k, ci) => {
     const pts = months.map((m, mi) => {
       const v = data[m]?.[k] || null;
@@ -1723,8 +1930,9 @@ function showDetail(empId) {
       return { x, y, v };
     });
     const validPts = pts.filter(Boolean);
-    const path = validPts.map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `L${p.x},${p.y}`)).join(' ');
-    return { key: k, path, pts: validPts, color: colors[ci] };
+    const path = smoothCurve(validPts);
+    const area = areaPath(validPts, padT + chartH);
+    return { key: k, path, area, pts: validPts, color: colors[ci] };
   });
 
   // Y軸グリッド
@@ -1745,8 +1953,10 @@ function showDetail(empId) {
       ${gridLines}
       <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+chartH}" stroke="#e5e7eb" stroke-width="1"/>
       ${xLabels}
-      ${lines.map(l => `<path d="${l.path}" fill="none" stroke="${l.color}" stroke-width="2.5" stroke-linejoin="round"/>`).join('')}
-      ${lines.map(l => l.pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${l.color}"/>`).join('')).join('')}
+      <defs>${lines.map((l,i) => `<linearGradient id="areaGrad${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${l.color}" stop-opacity="0.5"/><stop offset="100%" stop-color="${l.color}" stop-opacity="0"/></linearGradient>`).join('')}</defs>
+      ${lines.map((l,i) => l.area ? `<path d="${l.area}" fill="url(#areaGrad${i})" class="area-fill" style="animation-delay:${0.3+i*0.08}s"/>` : '').join('')}
+      ${lines.map((l,i) => `<path d="${l.path}" fill="none" stroke="${l.color}" stroke-width="2.5" stroke-linejoin="round" class="smooth-line" style="animation-delay:${i*0.1}s"/>`).join('')}
+      ${lines.map(l => l.pts.map((p,pi) => `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="${l.color}" stroke="white" stroke-width="2" class="chart-dot" style="animation-delay:${0.8+pi*0.05}s"/>`).join('')).join('')}
     </svg>
     <div class="chart-legend">${lines.map(l => `
       <div class="legend-item"><div class="legend-dot" style="background:${l.color}"></div>${catNames[l.key]}</div>`).join('')}
@@ -1984,7 +2194,15 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   TAB_NAMES.forEach(t => {
     const el = document.getElementById('tab-' + t);
-    if (el) el.style.display = (t === name) ? 'block' : 'none';
+    if (!el) return;
+    if (t === name) {
+      el.style.display = 'block';
+      el.classList.remove('tab-fade');
+      void el.offsetWidth; // reflow trigger
+      el.classList.add('tab-fade');
+    } else {
+      el.style.display = 'none';
+    }
   });
   if (name === 'employees') renderEmployeeList();
   if (name === 'idmgmt') renderIdList();
@@ -2179,10 +2397,14 @@ function doLogin() {
 document.getElementById('login-id').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pw').focus(); });
 document.getElementById('login-pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
+let _slideDir = 'next';
 function renderPage() {
   const container = document.getElementById('questions-container');
   const pageData = questions[currentPage];
   container.innerHTML = '';
+  container.classList.remove('survey-slide-next', 'survey-slide-prev');
+  void container.offsetWidth;
+  container.classList.add(_slideDir === 'next' ? 'survey-slide-next' : 'survey-slide-prev');
   pageData.items.forEach(q => {
     const block = document.createElement('div');
     block.className = 'question-block';
@@ -2243,14 +2465,38 @@ function nextPage() {
     if (doneEl) doneEl.innerHTML = '<div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px">📊 今月のあなたのスコア</div>' + doneHtml;
     showScreen('done');
   }
-  else { currentPage++; renderPage(); window.scrollTo(0,0); }
+  else { _slideDir = 'next'; currentPage++; renderPage(); window.scrollTo(0,0); }
 }
 
-function prevPage() { currentPage--; renderPage(); window.scrollTo(0,0); }
+function prevPage() { _slideDir = 'prev'; currentPage--; renderPage(); window.scrollTo(0,0); }
+
+function launchConfetti() {
+  const colors = ['#6366f1','#a855f7','#ec4899','#f59e0b','#22c55e','#06b6d4','#ef4444','#8b5cf6','#10b981'];
+  const shapes = ['square','circle'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const size = 6 + Math.random() * 8;
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      el.style.cssText = `
+        left:${Math.random()*100}vw; top:-20px;
+        width:${size}px; height:${size * (0.4 + Math.random()*0.8)}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        border-radius:${shape === 'circle' ? '50%' : '2px'};
+        animation:confettiFall ${1.8 + Math.random()*2}s ease-in forwards;
+        animation-delay:${Math.random()*0.6}s;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 18);
+  }
+}
 
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'done') setTimeout(launchConfetti, 300);
 }
 
 function goToLogin() {
