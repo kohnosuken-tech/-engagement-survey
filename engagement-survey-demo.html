@@ -905,19 +905,19 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
           <div>
             <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">IQティア基準</div>
             <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
-              <div class="threshold-chip"><span class="tc-rank" style="color:#7c3aed">S</span><span class="tc-range">IQ 120以上</span></div>
-              <div class="threshold-chip"><span class="tc-rank" style="color:#2563eb">A</span><span class="tc-range">IQ 105〜119</span></div>
-              <div class="threshold-chip"><span class="tc-rank" style="color:#16a34a">B</span><span class="tc-range">IQ 90〜104</span></div>
-              <div class="threshold-chip"><span class="tc-rank" style="color:#d97706">C</span><span class="tc-range">IQ 89以下</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#7c3aed">S</span><span class="tc-range">IQ 121以上</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#2563eb">A</span><span class="tc-range">IQ 111〜120</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#16a34a">B</span><span class="tc-range">IQ 100〜110</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#d97706">C</span><span class="tc-range">IQ 99以下</span></div>
             </div>
           </div>
           <div>
             <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">戦闘力ティア基準</div>
             <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
-              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">1</span><span class="tc-range">80,000以上</span></div>
-              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">2</span><span class="tc-range">60,000〜79,999</span></div>
-              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">3</span><span class="tc-range">40,000〜59,999</span></div>
-              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">4</span><span class="tc-range">39,999以下</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">1</span><span class="tc-range">89,000以上</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">2</span><span class="tc-range">76,000〜88,999</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">3</span><span class="tc-range">63,000〜75,999</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">4</span><span class="tc-range">62,999以下</span></div>
             </div>
           </div>
         </div>
@@ -925,41 +925,41 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
           <table class="rank-matrix-table">
             <thead>
               <tr>
-                <th style="width:120px">IQ ＼ 戦闘力</th>
-                <th>1<br><span style="font-weight:500;color:#94a3b8">80,000+</span></th>
-                <th>2<br><span style="font-weight:500;color:#94a3b8">60,000+</span></th>
-                <th>3<br><span style="font-weight:500;color:#94a3b8">40,000+</span></th>
-                <th>4<br><span style="font-weight:500;color:#94a3b8">〜39,999</span></th>
+                <th style="width:120px">戦闘力 ↓ ＼ IQ →</th>
+                <th>C<br><span style="font-weight:500;color:#94a3b8">〜99</span></th>
+                <th>B<br><span style="font-weight:500;color:#94a3b8">100-110</span></th>
+                <th>A<br><span style="font-weight:500;color:#94a3b8">111-120</span></th>
+                <th>S<br><span style="font-weight:500;color:#94a3b8">121+</span></th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td class="axis-label">S（120+）</td>
-                <td><span class="rank-cell rank-cell-s">S1</span></td>
-                <td><span class="rank-cell rank-cell-s">S2</span></td>
-                <td><span class="rank-cell rank-cell-s">S3</span></td>
-                <td><span class="rank-cell rank-cell-s">S4</span></td>
-              </tr>
-              <tr>
-                <td class="axis-label">A（105〜119）</td>
-                <td><span class="rank-cell rank-cell-a">A1</span></td>
-                <td><span class="rank-cell rank-cell-a">A2</span></td>
-                <td><span class="rank-cell rank-cell-a">A3</span></td>
-                <td><span class="rank-cell rank-cell-a">A4</span></td>
-              </tr>
-              <tr>
-                <td class="axis-label">B（90〜104）</td>
-                <td><span class="rank-cell rank-cell-b">B1</span></td>
-                <td><span class="rank-cell rank-cell-b">B2</span></td>
-                <td><span class="rank-cell rank-cell-b">B3</span></td>
-                <td><span class="rank-cell rank-cell-b">B4</span></td>
-              </tr>
-              <tr>
-                <td class="axis-label">C（〜89）</td>
+                <td class="axis-label">89,000+</td>
                 <td><span class="rank-cell rank-cell-c">C1</span></td>
+                <td><span class="rank-cell rank-cell-b">B1</span></td>
+                <td><span class="rank-cell rank-cell-a">A1</span></td>
+                <td><span class="rank-cell rank-cell-s">S1</span></td>
+              </tr>
+              <tr>
+                <td class="axis-label">76,000〜</td>
                 <td><span class="rank-cell rank-cell-c">C2</span></td>
+                <td><span class="rank-cell rank-cell-b">B2</span></td>
+                <td><span class="rank-cell rank-cell-a">A2</span></td>
+                <td><span class="rank-cell rank-cell-s">S2</span></td>
+              </tr>
+              <tr>
+                <td class="axis-label">63,000〜</td>
                 <td><span class="rank-cell rank-cell-c">C3</span></td>
+                <td><span class="rank-cell rank-cell-b">B3</span></td>
+                <td><span class="rank-cell rank-cell-a">A3</span></td>
+                <td><span class="rank-cell rank-cell-s">S3</span></td>
+              </tr>
+              <tr>
+                <td class="axis-label">〜62,999</td>
                 <td><span class="rank-cell rank-cell-c">C4</span></td>
+                <td><span class="rank-cell rank-cell-b">B4</span></td>
+                <td><span class="rank-cell rank-cell-a">A4</span></td>
+                <td><span class="rank-cell rank-cell-s">S4</span></td>
               </tr>
             </tbody>
           </table>
@@ -1393,8 +1393,8 @@ const rankTierColor = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
 
 function calcRank(iq, bp) {
   if (!iq || !bp) return null;
-  const iqTier = iq >= 120 ? 'S' : iq >= 105 ? 'A' : iq >= 90 ? 'B' : 'C';
-  const bpTier = bp >= 80000 ? '1' : bp >= 60000 ? '2' : bp >= 40000 ? '3' : '4';
+  const iqTier = iq >= 121 ? 'S' : iq >= 111 ? 'A' : iq >= 100 ? 'B' : 'C';
+  const bpTier = bp >= 89000 ? '1' : bp >= 76000 ? '2' : bp >= 63000 ? '3' : '4';
   return iqTier + bpTier;
 }
 
