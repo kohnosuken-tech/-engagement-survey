@@ -6,6 +6,12 @@
 <title>エンゲージメントサーベイ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="pdf.min.js" onerror=""></script>
+<script>
+// pdf.js worker無効化（file://対応）
+if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+</script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; background: #f1f5f9; color: #1e293b; }
@@ -286,6 +292,85 @@
   .mbti-detail-item .mdi-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
   .mbti-detail-item .mdi-text { font-size: 12px; color: #374151; line-height: 1.5; }
 
+  /* 適性検査アップロード */
+  .kensa-upload-zone { border: 2px dashed #c7d2fe; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: #fafbff; margin-top: 16px; position: relative; }
+  .kensa-upload-zone:hover { border-color: #6366f1; background: #eef2ff; }
+  .kensa-upload-zone.dragging { border-color: #4f46e5; background: #e0e7ff; transform: scale(1.01); }
+  .kensa-upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .kensa-upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .kensa-upload-text { font-size: 13px; color: #6b7280; font-weight: 500; }
+  .kensa-upload-text strong { color: #4f46e5; }
+  .kensa-result-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+  .kensa-result-card h3 { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
+  .kensa-section { margin-bottom: 20px; }
+  .kensa-section-title { font-size: 12px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #eef2ff; }
+  .kensa-scores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+  .kensa-score-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 8px; }
+  .kensa-score-label { font-size: 13px; color: #374151; font-weight: 500; }
+  .kensa-score-value { font-size: 16px; font-weight: 800; min-width: 36px; text-align: right; }
+  .kensa-score-bar { height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 4px; flex: 1; margin-left: 12px; margin-right: 8px; }
+  .kensa-score-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+  .kensa-comment { background: #f8fafc; border-left: 3px solid #6366f1; padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 13px; color: #374151; line-height: 1.75; margin-top: 8px; }
+  .kensa-meta { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .kensa-meta-item { background: #f1f5f9; padding: 6px 14px; border-radius: 20px; font-size: 12px; color: #475569; font-weight: 600; }
+  .kensa-bp-highlight { background: linear-gradient(135deg, #fff7ed, #ffedd5); border: 1px solid #fed7aa; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .kensa-bp-highlight .bp-num { font-size: 28px; font-weight: 800; color: #ea580c; }
+  .kensa-bp-highlight .bp-label { font-size: 12px; color: #9a3412; font-weight: 700; }
+
+  /* ビジネスIQ適性検査 */
+  .scouter-result-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+  .scouter-result-card h3 { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
+  .scouter-iq-highlight { background: linear-gradient(135deg, #f5f3ff, #ede9fe); border: 1px solid #ddd6fe; border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .scouter-iq-highlight .iq-num { font-size: 34px; font-weight: 800; color: #4c1d95; }
+  .scouter-iq-highlight .iq-label { font-size: 12px; color: #6d28d9; font-weight: 700; }
+  .scouter-iq-highlight .iq-rank { font-size: 13px; color: #7c3aed; font-weight: 600; }
+  .scouter-ability-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .scouter-ability-item { padding: 10px 14px; background: #f8fafc; border-radius: 10px; }
+  .scouter-ability-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .scouter-ability-name { font-size: 13px; font-weight: 600; color: #374151; }
+  .scouter-ability-score { font-size: 18px; font-weight: 800; }
+  .scouter-ability-desc { font-size: 11px; color: #6b7280; line-height: 1.4; }
+  .scouter-ability-bar { height: 6px; background: #e5e7eb; border-radius: 3px; margin-top: 6px; }
+  .scouter-ability-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+  .scouter-speed-box { display: flex; gap: 12px; margin-bottom: 16px; }
+  .scouter-speed-item { flex: 1; background: #f8fafc; border-radius: 10px; padding: 10px 14px; text-align: center; }
+  .scouter-speed-item .sp-label { font-size: 11px; color: #6b7280; font-weight: 600; }
+  .scouter-speed-item .sp-value { font-size: 18px; font-weight: 800; color: #1e293b; margin-top: 4px; }
+  .scouter-accuracy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .scouter-accuracy-item { background: #f8fafc; border-radius: 8px; padding: 8px 10px; text-align: center; }
+  .scouter-accuracy-item .sa-label { font-size: 11px; color: #6b7280; font-weight: 500; }
+  .scouter-accuracy-item .sa-value { font-size: 15px; font-weight: 800; margin-top: 2px; }
+  .scouter-job-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .scouter-job-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 8px; }
+  .scouter-job-label { font-size: 12px; color: #374151; font-weight: 500; flex: 1; }
+  .scouter-job-score { font-size: 16px; font-weight: 800; min-width: 28px; text-align: right; }
+  .scouter-comment-block { margin-top: 12px; }
+  .scouter-comment-title { font-size: 12px; font-weight: 700; color: #6366f1; margin-bottom: 6px; }
+  .scouter-comment-text { font-size: 12px; color: #475569; line-height: 1.7; background: #f8fafc; padding: 10px 14px; border-radius: 8px; border-left: 3px solid #a78bfa; }
+
+  /* ビジネスIQ適性検査カード */
+  .biziq-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+  .biziq-card h3 { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
+  .biziq-hero { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .biziq-hero-item { flex: 1; min-width: 130px; border-radius: 14px; padding: 16px 18px; text-align: center; }
+  .biziq-hero-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .biziq-hero-value { font-size: 30px; font-weight: 800; margin-top: 4px; }
+  .biziq-hero-sub { font-size: 11px; margin-top: 4px; }
+  .biziq-section { margin-bottom: 20px; }
+  .biziq-section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #eef2ff; display: flex; align-items: center; gap: 8px; }
+  .biziq-section-desc { font-size: 11px; color: #94a3b8; font-weight: 500; }
+  .biziq-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; background: #f8fafc; border-radius: 8px; margin-bottom: 4px; }
+  .biziq-item-name { font-size: 13px; font-weight: 600; color: #374151; min-width: 100px; }
+  .biziq-item-bar { flex: 1; height: 6px; background: #e5e7eb; border-radius: 3px; position: relative; }
+  .biziq-item-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+  .biziq-item-bar-center { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 2px; background: #cbd5e1; }
+  .biziq-item-score { font-size: 15px; font-weight: 800; min-width: 32px; text-align: right; }
+  .biziq-item-diff { font-size: 11px; font-weight: 700; min-width: 36px; text-align: right; }
+  .biziq-item-desc { font-size: 11px; color: #6b7280; flex: 2; min-width: 140px; }
+  .biziq-item-label { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; min-width: 44px; text-align: center; }
+  .biziq-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 768px) { .biziq-dual { grid-template-columns: 1fr; } }
+
   /* プロフィールカード（IQ・戦闘力） */
   .profile-card { background: white; border-radius: 14px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 24px; }
   .profile-card h3 { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 16px; }
@@ -378,6 +463,24 @@
   .threshold-chip .tc-rank { font-weight: 900; font-size: 14px; }
   .threshold-chip .tc-range { color: #64748b; font-size: 12px; font-weight: 500; }
 
+  /* マスタ詳細テーブル */
+  .master-section { background: white; border-radius: 14px; padding: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 28px; border: 1px solid rgba(0,0,0,0.04); }
+  .master-section h3 { font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 6px; }
+  .master-desc { font-size: 13px; color: #64748b; margin-bottom: 20px; line-height: 1.6; }
+  .master-flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; padding: 16px 20px; background: linear-gradient(135deg,#f8fafc,#f1f5f9); border-radius: 12px; border: 1px solid #e2e8f0; }
+  .master-flow-box { padding: 10px 16px; border-radius: 10px; font-weight: 700; font-size: 13px; text-align: center; min-width: 120px; }
+  .master-flow-arrow { font-size: 20px; color: #94a3b8; flex-shrink: 0; }
+  .master-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
+  .master-table th { background: #f1f5f9; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+  .master-table td { padding: 10px 14px; font-size: 13px; color: #334155; border-top: 1px solid #f1f5f9; vertical-align: top; line-height: 1.5; }
+  .master-table tr:hover td { background: #fafbff; }
+  .master-table .cat-header { background: #f8fafc; font-weight: 700; color: #475569; font-size: 12px; }
+  .master-table .scale-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  .master-tabs { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; margin-bottom: 20px; }
+  .master-tab { padding: 10px 20px; font-size: 13px; font-weight: 700; color: #94a3b8; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .master-tab.active { color: #6366f1; border-bottom-color: #6366f1; }
+  .master-tab:hover { color: #6366f1; }
+
   /* 社員詳細：推奨対応 */
   .recommend-section { background: white; border-radius: 10px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 24px; }
   .recommend-section h3 { font-size: 15px; font-weight: 700; color: #1f2937; margin-bottom: 16px; }
@@ -403,6 +506,105 @@
   .personalized-action-text { font-size: 12px; color: #374151; line-height: 1.8; white-space: pre-line; }
   .personalized-note { font-size: 11px; color: #64748b; background: #f1f5f9; border-radius: 6px; padding: 6px 10px; margin-top: 6px; line-height: 1.6; }
   .generic-action-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+/* ===== RICH UI ENHANCEMENTS ===== */
+
+/* Screen fade+slide in */
+@keyframes screenFadeSlideIn { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+.screen.active { animation: screenFadeSlideIn 0.4s cubic-bezier(0.4,0,0.2,1); }
+#screen-login .card { animation: screenFadeSlideIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+
+/* Survey page slide */
+@keyframes surveySlideInRight { from { opacity:0; transform:translateX(60px); } to { opacity:1; transform:translateX(0); } }
+@keyframes surveySlideInLeft  { from { opacity:0; transform:translateX(-60px); } to { opacity:1; transform:translateX(0); } }
+.survey-slide-next { animation: surveySlideInRight 0.32s cubic-bezier(0.4,0,0.2,1); }
+.survey-slide-prev { animation: surveySlideInLeft  0.32s cubic-bezier(0.4,0,0.2,1); }
+
+/* Tab fade */
+@keyframes tabFadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+.tab-fade { animation: tabFadeUp 0.28s cubic-bezier(0.4,0,0.2,1); }
+.tab-btn { transition: all 0.2s; }
+.tab-btn.active { background: linear-gradient(180deg, #f5f3ff, #ede9fe); }
+
+/* Card stagger */
+@keyframes cardFadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+.stat-card { animation: cardFadeUp 0.45s cubic-bezier(0.4,0,0.2,1) both; }
+.stat-card:nth-child(1) { animation-delay:0s; }
+.stat-card:nth-child(2) { animation-delay:0.09s; }
+.stat-card:nth-child(3) { animation-delay:0.18s; }
+.stat-card:nth-child(4) { animation-delay:0.27s; }
+
+/* KPI value pop */
+@keyframes kpiPop { from { opacity:0; transform:scale(0.65) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+.stat-card .value { animation: kpiPop 0.5s cubic-bezier(0.34,1.56,0.64,1) both; animation-delay:0.15s; }
+
+/* Score card stagger */
+.score-card { animation: cardFadeUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+.score-card:nth-child(1){animation-delay:0.08s}.score-card:nth-child(2){animation-delay:0.16s}
+.score-card:nth-child(3){animation-delay:0.24s}.score-card:nth-child(4){animation-delay:0.32s}
+.score-card:nth-child(5){animation-delay:0.40s}.score-card:nth-child(6){animation-delay:0.48s}
+.score-card:nth-child(7){animation-delay:0.56s}.score-card:nth-child(8){animation-delay:0.64s}
+.score-card:nth-child(9){animation-delay:0.72s}
+
+/* Progress bar glow + shimmer */
+.progress-fill { box-shadow: 0 0 12px rgba(99,102,241,0.55), 0 0 5px rgba(168,85,247,0.3); position:relative; overflow:hidden; }
+.progress-fill::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.45) 50%,transparent 100%); background-size:200% 100%; animation:shimmerBar 1.8s infinite; }
+@keyframes shimmerBar { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+
+/* Score bar shimmer */
+.score-bar { position:relative; overflow:hidden; }
+.score-bar::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent); background-size:200% 100%; animation:shimmerBar 2.2s infinite; }
+
+/* Rating button ripple */
+.rating-btn { position:relative; overflow:hidden; }
+.rating-btn::before { content:''; position:absolute; inset:0; border-radius:inherit; background:radial-gradient(circle at center,rgba(255,255,255,0.5) 0%,transparent 70%); opacity:0; transform:scale(0); transition:opacity 0.25s,transform 0.25s; }
+.rating-btn:active::before { opacity:1; transform:scale(2.5); }
+
+/* Alert items stagger */
+.alert-item { animation: cardFadeUp 0.35s ease both; }
+.alert-item:nth-child(1){animation-delay:0.04s}.alert-item:nth-child(2){animation-delay:0.10s}
+.alert-item:nth-child(3){animation-delay:0.16s}.alert-item:nth-child(4){animation-delay:0.22s}
+/* Guide card stagger */
+.guide-card { animation: cardFadeUp 0.4s ease both; }
+.guide-card:nth-child(1){animation-delay:0.05s}.guide-card:nth-child(2){animation-delay:0.13s}
+.guide-card:nth-child(3){animation-delay:0.21s}.guide-card:nth-child(4){animation-delay:0.29s}
+
+/* Confetti */
+.confetti-piece { position:fixed; pointer-events:none; z-index:9999; border-radius:2px; }
+@keyframes confettiFall {
+  0%   { transform:translateY(-30px) rotateZ(0deg) rotateX(0deg); opacity:1; }
+  100% { transform:translateY(105vh) rotateZ(720deg) rotateX(360deg); opacity:0; }
+}
+
+/* SVG chart line draw */
+.smooth-line { stroke-dasharray:2000; stroke-dashoffset:2000; animation:drawLine 1.3s cubic-bezier(0.4,0,0.2,1) forwards; }
+.smooth-line:nth-child(1){animation-delay:0s}.smooth-line:nth-child(2){animation-delay:0.1s}
+.smooth-line:nth-child(3){animation-delay:0.2s}.smooth-line:nth-child(4){animation-delay:0.3s}
+.smooth-line:nth-child(5){animation-delay:0.4s}.smooth-line:nth-child(6){animation-delay:0.5s}
+@keyframes drawLine { to { stroke-dashoffset:0; } }
+
+/* SVG area fill */
+.area-fill { opacity:0; animation:fadeInArea 0.8s ease 0.6s forwards; }
+@keyframes fadeInArea { to { opacity:0.13; } }
+
+/* SVG dot pop */
+.chart-dot { opacity:0; animation:dotPop 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+@keyframes dotPop { to { opacity:1; transform:scale(1); } }
+
+/* Radar chart */
+.radar-wrap { display:flex; justify-content:center; margin:0 0 20px; }
+.radar-polygon { transition: all 0.6s ease; }
+
+/* Done screen */
+#screen-done .done-icon { animation: bounceIn 0.7s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes bounceIn { 0%{transform:scale(0.3) rotate(-15deg);opacity:0} 60%{transform:scale(1.15) rotate(5deg)} 80%{transform:scale(0.95) rotate(-2deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+
+/* Mini bar hover */
+.mini-bar { cursor:default; }
+.mini-bar:hover { filter:brightness(1.2); transform:scaleY(1.15); transform-origin:bottom; }
+
+/* Dept bar hover */
+.dept-bar-card:hover { box-shadow:0 8px 24px rgba(0,0,0,0.14) !important; transform:translateY(-2px); transition:all 0.2s; }
+
 @media (max-width: 640px) {
   #screen-login .card { width: 92vw; padding: 28px 20px; }
   #screen-survey { padding: 16px 12px; }
@@ -526,23 +728,13 @@
     <div class="category-scores" id="category-grid"></div>
     <div class="section-title">📋 評価基準・推奨アクション</div>
     <div id="action-guide-list"></div>
+    <div id="radar-chart-section" style="margin-bottom:32px;background:white;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04)"></div>
     <div class="section-title">🏢 部署別スコア</div>
     <div id="dept-scores-grid" style="margin-bottom:32px"></div>
   </div>
 
-  <!-- 社員一覧 -->
+  <!-- 社員一覧（マスタ） -->
   <div id="tab-employees" class="admin-body" style="display:none">
-    <div class="month-selector">
-      <label>表示月：</label>
-      <select id="emp-month-select" onchange="renderEmployeeList()">
-        <option value="2025-10">2025年10月</option>
-        <option value="2025-11">2025年11月</option>
-        <option value="2025-12">2025年12月</option>
-        <option value="2026-01">2026年1月</option>
-        <option value="2026-02">2026年2月</option>
-        <option value="2026-03" selected>2026年3月</option>
-      </select>
-    </div>
     <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
       <input type="text" id="emp-search" placeholder="名前・IDで検索..." oninput="renderEmployeeList()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;width:180px;font-family:inherit">
       <select id="emp-dept-filter" onchange="renderEmployeeList()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit">
@@ -556,9 +748,16 @@
         <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
         <option>C1</option><option>C2</option><option>C3</option><option>C4</option>
       </select>
+      <div class="month-selector" style="margin:0">
+        <label>サーベイ月：</label>
+        <select id="emp-month-select" onchange="renderEmployeeList()">
+          <option value="2025-10">10月</option><option value="2025-11">11月</option><option value="2025-12">12月</option>
+          <option value="2026-01">1月</option><option value="2026-02">2月</option><option value="2026-03" selected>3月</option>
+        </select>
+      </div>
       <button onclick="exportEmployeeCSV()" class="btn btn-secondary btn-sm">📥 CSV出力</button>
     </div>
-    <div class="section-title">社員別スコア一覧</div>
+    <div class="section-title">👥 社員マスタ一覧 <span id="emp-count-label" style="font-size:13px;color:#94a3b8;font-weight:500"></span></div>
     <div class="response-table" id="emp-table"></div>
   </div>
 
@@ -630,6 +829,36 @@
     </div>
     <div class="section-title">👥 社員ID一覧</div>
     <div class="id-table-wrap" id="id-table"></div>
+
+    <!-- 適性検査マスタ -->
+    <div class="section-title" style="margin-top:32px">📋 ビジネスIQ適性検査 マスタ管理</div>
+    <p style="font-size:13px;color:#64748b;margin-bottom:16px">社員マスタとしてビジネスIQ適性検査の結果を登録します。IQ・戦闘力・ランクは自動反映されます。</p>
+    <div class="id-issue-card">
+      <div class="form-row" style="margin-bottom:14px;align-items:flex-end">
+        <div class="form-group" style="max-width:200px">
+          <label>対象社員</label>
+          <select id="biziq-target-emp" style="width:100%;padding:11px 14px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;color:#1e293b;font-weight:500;background:white">
+            <option value="">社員を選択...</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('biziq-paste-master').style.display=document.getElementById('biziq-paste-master').style.display==='none'?'block':'none'" style="height:44px">📋 テキスト貼り付けで登録</button>
+        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('biziq-file-master').click()" style="height:44px">📄 PDFアップロード</button>
+        <input type="file" id="biziq-file-master" accept=".pdf" style="display:none" onchange="handleMasterPDF(this)">
+      </div>
+      <div id="biziq-paste-master" style="display:none;margin-top:12px">
+        <p style="font-size:12px;color:#64748b;margin-bottom:8px;line-height:1.6">
+          <strong>手順：</strong>business-iq.co.jp の結果ページ → Ctrl+A（全選択）→ Ctrl+C（コピー）→ 下に貼り付け → 「登録」
+        </p>
+        <textarea id="biziq-textarea-master" rows="6" style="width:100%;padding:12px;border:2px solid #e5e7eb;border-radius:10px;font-size:13px;font-family:inherit;resize:vertical;color:#1e293b" placeholder="ここにビジネスIQ適性検査の結果テキストを貼り付け..."></textarea>
+        <button class="btn btn-primary btn-sm" onclick="handleMasterPaste()" style="margin-top:8px">登録する</button>
+      </div>
+    </div>
+    <div class="id-table-wrap" style="margin-top:16px">
+      <table id="biziq-master-table">
+        <thead><tr><th>社員ID</th><th>氏名</th><th>所属</th><th>16ランク</th><th>IQ</th><th>戦闘力</th><th>信頼</th><th>登録日</th><th></th></tr></thead>
+        <tbody id="biziq-master-tbody"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- ロジック一覧 -->
@@ -639,72 +868,256 @@
       <p style="font-size:13px;color:#64748b;font-weight:500">ランク算出・MBTIペルソナの設計ロジックをまとめたリファレンスです。定期的に見直してブラッシュアップしてください。</p>
     </div>
 
-    <!-- ランク算出ロジック -->
-    <div class="logic-section">
+    <!-- ===== ランク算出マトリクス＋詳細マスタ ===== -->
+    <div class="master-section">
       <h3>🧮 ランク算出マトリクス</h3>
-      <p class="logic-desc">IQスコア（縦軸）× 戦闘力（横軸）の組み合わせで16ランクを算出します。</p>
-      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px">
-        <div>
-          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">IQティア基準</div>
-          <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
-            <div class="threshold-chip"><span class="tc-rank" style="color:#7c3aed">S</span><span class="tc-range">IQ 120以上</span></div>
-            <div class="threshold-chip"><span class="tc-rank" style="color:#2563eb">A</span><span class="tc-range">IQ 105〜119</span></div>
-            <div class="threshold-chip"><span class="tc-rank" style="color:#16a34a">B</span><span class="tc-range">IQ 90〜104</span></div>
-            <div class="threshold-chip"><span class="tc-rank" style="color:#d97706">C</span><span class="tc-range">IQ 89以下</span></div>
-          </div>
+      <p class="master-desc">IQスコア × ビジネス戦闘力の組み合わせで16ランクを算出します。</p>
+
+      <!-- データフロー図 -->
+      <div class="master-flow">
+        <div class="master-flow-box" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);color:#4c1d95;border:1px solid #ddd6fe">
+          📋 ビジネスIQ適性検査<br><span style="font-size:11px;font-weight:500">IQ + 戦闘力 + ランク</span>
         </div>
-        <div>
-          <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">戦闘力ティア基準</div>
-          <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
-            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">1</span><span class="tc-range">7,000以上</span></div>
-            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">2</span><span class="tc-range">6,000〜6,999</span></div>
-            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">3</span><span class="tc-range">5,000〜5,999</span></div>
-            <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">4</span><span class="tc-range">4,999以下</span></div>
-          </div>
+        <div class="master-flow-arrow">＋</div>
+        <div class="master-flow-box" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);color:#9a3412;border:1px solid #fed7aa">
+          📊 適性検査PDF<br><span style="font-size:11px;font-weight:500">行動・意欲・思考特性</span>
+        </div>
+        <div class="master-flow-arrow">→</div>
+        <div class="master-flow-box" style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);color:#3730a3;border:1px solid #c7d2fe">
+          🏆 ランク算出<br><span style="font-size:11px;font-weight:500">S1〜C4（16段階）</span>
+        </div>
+        <div class="master-flow-arrow">×</div>
+        <div class="master-flow-box" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);color:#166534;border:1px solid #bbf7d0">
+          🧬 MBTI<br><span style="font-size:11px;font-weight:500">16タイプ → ペルソナ</span>
         </div>
       </div>
-      <div style="overflow-x:auto">
-        <table class="rank-matrix-table">
-          <thead>
-            <tr>
-              <th style="width:120px">IQ ＼ 戦闘力</th>
-              <th>1<br><span style="font-weight:500;color:#94a3b8">7,000+</span></th>
-              <th>2<br><span style="font-weight:500;color:#94a3b8">6,000+</span></th>
-              <th>3<br><span style="font-weight:500;color:#94a3b8">5,000+</span></th>
-              <th>4<br><span style="font-weight:500;color:#94a3b8">〜4,999</span></th>
-            </tr>
-          </thead>
+
+      <!-- タブ切替 -->
+      <div class="master-tabs">
+        <button class="master-tab active" onclick="switchMasterTab('matrix',this)">ランクマトリクス</button>
+        <button class="master-tab" onclick="switchMasterTab('iq-master',this)">🔬 IQ詳細項目</button>
+        <button class="master-tab" onclick="switchMasterTab('bp-master',this)">📊 戦闘力詳細項目</button>
+      </div>
+
+      <!-- ランクマトリクス -->
+      <div id="master-matrix" class="master-tab-content">
+        <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:20px">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">IQティア基準</div>
+            <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
+              <div class="threshold-chip"><span class="tc-rank" style="color:#7c3aed">S</span><span class="tc-range">IQ 120以上</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#2563eb">A</span><span class="tc-range">IQ 105〜119</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#16a34a">B</span><span class="tc-range">IQ 90〜104</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#d97706">C</span><span class="tc-range">IQ 89以下</span></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">戦闘力ティア基準</div>
+            <div class="iq-threshold-row" style="flex-direction:column;gap:6px">
+              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">1</span><span class="tc-range">80,000以上</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">2</span><span class="tc-range">60,000〜79,999</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">3</span><span class="tc-range">40,000〜59,999</span></div>
+              <div class="threshold-chip"><span class="tc-rank" style="color:#1e293b">4</span><span class="tc-range">39,999以下</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="rank-matrix-table">
+            <thead>
+              <tr>
+                <th style="width:120px">IQ ＼ 戦闘力</th>
+                <th>1<br><span style="font-weight:500;color:#94a3b8">80,000+</span></th>
+                <th>2<br><span style="font-weight:500;color:#94a3b8">60,000+</span></th>
+                <th>3<br><span style="font-weight:500;color:#94a3b8">40,000+</span></th>
+                <th>4<br><span style="font-weight:500;color:#94a3b8">〜39,999</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="axis-label">S（120+）</td>
+                <td><span class="rank-cell rank-cell-s">S1</span></td>
+                <td><span class="rank-cell rank-cell-s">S2</span></td>
+                <td><span class="rank-cell rank-cell-s">S3</span></td>
+                <td><span class="rank-cell rank-cell-s">S4</span></td>
+              </tr>
+              <tr>
+                <td class="axis-label">A（105〜119）</td>
+                <td><span class="rank-cell rank-cell-a">A1</span></td>
+                <td><span class="rank-cell rank-cell-a">A2</span></td>
+                <td><span class="rank-cell rank-cell-a">A3</span></td>
+                <td><span class="rank-cell rank-cell-a">A4</span></td>
+              </tr>
+              <tr>
+                <td class="axis-label">B（90〜104）</td>
+                <td><span class="rank-cell rank-cell-b">B1</span></td>
+                <td><span class="rank-cell rank-cell-b">B2</span></td>
+                <td><span class="rank-cell rank-cell-b">B3</span></td>
+                <td><span class="rank-cell rank-cell-b">B4</span></td>
+              </tr>
+              <tr>
+                <td class="axis-label">C（〜89）</td>
+                <td><span class="rank-cell rank-cell-c">C1</span></td>
+                <td><span class="rank-cell rank-cell-c">C2</span></td>
+                <td><span class="rank-cell rank-cell-c">C3</span></td>
+                <td><span class="rank-cell rank-cell-c">C4</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- IQ構成要素マスタ -->
+      <div id="master-iq-master" class="master-tab-content" style="display:none">
+        <div style="margin-bottom:16px;padding:14px 18px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1px solid #ddd6fe;border-radius:12px">
+          <div style="font-size:13px;font-weight:700;color:#4c1d95;margin-bottom:4px">🔬 データソース：ビジネスIQ適性検査（IQ詳細セクション）</div>
+          <div style="font-size:12px;color:#6d28d9">PDFアップロードにより自動取込。6能力の10段階評価 → IQスコア（50〜200）として算出。</div>
+        </div>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">📊 能力評価項目（10段階）</div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th style="width:160px">能力名</th><th>定義</th><th style="width:90px">スケール</th><th style="width:200px">高スコアの特徴</th></tr></thead>
           <tbody>
-            <tr>
-              <td class="axis-label">S（120+）</td>
-              <td><span class="rank-cell rank-cell-s">S1</span></td>
-              <td><span class="rank-cell rank-cell-s">S2</span></td>
-              <td><span class="rank-cell rank-cell-s">S3</span></td>
-              <td><span class="rank-cell rank-cell-s">S4</span></td>
-            </tr>
-            <tr>
-              <td class="axis-label">A（105〜119）</td>
-              <td><span class="rank-cell rank-cell-a">A1</span></td>
-              <td><span class="rank-cell rank-cell-a">A2</span></td>
-              <td><span class="rank-cell rank-cell-a">A3</span></td>
-              <td><span class="rank-cell rank-cell-a">A4</span></td>
-            </tr>
-            <tr>
-              <td class="axis-label">B（90〜104）</td>
-              <td><span class="rank-cell rank-cell-b">B1</span></td>
-              <td><span class="rank-cell rank-cell-b">B2</span></td>
-              <td><span class="rank-cell rank-cell-b">B3</span></td>
-              <td><span class="rank-cell rank-cell-b">B4</span></td>
-            </tr>
-            <tr>
-              <td class="axis-label">C（〜89）</td>
-              <td><span class="rank-cell rank-cell-c">C1</span></td>
-              <td><span class="rank-cell rank-cell-c">C2</span></td>
-              <td><span class="rank-cell rank-cell-c">C3</span></td>
-              <td><span class="rank-cell rank-cell-c">C4</span></td>
-            </tr>
+            <tr><td style="font-weight:700;color:#6366f1">分析力</td><td>具体やパターンを抽出・整理する力</td><td><span class="scale-badge" style="background:#eef2ff;color:#4f46e5">1〜10</span></td><td>情報を多面的に捉え、因果関係を特定できる</td></tr>
+            <tr><td style="font-weight:700;color:#6366f1">思考力</td><td>論理的に筋道を立てて考え、結論を導き出す力</td><td><span class="scale-badge" style="background:#eef2ff;color:#4f46e5">1〜10</span></td><td>複雑な問題を構造的に整理し解決策を導ける</td></tr>
+            <tr><td style="font-weight:700;color:#6366f1">図形・空間認知力</td><td>図や空間の位置・構造・変化を的確に把握する力</td><td><span class="scale-badge" style="background:#eef2ff;color:#4f46e5">1〜10</span></td><td>立体的なイメージ形成や配置の最適化に優れる</td></tr>
+            <tr><td style="font-weight:700;color:#6366f1">洞察力</td><td>抽象的な物事に対して本質的なルールや関連性を見抜く力</td><td><span class="scale-badge" style="background:#eef2ff;color:#4f46e5">1〜10</span></td><td>暗黙のパターンや構造を直感的に把握できる</td></tr>
+            <tr><td style="font-weight:700;color:#6366f1">計算力</td><td>数量や数式を正確かつ素早く処理する力</td><td><span class="scale-badge" style="background:#eef2ff;color:#4f46e5">1〜10</span></td><td>複雑な数的処理を正確・迅速に行える</td></tr>
+            <tr><td style="font-weight:700;color:#6366f1">言語・読解力</td><td>文章の意図を正確に理解し、その内容を要約・解釈する力</td><td><span class="scale-badge" style="background:#eef2ff;color:#4f46e5">1〜10</span></td><td>複雑な文章の論理展開を迅速に読み解ける</td></tr>
           </tbody>
         </table>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">🎯 分野別正答率</div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th style="width:160px">分野</th><th>出題内容</th><th style="width:90px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">パターン認識</td><td>規則性・法則性の発見に関する問題</td><td><span class="scale-badge" style="background:#f0fdf4;color:#16a34a">0〜100%</span></td></tr>
+            <tr><td style="font-weight:600">抽象推論</td><td>抽象的概念の関係性把握に関する問題</td><td><span class="scale-badge" style="background:#f0fdf4;color:#16a34a">0〜100%</span></td></tr>
+            <tr><td style="font-weight:600">図形分析</td><td>図形の回転・変形・構造分析に関する問題</td><td><span class="scale-badge" style="background:#f0fdf4;color:#16a34a">0〜100%</span></td></tr>
+            <tr><td style="font-weight:600">演繹的推論</td><td>前提から論理的に結論を導く問題</td><td><span class="scale-badge" style="background:#f0fdf4;color:#16a34a">0〜100%</span></td></tr>
+            <tr><td style="font-weight:600">数的推論</td><td>数列・数量関係の推論問題</td><td><span class="scale-badge" style="background:#f0fdf4;color:#16a34a">0〜100%</span></td></tr>
+            <tr><td style="font-weight:600">文章読解</td><td>長文の論旨把握・要約に関する問題</td><td><span class="scale-badge" style="background:#f0fdf4;color:#16a34a">0〜100%</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">💼 職務適性（10段階）</div>
+        <table class="master-table">
+          <thead><tr><th style="width:240px">職務タイプ</th><th>高スコアが示す適性</th><th style="width:90px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">発想力や柔軟性が必要な仕事</td><td>企画・クリエイティブ・新規事業などで力を発揮</td><td><span class="scale-badge" style="background:#fffbeb;color:#d97706">1〜10</span></td></tr>
+            <tr><td style="font-weight:600">決断力が必要な仕事</td><td>経営判断・マネジメントなど意思決定業務に適性</td><td><span class="scale-badge" style="background:#fffbeb;color:#d97706">1〜10</span></td></tr>
+            <tr><td style="font-weight:600">集中して着実に進める仕事</td><td>品質管理・経理・開発など正確性が求められる業務に適性</td><td><span class="scale-badge" style="background:#fffbeb;color:#d97706">1〜10</span></td></tr>
+            <tr><td style="font-weight:600">多角的な視点が求められる仕事</td><td>コンサルティング・リサーチなど俯瞰力が必要な業務に適性</td><td><span class="scale-badge" style="background:#fffbeb;color:#d97706">1〜10</span></td></tr>
+            <tr><td style="font-weight:600">複雑な情報を統合して考える仕事</td><td>アナリスト・戦略策定など情報統合力が必要な業務に適性</td><td><span class="scale-badge" style="background:#fffbeb;color:#d97706">1〜10</span></td></tr>
+            <tr><td style="font-weight:600">文章力の求められる仕事</td><td>編集・法務・広報など文章構成力が必要な業務に適性</td><td><span class="scale-badge" style="background:#fffbeb;color:#d97706">1〜10</span></td></tr>
+            <tr><td style="font-weight:600">スピードの重要な仕事</td><td>営業・トレーディングなど即応性が求められる業務に適性</td><td><span class="scale-badge" style="background:#fffbeb;color:#d97706">1〜10</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:20px;padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0">
+          <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px">⏱ スピード評価について</div>
+          <div style="font-size:12px;color:#64748b;line-height:1.6">回答速度も S / A / B / C / D / E の6段階で評価されます。IQスコアとは別軸の指標として、処理速度の参考値となります。所要時間・テスト内順位も記録されます。</div>
+        </div>
+      </div>
+
+      <!-- 戦闘力構成要素マスタ -->
+      <div id="master-bp-master" class="master-tab-content" style="display:none">
+        <div style="margin-bottom:16px;padding:14px 18px;background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa;border-radius:12px">
+          <div style="font-size:13px;font-weight:700;color:#9a3412;margin-bottom:4px">📊 データソース：ビジネスIQ適性検査（戦闘力詳細セクション）</div>
+          <div style="font-size:12px;color:#c2410c">PDFアップロードにより自動取込。7分野・計40以上の尺度で資質を測定し、戦闘力（総合値）を算出。</div>
+        </div>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">🎭 性格特性（7尺度・各0〜100）</div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th style="width:120px">尺度名</th><th>低い場合の特徴</th><th>高い場合の特徴</th><th style="width:80px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;color:#ea580c">活動性</td><td>落ち着きがある、腰が重い</td><td>行動的、落ち着きがない</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">社交性</td><td>人付合いを好まず、控えめ</td><td>おしゃべり、人付合いを好む</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">慎重性</td><td>気さく、大雑把</td><td>慎重、丁寧、神経質</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">新奇性</td><td>謙虚、受け身</td><td>前向き、自信過剰</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">固執性</td><td>こだわりがなく柔軟</td><td>こだわりが強く粘り強い</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">主体性</td><td>周囲と調和、協調的</td><td>迎合しない、自信過剰</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">決断性</td><td>優しく寛容、情緒的</td><td>合理的、独善的</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">🔥 活動意欲（7尺度・各0〜100）</div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th style="width:120px">尺度名</th><th>定義</th><th style="width:80px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;color:#ea580c">向上欲求</td><td>自己成長・向上したいという意欲</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">挑戦欲求</td><td>困難や目標にチャレンジしたいという意欲</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">自律欲求</td><td>自分の意思で物事に取り組みたいという意欲</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">探求欲求</td><td>本質や理由・成り立ちを知りたいという意欲</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">啓発欲求</td><td>他者に良い影響を与えたいという意欲</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">承認欲求</td><td>役割を果たし他者に認められたいという意欲</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">エネルギー</td><td>総合的な活動意欲の強さ（意欲の総合判定）</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">🧠 思考・能力（4尺度・各0〜100）</div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th style="width:120px">尺度名</th><th>定義</th><th style="width:80px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;color:#ea580c">直観力</td><td>抽象的な事柄や概念的な本質を感覚的に捉える力</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">論理力</td><td>筋道立てて思考し、物事を定性的・定量的に捉える力</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">実行力</td><td>具体的計画を立てて行動し、遂行する力</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">共感力</td><td>他者の心理や感情を感知し、汲み取る力</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">💪 ストレス耐性（2尺度・各0〜100）</div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th style="width:120px">尺度名</th><th>定義</th><th style="width:80px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;color:#ea580c">精神的耐性</td><td>メンタル面（精神面）でのストレスに耐える強さ</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">身体的耐性</td><td>神経面（身体面）でのストレスに耐える強さ</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">💎 価値観（5尺度・各0〜100）</div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th style="width:120px">尺度名</th><th>低い場合の特徴</th><th>高い場合の特徴</th><th style="width:80px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;color:#ea580c">公益志向</td><td>人の役に立つことに価値を感じない</td><td>人の役に立つことに価値を感じる</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">成長志向</td><td>自己の能力向上に価値を感じない</td><td>自己の能力向上に価値を感じる</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">金権志向</td><td>お金を稼ぐことに価値を感じない</td><td>お金を稼ぐことに価値を感じる</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">享楽志向</td><td>娯楽的な面白さに価値を感じない</td><td>娯楽的な面白さに価値を感じる</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#ea580c">安定志向</td><td>生活・収入の安定に価値を感じない</td><td>生活・収入の安定に価値を感じる</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">⚠️ ネガティブ傾向（6尺度・各0〜100） <span style="font-size:11px;font-weight:500;color:#dc2626">※ 高いほどリスク大</span></div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th style="width:140px">尺度名</th><th>定義</th><th style="width:80px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;color:#dc2626">非自尊傾向</td><td>自己卑下する傾向にあり本番に弱い傾向</td><td><span class="scale-badge" style="background:#fef2f2;color:#dc2626">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#dc2626">気分傾向</td><td>気分の浮き沈みで、仕事にムラがでる傾向</td><td><span class="scale-badge" style="background:#fef2f2;color:#dc2626">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#dc2626">悲観傾向</td><td>建設的に捉えたり、考えたりできない傾向</td><td><span class="scale-badge" style="background:#fef2f2;color:#dc2626">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#dc2626">非倫理傾向</td><td>遵法・倫理意識が低く、目的の為に手段を選ばない傾向</td><td><span class="scale-badge" style="background:#fef2f2;color:#dc2626">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#dc2626">モラトリアム傾向</td><td>無気力・無関心に傾き、不平や不満を持ちやすい傾向</td><td><span class="scale-badge" style="background:#fef2f2;color:#dc2626">0〜100</span></td></tr>
+            <tr><td style="font-weight:700;color:#dc2626">不適応傾向</td><td>環境に適応しにくく、集団に馴染みにくい傾向</td><td><span class="scale-badge" style="background:#fef2f2;color:#dc2626">0〜100</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:10px">💼 職務適性（8タイプ・各0〜100）</div>
+        <table class="master-table" style="margin-bottom:20px">
+          <thead><tr><th>職務の特性</th><th style="width:80px">スケール</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">人間関係を築いていく職務</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:600">フットワークの軽さを必要とする職務</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:600">リーダーシップを必要とする職務</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:600">過去に事例のない新しい職務</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:600">反復・継続的な職務</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:600">企画力や創造力を必要とする職務</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:600">丁寧さ注意深さを必要とする職務</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+            <tr><td style="font-weight:600">情報を集め問題を分析する職務</td><td><span class="scale-badge" style="background:#fff7ed;color:#ea580c">0〜100</span></td></tr>
+          </tbody>
+        </table>
+
+        <div style="padding:14px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0">
+          <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px">🔍 虚偽回答傾向について</div>
+          <div style="font-size:12px;color:#64748b;line-height:1.6">0〜10の11段階で評価。数値が高いほど虚偽回答の可能性が高い。0の場合「回答に虚偽の傾向を検出できない」と判定。</div>
+        </div>
       </div>
     </div>
 
@@ -913,12 +1326,12 @@ const ADMIN_PASSWORD = 'admin1234';
 let surveyPeriod = (() => {
   try {
     const s = localStorage.getItem('es_survey_period');
-    return s ? JSON.parse(s) : { start: '2026-03-01', end: '2026-03-15' };
-  } catch(e) { return { start: '2026-03-01', end: '2026-03-15' }; }
+    return s ? JSON.parse(s) : { start: '2026-03-01', end: '2026-04-30' };
+  } catch(e) { return { start: '2026-03-01', end: '2026-04-30' }; }
 })();
 
 // ===== マスタデータ =====
-const employees = {
+const _defaultEmployees = {
   'EMP001': { name: '田中 一郎',   dept: '営業部',  iq: 110, battlePower:  8500, mbti: 'ESTJ' },
   'EMP042': { name: '鈴木 花子',   dept: '開発部',  iq: 128, battlePower: 12000, mbti: 'ENFJ' },
   'EMP099': { name: '佐藤 次郎',   dept: '総務部',  iq: 115, battlePower:  9500, mbti: 'ISTJ' },
@@ -928,6 +1341,18 @@ const employees = {
   'EMP071': { name: '小林 拓也',   dept: '総務部',  iq: 108, battlePower:  8000, mbti: 'ISTP' },
   'EMP088': { name: '渡辺 さくら', dept: 'マーケ部', iq: 140, battlePower: 18000, mbti: 'ENFP' },
 };
+// localStorageに保存された社員データとデフォルトをマージ（null=削除済み）
+const employees = (() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('es_employees') || '{}');
+    const merged = { ..._defaultEmployees };
+    Object.entries(saved).forEach(([id, data]) => {
+      if (data === null) { delete merged[id]; }
+      else { merged[id] = data; }
+    });
+    return merged;
+  } catch(e) { return { ..._defaultEmployees }; }
+})();
 
 const categories = ['仕事のやりがい', '上司との関係性', 'チームワーク', '業務量・残業', '会社への信頼', '成長・キャリア'];
 const months = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'];
@@ -1026,7 +1451,7 @@ const rankTierColor = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
 function calcRank(iq, bp) {
   if (!iq || !bp) return null;
   const iqTier = iq >= 120 ? 'S' : iq >= 105 ? 'A' : iq >= 90 ? 'B' : 'C';
-  const bpTier = bp >= 7000 ? '1' : bp >= 6000 ? '2' : bp >= 5000 ? '3' : '4';
+  const bpTier = bp >= 80000 ? '1' : bp >= 60000 ? '2' : bp >= 40000 ? '3' : '4';
   return iqTier + bpTier;
 }
 
@@ -1563,6 +1988,91 @@ function renderDashboard() {
     }).join('');
   }
 
+  // ===== レーダーチャート =====
+  const radarEl = document.getElementById('radar-chart-section');
+  if (radarEl) {
+    const radarSize = 280, cx = radarSize/2, cy = radarSize/2, R = 110;
+    const keys = catKeys;
+    const n = keys.length;
+    const angleStep = (2 * Math.PI) / n;
+    const startAngle = -Math.PI / 2;
+
+    // グリッドポリゴン
+    const gridLevels = [20, 40, 60, 80, 100];
+    const gridPolygons = gridLevels.map(level => {
+      const pts = keys.map((_, i) => {
+        const a = startAngle + i * angleStep;
+        const r = R * level / 100;
+        return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+      }).join(' ');
+      return `<polygon points="${pts}" fill="none" stroke="#e5e7eb" stroke-width="1"/>`;
+    }).join('');
+
+    // 軸ライン
+    const axisLines = keys.map((_, i) => {
+      const a = startAngle + i * angleStep;
+      return `<line x1="${cx}" y1="${cy}" x2="${cx + R * Math.cos(a)}" y2="${cy + R * Math.sin(a)}" stroke="#e5e7eb" stroke-width="1"/>`;
+    }).join('');
+
+    // データポリゴン
+    const dataPoints = keys.map((k, i) => {
+      const score = cats[k] || 0;
+      const a = startAngle + i * angleStep;
+      const r = R * score / 100;
+      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), score, key: k };
+    });
+    const polygonPts = dataPoints.map(p => `${p.x},${p.y}`).join(' ');
+    const prevDataPoints = prevCats ? keys.map((k, i) => {
+      const score = prevCats[k] || 0;
+      const a = startAngle + i * angleStep;
+      const r = R * score / 100;
+      return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
+    }).join(' ') : null;
+
+    // ラベル
+    const labels = keys.map((k, i) => {
+      const a = startAngle + i * angleStep;
+      const lr = R + 22;
+      const lx = cx + lr * Math.cos(a);
+      const ly = cy + lr * Math.sin(a);
+      const anchor = lx < cx - 5 ? 'end' : lx > cx + 5 ? 'start' : 'middle';
+      const score = cats[k] || 0;
+      const col = score < 60 ? '#dc2626' : score < 70 ? '#d97706' : '#16a34a';
+      return `<text x="${lx}" y="${ly}" font-size="10" font-weight="700" fill="${col}" text-anchor="${anchor}" dominant-baseline="middle">${catNames[k]}</text>
+              <text x="${lx}" y="${ly + 13}" font-size="9" fill="#94a3b8" text-anchor="${anchor}">${score}点</text>`;
+    }).join('');
+
+    // 中心スコア
+    const totalScore = Math.round(Object.values(cats).reduce((a,b)=>a+b,0)/catKeys.length);
+    const totalColor = totalScore >= 70 ? '#16a34a' : totalScore >= 60 ? '#d97706' : '#dc2626';
+
+    radarEl.innerHTML = `
+      <div class="section-title">📡 カテゴリ別レーダーチャート</div>
+      <div class="radar-wrap">
+        <svg width="${radarSize+80}" height="${radarSize+60}" viewBox="-40 -30 ${radarSize+80} ${radarSize+60}" style="overflow:visible">
+          ${gridPolygons}
+          ${axisLines}
+          ${prevDataPoints ? `<polygon points="${prevDataPoints}" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>` : ''}
+          <polygon class="radar-polygon" points="${polygonPts}" fill="url(#radarGrad)" stroke="url(#radarStroke)" stroke-width="2.5" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="radarGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6366f1" stop-opacity="0.25"/>
+              <stop offset="100%" stop-color="#a855f7" stop-opacity="0.15"/>
+            </linearGradient>
+            <linearGradient id="radarStroke" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#a855f7"/>
+            </linearGradient>
+          </defs>
+          ${dataPoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#6366f1" stroke="white" stroke-width="2" opacity="0.9"/>`).join('')}
+          ${labels}
+          <text x="${cx}" y="${cy-8}" font-size="20" font-weight="900" fill="${totalColor}" text-anchor="middle">${totalScore}</text>
+          <text x="${cx}" y="${cy+10}" font-size="9" fill="#94a3b8" text-anchor="middle">総合スコア</text>
+          ${prevDataPoints ? `<text x="${radarSize-10}" y="${radarSize+20}" font-size="9" fill="#94a3b8">── 今月　- - 前月</text>` : ''}
+        </svg>
+      </div>`;
+  }
+
   // 部署別スコア
   const deptScoresGrid = document.getElementById('dept-scores-grid');
   if (deptScoresGrid) {
@@ -1583,7 +2093,7 @@ function renderDashboard() {
       if (avg >= 70) { color1 = '#4ade80'; color2 = '#22c55e'; textColor = '#16a34a'; }
       else if (avg >= 60) { color1 = '#fbbf24'; color2 = '#f59e0b'; textColor = '#d97706'; }
       else { color1 = '#f87171'; color2 = '#ef4444'; textColor = '#dc2626'; }
-      return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:box-shadow 0.2s" onclick="showDeptDetail('${dept}', '${month}')" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)'">
+      return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.2s" onclick="showDeptDetail('${dept}', '${month}')">
         <div style="width:100px;font-size:13px;font-weight:700;color:#374151">${dept}</div>
         <div style="flex:1;background:#f1f5f9;border-radius:4px;height:12px;overflow:hidden">
           <div style="height:100%;width:${avg}%;background:linear-gradient(90deg,${color1},${color2});border-radius:4px;transition:width 0.5s"></div>
@@ -1598,62 +2108,82 @@ function renderDashboard() {
 
 // ===== 社員一覧描画 =====
 function renderEmployeeList() {
-  const month = document.getElementById('emp-month-select').value;
+  const month = document.getElementById('emp-month-select')?.value || months[months.length - 1];
   const prev = months[months.indexOf(month) - 1];
   const search = (document.getElementById('emp-search')||{}).value?.toLowerCase()||'';
   const deptFilter = (document.getElementById('emp-dept-filter')||{}).value||'';
   const rankFilter = (document.getElementById('emp-rank-filter')||{}).value||'';
-  const rows = Object.entries(empData).filter(([id]) => {
-    if (search && !id.toLowerCase().includes(search) && !(employees[id]?.name||'').toLowerCase().includes(search)) return false;
-    if (deptFilter && employees[id]?.dept !== deptFilter) return false;
-    if (rankFilter && calcRank(getProfile(id).iq, getProfile(id).battlePower) !== rankFilter) return false;
+
+  // 全社員ベースで構築（empDataの有無に関わらず）
+  const rows = Object.entries(employees).filter(([id, emp]) => {
+    if (search && !id.toLowerCase().includes(search) && !(emp.name||'').toLowerCase().includes(search)) return false;
+    if (deptFilter && emp.dept !== deptFilter) return false;
+    const biziq = getBizIQData(id);
+    const r16 = biziq?.rank16 || '';
+    const profileRank = calcRank(getProfile(id).iq, getProfile(id).battlePower) || '';
+    const rank = r16 || profileRank;
+    if (rankFilter && rank !== rankFilter) return false;
     return true;
-  }).map(([id, data]) => {
-    const scores = data[month];
-    if (!scores) return null;
-    const total = getTotal(scores);
-    const prevTotal = prev && data[prev] ? getTotal(data[prev]) : null;
-    const diff = prevTotal !== null ? total - prevTotal : null;
-    const status = diff !== null ? getStatus(total, diff) : (total < 60 ? 'alert' : total < 70 ? 'warn' : 'ok');
+  }).map(([id, emp]) => {
+    const data = empData[id];
+    const scores = data?.[month];
+    const total = scores ? getTotal(scores) : null;
+    const prevTotal = prev && data?.[prev] ? getTotal(data[prev]) : null;
+    const diff = (total !== null && prevTotal !== null) ? total - prevTotal : null;
+    const status = total !== null ? (diff !== null ? getStatus(total, diff) : (total < 60 ? 'alert' : total < 70 ? 'warn' : 'ok')) : null;
     const profile = getProfile(id);
+    const biziq = getBizIQData(id);
+    const rank = biziq?.rank16 || calcRank(profile.iq, profile.battlePower) || '';
+    const iq = biziq?.iqScore || profile.iq || null;
+    const bp = biziq?.battlePower || profile.battlePower || null;
+    const mbtiType = profile.mbti || emp.mbti || '';
+    const trust = biziq?.trustScore || null;
     const hasReal = !!localStorage.getItem(`es_${id}_${month}`);
-    const rank = calcRank(profile.iq, profile.battlePower);
-    const mbtiType = profile.mbti || employees[id]?.mbti;
-    return { id, name: employees[id]?.name || id, dept: employees[id]?.dept || '', total, diff, status,
-             iq: profile.iq, battlePower: profile.battlePower, hasReal, rank, profile };
-  }).filter(Boolean).sort((a,b) => a.total - b.total);
+    const hasBizIQ = !!biziq;
+    return { id, name: emp.name || id, dept: emp.dept || '', total, diff, status, iq, bp, rank, mbtiType, trust, hasReal, hasBizIQ, profile };
+  }).sort((a, b) => {
+    // ランク順 → 名前順
+    const rankOrder = 'S1S2S3S4A1A2A3A4B1B2B3B4C1C2C3C4';
+    const ai = rankOrder.indexOf(a.rank), bi = rankOrder.indexOf(b.rank);
+    if (ai !== bi) return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    return a.name.localeCompare(b.name, 'ja');
+  });
+
+  document.getElementById('emp-count-label').textContent = `（${rows.length}名）`;
 
   const table = document.getElementById('emp-table');
   table.innerHTML = `<table>
     <thead><tr>
-      <th>社員ID</th><th>氏名</th><th>所属</th><th>総合スコア</th><th>前月比</th><th>ステータス</th><th>詳細</th>
+      <th>社員</th><th>ランク</th><th>IQ</th><th>戦闘力</th><th>MBTI</th><th>サーベイ（${monthLabels[month]||month}）</th><th>信頼</th><th></th>
     </tr></thead>
-    <tbody>${rows.map(r => `
+    <tbody>${rows.map(r => {
+      const rc = r.rank ? `rank-${r.rank[0].toLowerCase()}` : '';
+      const mbtiInfo = r.mbtiType ? mbtiData[r.mbtiType] : null;
+      const trustHtml = r.trust ? `<span style="font-weight:700;color:${r.trust.score>=8?'#16a34a':r.trust.score>=4?'#d97706':'#dc2626'}">${r.trust.score}/${r.trust.max}</span>` : '<span style="color:#cbd5e1">―</span>';
+      const surveyHtml = r.total !== null
+        ? `<span style="font-weight:800;font-size:14px">${r.total}点</span>
+           <span style="font-size:11px;color:${r.diff===null?'#94a3b8':r.diff>=0?'#16a34a':'#dc2626'};font-weight:700;margin-left:4px">${r.diff!==null?(r.diff>0?'+':'')+r.diff:'―'}</span>
+           ${r.hasReal ? '<span style="font-size:9px;background:#dcfce7;color:#16a34a;padding:1px 5px;border-radius:6px;margin-left:4px;font-weight:700">実</span>' : ''}
+           ${r.status ? `<span class="badge badge-${r.status}" style="margin-left:6px;font-size:10px;padding:2px 6px">${r.status==='alert'?'⚠️':''}${r.status==='alert'?'要確認':r.status==='warn'?'注意':'良好'}</span>` : ''}`
+        : '<span style="color:#cbd5e1;font-size:12px">未回答</span>';
+      return `
       <tr class="clickable" onclick="showDetail('${r.id}')">
-        <td><span style="font-size:13px;font-weight:800;color:#6366f1;background:#eef2ff;padding:3px 8px;border-radius:6px;font-family:'Inter',monospace">${r.id}</span></td>
         <td>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span style="font-weight:600;color:#1e293b">${r.name}</span>
-            ${r.rank ? `<span class="rank-badge-sm rank-${r.rank[0].toLowerCase()}">${r.rank}</span>` : ''}
-            ${(() => { const mbtiType = r.profile?.mbti || employees[r.id]?.mbti; const mbtiInfo = mbtiType ? mbtiData[mbtiType] : null; return mbtiInfo ? `<span class="mbti-badge mbti-${mbtiInfo.group.toLowerCase()}" style="font-size:11px;padding:2px 8px">${mbtiType} ${mbtiInfo.name}</span>` : ''; })()}
-          </div>
-          <div style="display:flex;gap:5px;margin-top:4px">
-            ${r.iq ? `<span style="font-size:11px;background:#f5f3ff;color:#7c3aed;padding:2px 7px;border-radius:10px;font-weight:700">🧠 ${r.iq}</span>` : ''}
-            ${r.battlePower ? `<span style="font-size:11px;background:#fff7ed;color:#ea580c;padding:2px 7px;border-radius:10px;font-weight:700">⚡ ${r.battlePower.toLocaleString()}</span>` : ''}
-            ${r.rank ? `` : ''}
+          <div style="font-weight:600;color:#1e293b">${r.name}</div>
+          <div style="display:flex;gap:4px;margin-top:2px">
+            <span style="font-size:11px;color:#6366f1;background:#eef2ff;padding:1px 6px;border-radius:4px;font-family:monospace;font-weight:700">${r.id}</span>
+            <span style="font-size:11px;background:#f1f5f9;padding:1px 6px;border-radius:4px;color:#64748b">${r.dept}</span>
           </div>
         </td>
-        <td><span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;font-size:12px;color:#64748b;font-weight:600">${r.dept}</span></td>
-        <td>
-          <span style="font-weight:800;font-size:15px">${r.total}点</span>
-          ${r.hasReal ? `<span style="font-size:10px;background:#dcfce7;color:#16a34a;padding:2px 6px;border-radius:8px;margin-left:5px;font-weight:700;border:1px solid #bbf7d0">実データ</span>` : ''}
-        </td>
-        <td style="color:${r.diff === null ? '#6b7280' : r.diff >= 0 ? '#16a34a' : '#dc2626'};font-weight:700">
-          ${r.diff !== null ? (r.diff > 0 ? '+' : '') + r.diff + '点' : '―'}
-        </td>
-        <td><span class="badge badge-${r.status}">${r.status === 'alert' ? '⚠️ 要確認' : r.status === 'warn' ? '注意' : '良好'}</span></td>
-        <td><button class="detail-link" onclick="event.stopPropagation();showDetail('${r.id}')">詳細を見る</button></td>
-      </tr>`).join('')}
+        <td>${r.rank ? `<span class="rank-badge-sm ${rc}">${r.rank}</span>` : '<span style="color:#cbd5e1">―</span>'}</td>
+        <td style="font-weight:700;color:#4c1d95">${r.iq || '<span style="color:#cbd5e1">―</span>'}</td>
+        <td style="font-weight:700;color:#ea580c">${r.bp ? r.bp.toLocaleString() : '<span style="color:#cbd5e1">―</span>'}</td>
+        <td>${mbtiInfo ? `<span class="mbti-badge mbti-${mbtiInfo.group.toLowerCase()}" style="font-size:10px;padding:2px 6px">${r.mbtiType}</span>` : '<span style="color:#cbd5e1">―</span>'}</td>
+        <td>${surveyHtml}</td>
+        <td>${trustHtml}</td>
+        <td><button class="detail-link" onclick="event.stopPropagation();showDetail('${r.id}')">詳細</button></td>
+      </tr>`;
+    }).join('')}
     </tbody>
   </table>`;
 }
@@ -1685,27 +2215,29 @@ function exportEmployeeCSV() {
 let lastTab = 'employees';
 
 function showDetail(empId) {
+  rebuildEmpData();
   lastTab = document.getElementById('tab-employees').style.display !== 'none' ? 'employees' : 'dashboard';
   const emp = employees[empId];
   document.getElementById('detail-name').textContent = emp?.name || empId;
   document.getElementById('detail-dept').textContent = emp?.dept || '';
 
   const empProfile = getProfile(empId);
-  const empRank = calcRank(empProfile.iq, empProfile.battlePower);
+  const empRank = getBizIQData(empId)?.rank16 || calcRank(empProfile.iq, empProfile.battlePower);
 
-  const data = empData[empId];
+  const data = empData[empId] || {};
   const latestMonth = months[months.length - 1];
-  const latestScores = data[latestMonth];
-  const latestTotal = getTotal(latestScores);
+  const latestScores = data[latestMonth] || null;
+  const latestTotal = latestScores ? getTotal(latestScores) : null;
   const prevMonth = months[months.length - 2];
-  const prevScores = data[prevMonth];
-  const prevTotal = getTotal(prevScores);
-  const diff = latestTotal - prevTotal;
-  const status = getStatus(latestTotal, diff);
+  const prevScores = data[prevMonth] || null;
+  const prevTotal = prevScores ? getTotal(prevScores) : null;
+  const diff = (latestTotal !== null && prevTotal !== null) ? latestTotal - prevTotal : null;
+  const status = latestTotal !== null ? (diff !== null ? getStatus(latestTotal, diff) : (latestTotal < 60 ? 'alert' : latestTotal < 70 ? 'warn' : 'ok')) : 'ok';
+  const hasAnyData = latestScores !== null;
 
   const badge = document.getElementById('detail-status-badge');
   badge.className = `badge badge-${status}`;
-  badge.textContent = status === 'alert' ? '⚠️ 要確認' : status === 'warn' ? '注意' : '良好';
+  badge.textContent = !hasAnyData ? 'サーベイ未回答' : status === 'alert' ? '⚠️ 要確認' : status === 'warn' ? '注意' : '良好';
 
   // ライングラフ（SVG）
   const svgW = 700, svgH = 200, padL = 40, padR = 20, padT = 20, padB = 30;
@@ -1713,7 +2245,29 @@ function showDetail(empId) {
   const chartH = svgH - padT - padB;
   const xStep = chartW / (months.length - 1);
 
-  const colors = ['#4f46e5','#ef4444','#22c55e','#f59e0b','#06b6d4','#ec4899'];
+  const colors = ['#4f46e5','#ef4444','#22c55e','#f59e0b','#06b6d4','#ec4899','#8b5cf6','#f97316','#10b981'];
+
+  function smoothCurve(pts) {
+    if (pts.length < 2) return pts.map((p,i) => i===0?`M${p.x},${p.y}`:`L${p.x},${p.y}`).join(' ');
+    let d = `M${pts[0].x},${pts[0].y}`;
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i-1], curr = pts[i];
+      const tension = 0.38;
+      const cp1x = prev.x + (curr.x - prev.x) * tension;
+      const cp1y = prev.y;
+      const cp2x = curr.x - (curr.x - prev.x) * tension;
+      const cp2y = curr.y;
+      d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${curr.x},${curr.y}`;
+    }
+    return d;
+  }
+
+  function areaPath(pts, baseY) {
+    if (pts.length < 2) return '';
+    const line = smoothCurve(pts);
+    return `${line} L${pts[pts.length-1].x},${baseY} L${pts[0].x},${baseY} Z`;
+  }
+
   const lines = catKeys.map((k, ci) => {
     const pts = months.map((m, mi) => {
       const v = data[m]?.[k] || null;
@@ -1723,8 +2277,9 @@ function showDetail(empId) {
       return { x, y, v };
     });
     const validPts = pts.filter(Boolean);
-    const path = validPts.map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `L${p.x},${p.y}`)).join(' ');
-    return { key: k, path, pts: validPts, color: colors[ci] };
+    const path = smoothCurve(validPts);
+    const area = areaPath(validPts, padT + chartH);
+    return { key: k, path, area, pts: validPts, color: colors[ci] };
   });
 
   // Y軸グリッド
@@ -1745,8 +2300,10 @@ function showDetail(empId) {
       ${gridLines}
       <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+chartH}" stroke="#e5e7eb" stroke-width="1"/>
       ${xLabels}
-      ${lines.map(l => `<path d="${l.path}" fill="none" stroke="${l.color}" stroke-width="2.5" stroke-linejoin="round"/>`).join('')}
-      ${lines.map(l => l.pts.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${l.color}"/>`).join('')).join('')}
+      <defs>${lines.map((l,i) => `<linearGradient id="areaGrad${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${l.color}" stop-opacity="0.5"/><stop offset="100%" stop-color="${l.color}" stop-opacity="0"/></linearGradient>`).join('')}</defs>
+      ${lines.map((l,i) => l.area ? `<path d="${l.area}" fill="url(#areaGrad${i})" class="area-fill" style="animation-delay:${0.3+i*0.08}s"/>` : '').join('')}
+      ${lines.map((l,i) => `<path d="${l.path}" fill="none" stroke="${l.color}" stroke-width="2.5" stroke-linejoin="round" class="smooth-line" style="animation-delay:${i*0.1}s"/>`).join('')}
+      ${lines.map(l => l.pts.map((p,pi) => `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="${l.color}" stroke="white" stroke-width="2" class="chart-dot" style="animation-delay:${0.8+pi*0.05}s"/>`).join('')).join('')}
     </svg>
     <div class="chart-legend">${lines.map(l => `
       <div class="legend-item"><div class="legend-dot" style="background:${l.color}"></div>${catNames[l.key]}</div>`).join('')}
@@ -1856,7 +2413,12 @@ function showDetail(empId) {
       <div id="rank-display-${empId}" style="margin-top:20px;padding-top:20px;border-top:1px solid #f1f5f9">
         ${initRank ? renderRankBlock(initRank, empId) : '<div style="color:#94a3b8;font-size:13px;text-align:center;padding:8px">IQと戦闘力を入力・保存するとランクが算出されます</div>'}
       </div>
+      ${!getBizIQData(empId) ? '<div style="margin-top:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;font-size:12px;color:#92400e">📋 適性検査データ未登録 — <strong>ID管理</strong>タブから登録してください</div>' : ''}
     </div>`;
+
+  // ビジネスIQ適性検査データ表示
+  const bizIQData = getBizIQData(empId);
+  const bizIQHtml = bizIQData ? renderBizIQCard(bizIQData, empId) : '';
 
   // 実回答データカード
   const ansColors = ['','#ef4444','#f97316','#f59e0b','#eab308','#22c55e','#16a34a','#059669'];
@@ -1899,7 +2461,8 @@ function showDetail(empId) {
     } catch(e) {}
   }
 
-  document.getElementById('detail-content').innerHTML = profileHtml + answerDetailHtml + `
+  // サーベイデータがある場合のみチャート・テーブル・推奨を表示
+  const surveySection = hasAnyData ? `
     <div class="chart-card">
       <h3>カテゴリ別スコア推移（過去6ヶ月）</h3>
       ${svgContent}
@@ -1931,18 +2494,19 @@ function showDetail(empId) {
     <div class="recommend-section">
       <h3>💡 推奨対応${empProfile.mbti && empRank ? `<span style="font-size:12px;font-weight:500;color:#94a3b8;margin-left:10px">ランク ${empRank} × ${empProfile.mbti} 個別カスタマイズ済み</span>` : ''}</h3>
       ${(() => {
+        if (!latestScores) return '<div class="no-alert">サーベイデータがありません</div>';
         const items = catKeys.map(k => {
           const score = latestScores[k];
           const prevScore = prevScores ? prevScores[k] : null;
-          const diff = prevScore !== null ? score - prevScore : null;
-          const st = getCatStatus(k, score, diff);
-          return { k, score, diff, st };
+          const d = prevScore !== null ? score - prevScore : null;
+          const st = getCatStatus(k, score, d);
+          return { k, score, diff: d, st };
         }).filter(item => item.st !== 'ok');
         if (items.length === 0) return '<div class="no-alert">✅ 現在すべてのカテゴリが良好です。</div>';
         const rankTierClass = { S:'ptag-rank-s', A:'ptag-rank-a', B:'ptag-rank-b', C:'ptag-rank-c' };
-        return items.map(({ k, score, diff, st }) => {
+        return items.map(({ k, score, diff: d2, st }) => {
           const guide = getPersonalizedCategoryAction(k, st, empRank, empProfile.mbti);
-          const diffText = diff !== null ? `（前月比 ${diff > 0 ? '+' : ''}${diff}点）` : '';
+          const diffText = d2 !== null ? `（前月比 ${d2 > 0 ? '+' : ''}${d2}点）` : '';
           const tierClass = empRank ? (rankTierClass[empRank[0]] || 'ptag-rank-a') : '';
           const personalizedBlock = guide?.personalized ? `
             <div class="personalized-action-wrap">
@@ -1965,7 +2529,14 @@ function showDetail(empId) {
             </div>`;
         }).join('');
       })()}
+    </div>` : `
+    <div style="background:white;border-radius:14px;padding:40px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:24px">
+      <div style="font-size:40px;margin-bottom:12px">📋</div>
+      <div style="font-size:16px;font-weight:700;color:#1e293b;margin-bottom:6px">サーベイ回答データなし</div>
+      <div style="font-size:13px;color:#64748b">この社員はまだ月次サーベイに回答していません。回答があると、ここにスコア推移・アラート・推奨対応が表示されます。</div>
     </div>`;
+
+  document.getElementById('detail-content').innerHTML = profileHtml + bizIQHtml + answerDetailHtml + surveySection;
 
   showScreen('detail');
 }
@@ -1984,10 +2555,18 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   TAB_NAMES.forEach(t => {
     const el = document.getElementById('tab-' + t);
-    if (el) el.style.display = (t === name) ? 'block' : 'none';
+    if (!el) return;
+    if (t === name) {
+      el.style.display = 'block';
+      el.classList.remove('tab-fade');
+      void el.offsetWidth; // reflow trigger
+      el.classList.add('tab-fade');
+    } else {
+      el.style.display = 'none';
+    }
   });
   if (name === 'employees') renderEmployeeList();
-  if (name === 'idmgmt') renderIdList();
+  if (name === 'idmgmt') { renderIdList(); initBizIQMasterUI(); }
   if (name === 'logic') renderLogicTab();
   if (name === 'settings') renderSettingsTab();
   if (name === 'actions') renderActionPlan();
@@ -2179,10 +2758,14 @@ function doLogin() {
 document.getElementById('login-id').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pw').focus(); });
 document.getElementById('login-pw').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
+let _slideDir = 'next';
 function renderPage() {
   const container = document.getElementById('questions-container');
   const pageData = questions[currentPage];
   container.innerHTML = '';
+  container.classList.remove('survey-slide-next', 'survey-slide-prev');
+  void container.offsetWidth;
+  container.classList.add(_slideDir === 'next' ? 'survey-slide-next' : 'survey-slide-prev');
   pageData.items.forEach(q => {
     const block = document.createElement('div');
     block.className = 'question-block';
@@ -2243,14 +2826,38 @@ function nextPage() {
     if (doneEl) doneEl.innerHTML = '<div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px">📊 今月のあなたのスコア</div>' + doneHtml;
     showScreen('done');
   }
-  else { currentPage++; renderPage(); window.scrollTo(0,0); }
+  else { _slideDir = 'next'; currentPage++; renderPage(); window.scrollTo(0,0); }
 }
 
-function prevPage() { currentPage--; renderPage(); window.scrollTo(0,0); }
+function prevPage() { _slideDir = 'prev'; currentPage--; renderPage(); window.scrollTo(0,0); }
+
+function launchConfetti() {
+  const colors = ['#6366f1','#a855f7','#ec4899','#f59e0b','#22c55e','#06b6d4','#ef4444','#8b5cf6','#10b981'];
+  const shapes = ['square','circle'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const size = 6 + Math.random() * 8;
+      const shape = shapes[Math.floor(Math.random() * shapes.length)];
+      el.style.cssText = `
+        left:${Math.random()*100}vw; top:-20px;
+        width:${size}px; height:${size * (0.4 + Math.random()*0.8)}px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        border-radius:${shape === 'circle' ? '50%' : '2px'};
+        animation:confettiFall ${1.8 + Math.random()*2}s ease-in forwards;
+        animation-delay:${Math.random()*0.6}s;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 18);
+  }
+}
 
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
+  if (name === 'done') setTimeout(launchConfetti, 300);
 }
 
 function goToLogin() {
@@ -2264,8 +2871,15 @@ function goToLogin() {
 function getProfile(empId) {
   const saved = localStorage.getItem(`es_profile_${empId}`);
   const defaults = employees[empId] || {};
-  if (saved) { try { return { ...defaults, ...JSON.parse(saved) }; } catch(e) {} }
-  return defaults;
+  let base;
+  if (saved) { try { base = { ...defaults, ...JSON.parse(saved) }; } catch(e) { base = { ...defaults }; } } else { base = { ...defaults }; }
+  // BizIQ data is authoritative for IQ/battlePower
+  const biziq = getBizIQData(empId);
+  if (biziq) {
+    if (biziq.iqScore) base.iq = biziq.iqScore;
+    if (biziq.battlePower) base.battlePower = biziq.battlePower;
+  }
+  return base;
 }
 
 function saveProfile(empId) {
@@ -2481,6 +3095,23 @@ function renderDemoIds() {
   }).join('');
 }
 
+// ===== 社員データ永続化 =====
+function saveEmployees() {
+  // デフォルト社員以外の追加・変更分をlocalStorageに保存
+  const toSave = {};
+  Object.entries(employees).forEach(([id, emp]) => {
+    // デフォルトに無いか、変更があれば保存
+    if (!_defaultEmployees[id] || JSON.stringify(emp) !== JSON.stringify(_defaultEmployees[id])) {
+      toSave[id] = emp;
+    }
+  });
+  // 削除された社員: デフォルトにあるがemployeesに無い場合、null マーカー
+  Object.keys(_defaultEmployees).forEach(id => {
+    if (!employees[id]) toSave[id] = null;
+  });
+  localStorage.setItem('es_employees', JSON.stringify(toSave));
+}
+
 // ===== ID管理 =====
 let lastIssuedId = '';
 let lastIssuedPw = '';
@@ -2504,14 +3135,13 @@ function issueNewId() {
   const now = new Date();
   const issuedAt = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
   employees[newId] = { name, dept, issuedAt, isNew: true, iq: iq||0, battlePower: battlePower||0, mbti: mbti||'' };
+  saveEmployees();
   // プロフィールをlocalStorageに即時保存
-  if (iq || battlePower || mbti) {
-    const profile = {};
-    if (iq)          profile.iq = iq;
-    if (battlePower) profile.battlePower = battlePower;
-    if (mbti)        profile.mbti = mbti;
-    localStorage.setItem(`es_profile_${newId}`, JSON.stringify(profile));
-  }
+  localStorage.setItem(`es_profile_${newId}`, JSON.stringify({
+    iq: iq || 0,
+    battlePower: battlePower || 0,
+    mbti: mbti || ''
+  }));
   // パスワード生成・保存
   const newPw = genPassword();
   empPasswords[newId] = newPw;
@@ -2538,6 +3168,7 @@ function issueNewId() {
   document.getElementById('new-emp-mbti').value = '';
   rebuildEmpData();
   renderIdList();
+  initBizIQMasterUI();
   showToast('✅ IDを発行しました');
 }
 
@@ -2585,9 +3216,22 @@ function deleteEmployee(id) {
   const emp = employees[id];
   if (!confirm(`${id}（${emp?.name||''}）を削除しますか？\nこの操作は取り消せません。`)) return;
   delete employees[id];
+  saveEmployees();
   delete empData[id];
+  // パスワード削除
+  delete empPasswords[id];
+  localStorage.setItem('es_emp_passwords', JSON.stringify(empPasswords));
+  // 月別回答データ削除
+  months.forEach(m => localStorage.removeItem(`es_${id}_${m}`));
+  // その他関連データ削除
+  localStorage.removeItem(`es_draft_${id}`);
+  localStorage.removeItem(`es_biziq_${id}`);
   localStorage.removeItem(`es_profile_${id}`);
   renderIdList();
+  initBizIQMasterUI();
+  if (document.getElementById('tab-employees').style.display !== 'none') {
+    renderEmployeeList();
+  }
   showToast('🗑 削除しました');
 }
 
@@ -3028,6 +3672,760 @@ function saveActionItem(empId, month, cat) {
   renderActionPlan();
 }
 
+
+// ===== CJK部首文字の正規化 =====
+const _cjkRadicalMap = {'\u2F00':'一','\u2F01':'丨','\u2F02':'丶','\u2F03':'丿','\u2F04':'乙','\u2F05':'亅','\u2F06':'二','\u2F07':'亠','\u2F08':'人','\u2F09':'儿','\u2F0A':'入','\u2F0B':'八','\u2F0C':'冂','\u2F0D':'冖','\u2F0E':'冫','\u2F0F':'几','\u2F10':'凵','\u2F11':'刀','\u2F12':'力','\u2F13':'勹','\u2F14':'匕','\u2F15':'匚','\u2F16':'匸','\u2F17':'十','\u2F18':'卜','\u2F19':'卩','\u2F1A':'厂','\u2F1B':'厶','\u2F1C':'又','\u2F1D':'口','\u2F1E':'囗','\u2F1F':'土','\u2F20':'士','\u2F21':'夂','\u2F22':'夊','\u2F23':'夕','\u2F24':'大','\u2F25':'女','\u2F26':'子','\u2F27':'宀','\u2F28':'寸','\u2F29':'小','\u2F2A':'尢','\u2F2B':'尸','\u2F2C':'屮','\u2F2D':'山','\u2F2E':'巛','\u2F2F':'工','\u2F30':'己','\u2F31':'巾','\u2F32':'干','\u2F33':'幺','\u2F34':'广','\u2F35':'廴','\u2F36':'廾','\u2F37':'弋','\u2F38':'弓','\u2F39':'彐','\u2F3A':'彡','\u2F3B':'彳','\u2F3C':'心','\u2F3D':'戈','\u2F3E':'戶','\u2F3F':'手','\u2F40':'支','\u2F41':'攴','\u2F42':'文','\u2F43':'斗','\u2F44':'斤','\u2F45':'方','\u2F46':'无','\u2F47':'日','\u2F48':'曰','\u2F49':'月','\u2F4A':'木','\u2F4B':'欠','\u2F4C':'止','\u2F4D':'歹','\u2F4E':'殳','\u2F4F':'毋','\u2F50':'比','\u2F51':'毛','\u2F52':'氏','\u2F53':'气','\u2F54':'水','\u2F55':'火','\u2F56':'爪','\u2F57':'父','\u2F58':'爻','\u2F59':'爿','\u2F5A':'片','\u2F5B':'牙','\u2F5C':'牛','\u2F5D':'犬','\u2F5E':'玄','\u2F5F':'玉','\u2F60':'瓜','\u2F61':'瓦','\u2F62':'甘','\u2F63':'生','\u2F64':'用','\u2F65':'田','\u2F66':'疋','\u2F67':'疒','\u2F68':'癶','\u2F69':'白','\u2F6A':'皮','\u2F6B':'皿','\u2F6C':'目','\u2F6D':'矛','\u2F6E':'矢','\u2F6F':'石','\u2F70':'示','\u2F71':'禸','\u2F72':'禾','\u2F73':'穴','\u2F74':'立','\u2F75':'竹','\u2F76':'米','\u2F77':'糸','\u2F78':'缶','\u2F79':'网','\u2F7A':'羊','\u2F7B':'羽','\u2F7C':'老','\u2F7D':'而','\u2F7E':'耒','\u2F7F':'耳','\u2F80':'聿','\u2F81':'肉','\u2F82':'臣','\u2F83':'自','\u2F84':'至','\u2F85':'臼','\u2F86':'舌','\u2F87':'舛','\u2F88':'舟','\u2F89':'艮','\u2F8A':'色','\u2F8B':'艸','\u2F8C':'虍','\u2F8D':'虫','\u2F8E':'血','\u2F8F':'行','\u2F90':'衣','\u2F91':'襾','\u2F92':'見','\u2F93':'角','\u2F94':'言','\u2F95':'谷','\u2F96':'豆','\u2F97':'豕','\u2F98':'豸','\u2F99':'貝','\u2F9A':'赤','\u2F9B':'走','\u2F9C':'足','\u2F9D':'身','\u2F9E':'車','\u2F9F':'辛','\u2FA0':'辰','\u2FA1':'辵','\u2FA2':'邑','\u2FA3':'酉','\u2FA4':'釆','\u2FA5':'里','\u2FA6':'金','\u2FA7':'長','\u2FA8':'門','\u2FA9':'阜','\u2FAA':'隶','\u2FAB':'隹','\u2FAC':'雨','\u2FAD':'靑','\u2FAE':'非','\u2FAF':'面','\u2FB0':'革','\u2FB1':'韋','\u2FB2':'韭','\u2FB3':'音','\u2FB4':'頁','\u2FB5':'風','\u2FB6':'飛','\u2FB7':'食','\u2FB8':'首','\u2FB9':'香','\u2FBA':'馬','\u2FBB':'骨','\u2FBC':'高','\u2FBD':'髟','\u2FBE':'鬥','\u2FBF':'鬯','\u2FC0':'鬲','\u2FC1':'鬼','\u2FC2':'魚','\u2FC3':'鳥','\u2FC4':'鹵','\u2FC5':'鹿','\u2FC6':'麥','\u2FC7':'麻','\u2FC8':'黃','\u2FC9':'黍','\u2FCA':'黑','\u2FCB':'黹','\u2FCC':'黽','\u2FCD':'鼎','\u2FCE':'鼓','\u2FCF':'鼠','\u2FD0':'鼻','\u2FD1':'齊','\u2FD2':'齒','\u2FD3':'龍','\u2FD4':'龜','\u2FD5':'龠'};
+function normalizeCJK(s) {
+  let r = '';
+  for (const ch of s) {
+    r += _cjkRadicalMap[ch] || ch;
+  }
+  return r.replace(/\u2027/g, '・');
+}
+
+// ===== PDF テキスト抽出 =====
+async function extractPDFText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+
+  // 方法1: pdf.js が使える場合
+  if (typeof pdfjsLib !== 'undefined') {
+    try {
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+      let fullText = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        for (const item of content.items) {
+          const t = (item.str || '').trim();
+          if (t) fullText += t + '\n';
+        }
+      }
+      if (fullText.length > 10) return fullText;
+    } catch(e) {
+      console.warn('pdf.js extraction failed, trying fallback:', e);
+    }
+  }
+
+  // 方法2: フォールバック（DecompressionStream API でPDFストリーム解凍）
+  const bytes = new Uint8Array(arrayBuffer);
+  const latin = new TextDecoder('latin1').decode(bytes);
+  const results = [];
+  const re = /stream\r?\n/g;
+  let m;
+  while ((m = re.exec(latin)) !== null) {
+    const start = m.index + m[0].length;
+    const endIdx = latin.indexOf('endstream', start);
+    if (endIdx < 0) continue;
+    const chunk = bytes.slice(start, endIdx);
+    if (chunk.length < 10) continue;
+    try {
+      const ds = new DecompressionStream('deflate');
+      const writer = ds.writable.getWriter();
+      writer.write(chunk); writer.close();
+      const buf = await new Response(ds.readable).arrayBuffer();
+      const decoded = new TextDecoder('utf-8', {fatal:false}).decode(buf);
+      // BT...ET内のTj/TJテキスト抽出
+      const tjRe = /\(([^)]*)\)\s*Tj|\[([^\]]*)\]\s*TJ/g;
+      let tm;
+      while ((tm = tjRe.exec(decoded)) !== null) {
+        if (tm[1] !== undefined) {
+          results.push(tm[1]);
+        } else if (tm[2] !== undefined) {
+          const inner = [];
+          const ireg = /\(([^)]*)\)/g;
+          let im;
+          while ((im = ireg.exec(tm[2])) !== null) inner.push(im[1]);
+          results.push(inner.join(''));
+        }
+      }
+    } catch(e) { /* skip non-deflate streams */ }
+  }
+  return results.join('\n');
+}
+
+// ===== ビジネスIQ適性検査 PDFアップロード =====
+async function handleUnifiedPDF(file, empId) {
+  if (!file) { showToast('⚠️ ファイルを選択してください'); return; }
+  try {
+    if (typeof pdfjsLib === 'undefined') {
+      showToast('⚠️ PDF読取ライブラリが読み込めていません');
+      return;
+    }
+    const fullText = await extractPDFText(file);
+    if (!fullText || fullText.length < 10) {
+      showToast('⚠️ PDFからテキストを抽出できませんでした');
+      return;
+    }
+    const normalized = normalizeCJK(fullText);
+    const data = parseBusinessIQText(normalized);
+    if (!data) {
+      showToast('⚠️ ビジネスIQ適性検査のデータを読み取れませんでした');
+      return;
+    }
+    saveBizIQData(empId, data);
+    // IQ・戦闘力をプロフィールに自動反映
+    const profile = getProfile(empId);
+    const newProfile = {
+      iq: data.iqScore || profile.iq || 0,
+      battlePower: data.battlePower || profile.battlePower || 0,
+      mbti: profile.mbti || ''
+    };
+    localStorage.setItem(`es_profile_${empId}`, JSON.stringify(newProfile));
+    if (employees[empId]) {
+      employees[empId].iq = newProfile.iq;
+      employees[empId].battlePower = newProfile.battlePower;
+    }
+    showToast('✅ ビジネスIQ適性検査データを取り込みました');
+    showDetail(empId);
+  } catch(e) {
+    console.error('BizIQ PDF error:', e);
+    showToast('⚠️ PDFの読み取りに失敗しました: ' + e.message);
+  }
+}
+
+// 旧データ互換（残存データ表示用）
+function getKensaData(empId) {
+  return null; // 旧形式は非対応
+}
+
+// ===== テキスト貼り付けハンドラー =====
+function handleBizIQPaste(empId) {
+  const textarea = document.getElementById(`biziq-textarea-${empId}`);
+  const rawText = textarea?.value || '';
+  if (!rawText.trim()) {
+    showToast('⚠️ テキストを貼り付けてください');
+    return;
+  }
+  const normalized = normalizeCJK(rawText);
+  const data = parseBusinessIQText(normalized);
+  if (!data) {
+    showToast('⚠️ ビジネスIQ適性検査のデータを認識できませんでした');
+    return;
+  }
+  saveBizIQData(empId, data);
+  const profile = getProfile(empId);
+  const newProfile = {
+    iq: data.iqScore || profile.iq || 0,
+    battlePower: data.battlePower || profile.battlePower || 0,
+    mbti: profile.mbti || ''
+  };
+  localStorage.setItem(`es_profile_${empId}`, JSON.stringify(newProfile));
+  if (employees[empId]) {
+    employees[empId].iq = newProfile.iq;
+    employees[empId].battlePower = newProfile.battlePower;
+  }
+  showToast('✅ ビジネスIQ適性検査データを取り込みました');
+  showDetail(empId);
+}
+
+// ===== ビジネスIQ適性検査 パーサー =====
+function getBizIQData(empId) {
+  const saved = localStorage.getItem(`es_biziq_${empId}`);
+  if (saved) { try { return JSON.parse(saved); } catch(e) {} }
+  return null;
+}
+function saveBizIQData(empId, data) {
+  localStorage.setItem(`es_biziq_${empId}`, JSON.stringify(data));
+}
+
+function parseBusinessIQText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+  // ヘルパー: ラベルの近くから数値を取得
+  function findScore(label, minVal, maxVal) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i] === label || lines[i].startsWith(label)) {
+        for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+          const n = parseFloat(lines[j].replace(/,/g, ''));
+          if (!isNaN(n) && n >= minVal && n <= maxVal) return n;
+        }
+      }
+    }
+    return null;
+  }
+
+  // ヘルパー: ラベル＋スコア＋差分のセットを取得
+  function findScoreWithDiff(label) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i] === label) {
+        let score = null, diff = null;
+        for (let j = i + 1; j < Math.min(i + 6, lines.length); j++) {
+          const l = lines[j];
+          // 差分値: +19, -7, ±0
+          if (score !== null && /^[+\-±]\d+$/.test(l)) {
+            diff = l.startsWith('±') ? 0 : parseInt(l);
+            break;
+          }
+          // スコア値: 0〜100の純粋な数値（符号なし）
+          if (score === null && /^\d+$/.test(l)) {
+            const n = parseInt(l);
+            if (n >= 0 && n <= 100) { score = n; continue; }
+          }
+          // 次のラベルに到達したら中断
+          if (score !== null && !/^\d/.test(l) && !/^[+\-±]/.test(l)) break;
+        }
+        if (score !== null) return { score, diff };
+      }
+    }
+    return null;
+  }
+
+  // 受験者名
+  let name = '';
+  for (const line of lines) {
+    const m = line.match(/受験者[:：]\s*(.+?)[\s|]/);
+    if (m) { name = m[1].trim(); break; }
+  }
+
+  // 受験日
+  let examDate = '';
+  for (const line of lines) {
+    const m = line.match(/受験日[:：]\s*(\d{4}\/\d{1,2}\/\d{1,2})/);
+    if (m) { examDate = m[1]; break; }
+  }
+
+  // ID
+  let examId = '';
+  for (const line of lines) {
+    const m = line.match(/ID[:：]\s*(\d+)/);
+    if (m) { examId = m[1]; break; }
+  }
+
+  // 16ランク
+  let rank16 = '';
+  const rank16Val = findScore('16ランク', 0, 99999);
+  if (!rank16Val) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i] === '16ランク') {
+        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+          if (/^[SABC]\d$/.test(lines[j])) { rank16 = lines[j]; break; }
+        }
+        break;
+      }
+    }
+  }
+  if (!rank16) {
+    for (let i = 0; i < lines.length; i++) {
+      if (/^[SABC]\d$/.test(lines[i]) && i > 0 && lines[i-1].includes('ランク')) { rank16 = lines[i]; break; }
+    }
+  }
+
+  // ビジネス戦闘力
+  let battlePower = null;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i] === 'ビジネス戦闘力') {
+      for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+        const n = parseInt(lines[j].replace(/,/g, ''));
+        if (!isNaN(n) && n > 100) { battlePower = n; break; }
+      }
+      break;
+    }
+  }
+
+  // IQスコア
+  let iqScore = null;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i] === 'IQスコア') {
+      for (let j = i + 1; j < Math.min(i + 4, lines.length); j++) {
+        const n = parseInt(lines[j]);
+        if (!isNaN(n) && n >= 50 && n <= 200) { iqScore = n; break; }
+      }
+      break;
+    }
+  }
+
+  // IQランク - まずIQ詳細セクション内を優先
+  let iqRank = '';
+  const iqDetailIdx = lines.findIndex(l => l.includes('IQ 詳細') || l.includes('IQ詳細'));
+  if (iqDetailIdx >= 0) {
+    for (let i = iqDetailIdx; i < lines.length; i++) {
+      if (lines[i] === 'IQランク') {
+        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+          if (/^[SABCDE]$/.test(lines[j])) { iqRank = lines[j]; break; }
+        }
+        break;
+      }
+    }
+  }
+  // フォールバック: "ランク: S" パターン
+  if (!iqRank) {
+    for (const line of lines) {
+      const m = line.match(/^ランク[:：]\s*([SABCDE])$/);
+      if (m) { iqRank = m[1]; break; }
+    }
+  }
+
+  // 回答信頼スコア
+  let trustScore = null;
+  // パターン1: 1行に「回答信頼スコア: 10/10」
+  for (const line of lines) {
+    const m = line.match(/回答信頼スコア[:：]?\s*(\d+)\s*[\/／]\s*(\d+)/);
+    if (m) { trustScore = { score: parseInt(m[1]), max: parseInt(m[2]) }; break; }
+  }
+  // パターン2: 「回答信頼スコア」行の後に「10/10」や「10」が別行にある
+  if (!trustScore) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes('回答信頼') && !lines[i].match(/\d+\s*[\/／]\s*\d+/)) {
+        for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+          const m2 = lines[j].match(/^(\d+)\s*[\/／]\s*(\d+)/);
+          if (m2) { trustScore = { score: parseInt(m2[1]), max: parseInt(m2[2]) }; break; }
+          // 「10」だけの行 → max=10と仮定
+          if (/^\d+$/.test(lines[j]) && parseInt(lines[j]) <= 10) {
+            trustScore = { score: parseInt(lines[j]), max: 10 }; break;
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  // スピード評価
+  let speedGrade = '';
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i] === 'スピード評価') {
+      for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+        if (/^[SABCDE]$/.test(lines[j].trim())) { speedGrade = lines[j].trim(); break; }
+      }
+    }
+  }
+
+  // 行動特性
+  const behavior = {};
+  ['自主性','決断性','活動性','探索性','対人性','慎重性','執着性'].forEach(k => {
+    const r = findScoreWithDiff(k);
+    if (r) behavior[k] = r;
+  });
+
+  // 潜在価値観
+  const values = {};
+  ['成長志向','貢献志向','充実志向','安定志向','報酬志向'].forEach(k => {
+    const r = findScoreWithDiff(k);
+    if (r) values[k] = r;
+  });
+
+  // 欲求の傾向
+  const desire = {};
+  ['向上意欲','自律意欲','挑戦意欲','探究意欲','影響意欲','承認意欲','活動意欲'].forEach(k => {
+    const r = findScoreWithDiff(k);
+    if (r) desire[k] = r;
+  });
+
+  // 思考特性
+  const thinking = {};
+  ['実行力','分析力','直感力','共感力'].forEach(k => {
+    const r = findScoreWithDiff(k);
+    if (r) thinking[k] = r;
+  });
+
+  // ストレス耐性
+  const stress = {};
+  ['精神耐性','身体耐性'].forEach(k => {
+    const r = findScoreWithDiff(k);
+    if (r) stress[k] = r;
+  });
+
+  // 職務適性
+  const jobAptitude = {};
+  ['組織統率適性','対人構築適性','新規開拓適性','企画創造適性','分析改善適性','臨機応変適性','精密注意適性','定型反復適性'].forEach(k => {
+    const r = findScoreWithDiff(k);
+    if (r) jobAptitude[k] = r;
+  });
+
+  // リスク傾向
+  const risk = {};
+  ['規律逸脱傾向','気分変動傾向','非コミット傾向','悲観傾向','自己否定傾向','対人不適応傾向'].forEach(k => {
+    const r = findScoreWithDiff(k);
+    if (r) risk[k] = r;
+  });
+
+  // IQ能力詳細
+  const iqAbilities = {};
+  const iqAbilityLabels = ['分析力','思考力','図形認知力','洞察力','計算力','言語読解力'];
+  // IQ詳細セクション以降から取得（ページ2）
+  let iqSectionStart = lines.findIndex(l => l.includes('IQ 詳細') || l.includes('IQ詳細'));
+  if (iqSectionStart < 0) iqSectionStart = lines.length - 50; // fallback
+  for (const label of iqAbilityLabels) {
+    for (let i = Math.max(0, iqSectionStart); i < lines.length; i++) {
+      if (lines[i] === label) {
+        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+          const n = parseInt(lines[j]);
+          if (!isNaN(n) && n >= 1 && n <= 10) { iqAbilities[label] = n; break; }
+        }
+        break;
+      }
+    }
+  }
+
+  // IQ正答率
+  const iqAccuracy = {};
+  const accLabels = ['パターン認識','抽象推論','図形分析','演繹的推論','数的推論','文章読解'];
+  for (const label of accLabels) {
+    for (let i = Math.max(0, iqSectionStart); i < lines.length; i++) {
+      if (lines[i] === label) {
+        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+          const n = parseFloat(lines[j]);
+          if (!isNaN(n) && n >= 0 && n <= 100) { iqAccuracy[label] = n; break; }
+        }
+        break;
+      }
+    }
+  }
+
+  // IQ版職務適性
+  const iqJobAptitude = {};
+  const iqJobLabels = ['総合評価','スピード重視','発想力・柔軟性','決断力','集中・着実','多角的視点','情報統合','文章力'];
+  for (const label of iqJobLabels) {
+    for (let i = Math.max(0, iqSectionStart); i < lines.length; i++) {
+      if (lines[i] === label) {
+        for (let j = i + 1; j < Math.min(i + 3, lines.length); j++) {
+          const n = parseInt(lines[j]);
+          if (!isNaN(n) && n >= 0 && n <= 10) { iqJobAptitude[label] = n; break; }
+        }
+        break;
+      }
+    }
+  }
+
+  // 分析コメント
+  let comment = '';
+  const commentIdx = lines.findIndex(l => l === '分析コメント');
+  if (commentIdx >= 0) {
+    const parts = [];
+    for (let i = commentIdx + 1; i < lines.length; i++) {
+      if (lines[i].includes('IQ 詳細') || lines[i].includes('IQ詳細') || /^\d+\s/.test(lines[i])) break;
+      parts.push(lines[i]);
+    }
+    comment = parts.join('');
+  }
+
+  if (!iqScore && !battlePower) return null;
+
+  return {
+    name, examDate, examId, rank16, battlePower, iqScore, iqRank, trustScore, speedGrade,
+    behavior, values, desire, thinking, stress,
+    jobAptitude, risk,
+    iqAbilities, iqAccuracy, iqJobAptitude,
+    comment
+  };
+}
+
+// ===== ビジネスIQ適性検査 レンダラー =====
+function biziqScoreColor(v) {
+  if (v >= 65) return '#16a34a';
+  if (v >= 50) return '#d97706';
+  return '#dc2626';
+}
+function biziqDiffHtml(diff) {
+  if (diff === null || diff === undefined) return '';
+  const color = diff > 0 ? '#16a34a' : diff < 0 ? '#dc2626' : '#94a3b8';
+  const sign = diff > 0 ? '+' : diff === 0 ? '±' : '';
+  return `<span class="biziq-item-diff" style="color:${color}">${sign}${diff}</span>`;
+}
+function renderBizIQItems(items, hasCenter) {
+  return Object.entries(items).map(([k, v]) => {
+    const score = typeof v === 'object' ? v.score : v;
+    const diff = typeof v === 'object' ? v.diff : null;
+    const color = biziqScoreColor(score);
+    return `<div class="biziq-item">
+      <span class="biziq-item-name">${k}</span>
+      <div class="biziq-item-bar">${hasCenter ? '<div class="biziq-item-bar-center"></div>' : ''}<div class="biziq-item-bar-fill" style="width:${score}%;background:${color}"></div></div>
+      <span class="biziq-item-score" style="color:${color}">${score}</span>
+      ${biziqDiffHtml(diff)}
+    </div>`;
+  }).join('');
+}
+function renderBizIQItemsWithDesc(items, descs) {
+  return Object.entries(items).map(([k, v]) => {
+    const score = typeof v === 'object' ? v.score : v;
+    const diff = typeof v === 'object' ? v.diff : null;
+    const color = biziqScoreColor(score);
+    const desc = descs?.[k] || '';
+    return `<div class="biziq-item">
+      <span class="biziq-item-name">${k}</span>
+      <div class="biziq-item-bar"><div class="biziq-item-bar-fill" style="width:${score}%;background:${color}"></div></div>
+      <span class="biziq-item-score" style="color:${color}">${score}</span>
+      ${biziqDiffHtml(diff)}
+      ${desc ? `<span class="biziq-item-desc">${desc}</span>` : ''}
+    </div>`;
+  }).join('');
+}
+function renderBizIQRisk(items) {
+  return Object.entries(items).map(([k, v]) => {
+    const score = v.score;
+    const diff = v.diff;
+    const color = score <= 25 ? '#16a34a' : score <= 40 ? '#d97706' : '#dc2626';
+    const label = score <= 25 ? '許容' : score <= 40 ? '注意' : '警戒';
+    const labelBg = score <= 25 ? '#f0fdf4' : score <= 40 ? '#fffbeb' : '#fef2f2';
+    return `<div class="biziq-item">
+      <span class="biziq-item-name">${k}</span>
+      <div class="biziq-item-bar"><div class="biziq-item-bar-fill" style="width:${score}%;background:${color}"></div></div>
+      <span class="biziq-item-score" style="color:${color}">${score}</span>
+      ${biziqDiffHtml(diff)}
+      <span class="biziq-item-label" style="background:${labelBg};color:${color}">${label}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderBizIQCard(data, empId) {
+  const rankColor = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
+  const tier = data.rank16 ? data.rank16[0] : '';
+  const rc = rankColor[tier] || '#6b7280';
+  const trustColor = data.trustScore ? (data.trustScore.score >= 8 ? '#16a34a' : data.trustScore.score >= 4 ? '#d97706' : '#dc2626') : '#6b7280';
+
+  // メタ
+  let metaHtml = '<div class="kensa-meta">';
+  if (data.name) metaHtml += `<span class="kensa-meta-item">👤 ${data.name}</span>`;
+  if (data.examDate) metaHtml += `<span class="kensa-meta-item">📅 ${data.examDate}</span>`;
+  if (data.examId) metaHtml += `<span class="kensa-meta-item">🆔 ${data.examId}</span>`;
+  metaHtml += `<button class="btn btn-secondary btn-sm" onclick="if(confirm('ビジネスIQ適性検査データを削除しますか？')){localStorage.removeItem('es_biziq_${empId}');showDetail('${empId}')}">🗑 削除</button>`;
+  metaHtml += '</div>';
+
+  // ヒーロー
+  const heroHtml = `<div class="biziq-hero">
+    <div class="biziq-hero-item" style="background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1px solid #c7d2fe">
+      <div class="biziq-hero-label" style="color:${rc}">🏆 16ランク</div>
+      <div class="biziq-hero-value" style="color:${rc}">${data.rank16 || '―'}</div>
+    </div>
+    <div class="biziq-hero-item" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1px solid #fed7aa">
+      <div class="biziq-hero-label" style="color:#9a3412">⚡ ビジネス戦闘力</div>
+      <div class="biziq-hero-value" style="color:#ea580c">${data.battlePower ? data.battlePower.toLocaleString() : '―'}</div>
+    </div>
+    <div class="biziq-hero-item" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1px solid #ddd6fe">
+      <div class="biziq-hero-label" style="color:#6d28d9">🧠 IQスコア</div>
+      <div class="biziq-hero-value" style="color:#4c1d95">${data.iqScore || '―'}</div>
+      <div class="biziq-hero-sub" style="color:#7c3aed">${data.iqRank ? 'ランク ' + data.iqRank : ''}</div>
+    </div>
+    <div class="biziq-hero-item" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #bbf7d0">
+      <div class="biziq-hero-label" style="color:${trustColor}">🔒 回答信頼</div>
+      <div class="biziq-hero-value" style="color:${trustColor}">${data.trustScore ? data.trustScore.score + '/' + data.trustScore.max : '―'}</div>
+      <div class="biziq-hero-sub" style="color:${trustColor}">${data.trustScore ? (data.trustScore.score >= 8 ? '高信頼' : data.trustScore.score >= 4 ? '要注意' : '低信頼') : ''}</div>
+    </div>
+  </div>`;
+
+  // 行動特性
+  let behaviorHtml = '';
+  if (Object.keys(data.behavior).length > 0) {
+    behaviorHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#6366f1">🎭 行動特性 <span class="biziq-section-desc">スコアの高低は行動傾向の方向性（優劣ではない）</span></div>
+      ${renderBizIQItems(data.behavior, true)}
+    </div>`;
+  }
+
+  // 潜在価値観
+  let valuesHtml = '';
+  if (Object.keys(data.values).length > 0) {
+    valuesHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#8b5cf6">💎 潜在価値観 <span class="biziq-section-desc">無意識の判断基準</span></div>
+      ${renderBizIQItems(data.values, true)}
+    </div>`;
+  }
+
+  // 欲求の傾向
+  let desireHtml = '';
+  if (Object.keys(data.desire).length > 0) {
+    desireHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#ea580c">🔥 欲求の傾向 <span class="biziq-section-desc">高いほど意欲が強い</span></div>
+      ${renderBizIQItems(data.desire, false)}
+    </div>`;
+  }
+
+  // 思考特性
+  let thinkingHtml = '';
+  if (Object.keys(data.thinking).length > 0) {
+    thinkingHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#2563eb">🧠 思考特性 <span class="biziq-section-desc">高いほど強い</span></div>
+      ${renderBizIQItems(data.thinking, false)}
+    </div>`;
+  }
+
+  // ストレス耐性
+  let stressHtml = '';
+  if (Object.keys(data.stress).length > 0) {
+    stressHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#059669">💪 ストレス耐性 <span class="biziq-section-desc">高いほど耐性が強い</span></div>
+      ${renderBizIQItems(data.stress, false)}
+    </div>`;
+  }
+
+  // 職務適性
+  let jobHtml = '';
+  if (Object.keys(data.jobAptitude).length > 0) {
+    const jobLabels = {};
+    Object.entries(data.jobAptitude).forEach(([k,v]) => {
+      const s = v.score;
+      jobLabels[k] = s >= 60 ? '高い' : s >= 45 ? '要努力' : '低い';
+    });
+    const items = Object.entries(data.jobAptitude).map(([k, v]) => {
+      const color = biziqScoreColor(v.score);
+      const label = v.score >= 60 ? '高い' : v.score >= 45 ? '要努力' : '低い';
+      const labelBg = v.score >= 60 ? '#f0fdf4' : v.score >= 45 ? '#fffbeb' : '#fef2f2';
+      return `<div class="biziq-item">
+        <span class="biziq-item-name">${k}</span>
+        <div class="biziq-item-bar"><div class="biziq-item-bar-fill" style="width:${v.score}%;background:${color}"></div></div>
+        <span class="biziq-item-score" style="color:${color}">${v.score}</span>
+        ${biziqDiffHtml(v.diff)}
+        <span class="biziq-item-label" style="background:${labelBg};color:${color}">${label}</span>
+      </div>`;
+    }).join('');
+    jobHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#d97706">💼 職務適性</div>
+      ${items}
+    </div>`;
+  }
+
+  // リスク傾向
+  let riskHtml = '';
+  if (Object.keys(data.risk).length > 0) {
+    riskHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#dc2626">⚠️ リスク傾向 <span class="biziq-section-desc">低いほど良好</span></div>
+      ${renderBizIQRisk(data.risk)}
+    </div>`;
+  }
+
+  // IQ詳細
+  let iqDetailHtml = '';
+  if (Object.keys(data.iqAbilities).length > 0) {
+    const abilityItems = Object.entries(data.iqAbilities).map(([k, v]) => {
+      const color = v >= 8 ? '#7c3aed' : v >= 6 ? '#16a34a' : v >= 4 ? '#d97706' : '#dc2626';
+      return `<div class="biziq-item">
+        <span class="biziq-item-name">${k}</span>
+        <div class="biziq-item-bar"><div class="biziq-item-bar-fill" style="width:${v*10}%;background:${color}"></div></div>
+        <span class="biziq-item-score" style="color:${color}">${v}<span style="font-size:10px;color:#94a3b8">/10</span></span>
+      </div>`;
+    }).join('');
+    const accItems = Object.entries(data.iqAccuracy).map(([k, v]) => {
+      const color = v >= 80 ? '#16a34a' : v >= 60 ? '#d97706' : '#dc2626';
+      return `<div class="biziq-item">
+        <span class="biziq-item-name">${k}</span>
+        <div class="biziq-item-bar"><div class="biziq-item-bar-fill" style="width:${v}%;background:${color}"></div></div>
+        <span class="biziq-item-score" style="color:${color}">${v}<span style="font-size:10px;color:#94a3b8">%</span></span>
+      </div>`;
+    }).join('');
+    const iqJobItems = Object.entries(data.iqJobAptitude).map(([k, v]) => {
+      const color = v >= 8 ? '#7c3aed' : v >= 6 ? '#16a34a' : v >= 4 ? '#d97706' : '#dc2626';
+      return `<div class="biziq-item">
+        <span class="biziq-item-name">${k}</span>
+        <div class="biziq-item-bar"><div class="biziq-item-bar-fill" style="width:${v*10}%;background:${color}"></div></div>
+        <span class="biziq-item-score" style="color:${color}">${v}<span style="font-size:10px;color:#94a3b8">/10</span></span>
+      </div>`;
+    }).join('');
+    iqDetailHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#7c3aed">🔬 IQ詳細 ${data.speedGrade ? `<span style="font-size:11px;background:#f1f5f9;padding:2px 8px;border-radius:6px;color:#64748b">スピード評価: ${data.speedGrade}</span>` : ''}</div>
+      <div class="biziq-dual">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">評価能力（10段階）</div>
+          ${abilityItems}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">分野別正答率</div>
+          ${accItems}
+        </div>
+      </div>
+      ${Object.keys(data.iqJobAptitude).length > 0 ? `<div style="margin-top:12px"><div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px">職務適性・IQ版（10段階）</div>${iqJobItems}</div>` : ''}
+    </div>`;
+  }
+
+  // コメント
+  let commentHtml = '';
+  if (data.comment) {
+    commentHtml = `<div class="biziq-section">
+      <div class="biziq-section-title" style="color:#475569">📝 分析コメント</div>
+      <div style="background:#f8fafc;border-left:3px solid #6366f1;padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:#374151;line-height:1.75">${data.comment}</div>
+    </div>`;
+  }
+
+  return `<div class="biziq-card" id="biziq-card-${empId}">
+    <h3>📋 ビジネスIQ適性検査 結果</h3>
+    ${metaHtml}${heroHtml}
+    <div class="biziq-dual">${behaviorHtml ? `<div>${behaviorHtml}${valuesHtml}</div>` : ''}${desireHtml || thinkingHtml || stressHtml ? `<div>${desireHtml}${thinkingHtml}${stressHtml}</div>` : ''}</div>
+    ${jobHtml}${riskHtml}${iqDetailHtml}${commentHtml}
+  </div>`;
+}
+
+// ===== 適性検査マスタ管理 =====
+function initBizIQMasterUI() {
+  const sel = document.getElementById('biziq-target-emp');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">社員を選択...</option>' +
+    Object.entries(employees).map(([id, e]) => `<option value="${id}">${e.name}（${id}）</option>`).join('');
+  renderBizIQMasterTable();
+}
+
+function renderBizIQMasterTable() {
+  const tbody = document.getElementById('biziq-master-tbody');
+  if (!tbody) return;
+  const rows = Object.keys(employees).map(id => {
+    const d = getBizIQData(id);
+    if (!d) return null;
+    const rc = {S:'rank-s',A:'rank-a',B:'rank-b',C:'rank-c'}[d.rank16?.[0]] || '';
+    const trust = d.trustScore ? `${d.trustScore.score}/${d.trustScore.max}` : '―';
+    return `<tr>
+      <td><span class="id-badge">${id}</span></td>
+      <td style="font-weight:600">${employees[id]?.name || id}</td>
+      <td><span class="dept-chip">${employees[id]?.dept || ''}</span></td>
+      <td>${d.rank16 ? `<span class="rank-badge-sm ${rc}">${d.rank16}</span>` : '―'}</td>
+      <td style="font-weight:700;color:#4c1d95">${d.iqScore || '―'}</td>
+      <td style="font-weight:700;color:#ea580c">${d.battlePower ? d.battlePower.toLocaleString() : '―'}</td>
+      <td>${trust}</td>
+      <td style="font-size:12px;color:#94a3b8">${d.examDate || '―'}</td>
+      <td>
+        <button class="detail-link" onclick="showDetail('${id}')">詳細</button>
+        <button class="detail-link" style="background:#fef2f2;color:#dc2626" onclick="if(confirm('${employees[id]?.name}の適性検査データを削除しますか？')){localStorage.removeItem('es_biziq_${id}');renderBizIQMasterTable();showToast('🗑 削除しました')}">削除</button>
+      </td>
+    </tr>`;
+  }).filter(Boolean);
+  tbody.innerHTML = rows.length > 0 ? rows.join('') :
+    '<tr><td colspan="9" style="text-align:center;color:#94a3b8;padding:24px">適性検査データが登録されている社員はいません</td></tr>';
+}
+
+function applyBizIQToProfile(empId, data) {
+  const profile = getProfile(empId);
+  const newProfile = {
+    iq: data.iqScore || profile.iq || 0,
+    battlePower: data.battlePower || profile.battlePower || 0,
+    mbti: profile.mbti || ''
+  };
+  localStorage.setItem(`es_profile_${empId}`, JSON.stringify(newProfile));
+  if (employees[empId]) {
+    employees[empId].iq = newProfile.iq;
+    employees[empId].battlePower = newProfile.battlePower;
+  }
+}
+
+function handleMasterPaste() {
+  const empId = document.getElementById('biziq-target-emp').value;
+  if (!empId) { showToast('⚠️ 対象社員を選択してください'); return; }
+  const rawText = document.getElementById('biziq-textarea-master').value;
+  if (!rawText.trim()) { showToast('⚠️ テキストを貼り付けてください'); return; }
+  const data = parseBusinessIQText(normalizeCJK(rawText));
+  if (!data) { showToast('⚠️ データを認識できませんでした'); return; }
+  saveBizIQData(empId, data);
+  applyBizIQToProfile(empId, data);
+  document.getElementById('biziq-textarea-master').value = '';
+  document.getElementById('biziq-paste-master').style.display = 'none';
+  renderBizIQMasterTable();
+  showToast(`✅ ${employees[empId]?.name || empId} の適性検査データを登録しました`);
+}
+
+function handleMasterPDF(input) {
+  const empId = document.getElementById('biziq-target-emp').value;
+  if (!empId) { showToast('⚠️ 対象社員を選択してください'); input.value = ''; return; }
+  const file = input.files[0];
+  if (!file) return;
+  handleUnifiedPDF(file, empId).then(() => {
+    renderBizIQMasterTable();
+    input.value = '';
+  });
+}
+
+// ===== マスタタブ切替 =====
+function switchMasterTab(name, btn) {
+  document.querySelectorAll('.master-tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.master-tab').forEach(b => b.classList.remove('active'));
+  const target = document.getElementById('master-' + name);
+  if (target) target.style.display = 'block';
+  if (btn) btn.classList.add('active');
+}
 
 initEmpPasswords();
 rebuildEmpData();
