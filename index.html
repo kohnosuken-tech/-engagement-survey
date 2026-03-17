@@ -1121,63 +1121,6 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
       </div>
     </div>
 
-    <!-- ランク詳細一覧 -->
-    <div class="logic-section">
-      <h3>🏆 ランク詳細定義（S1〜C4）</h3>
-      <p class="logic-desc">各ランクの思考力・実行力・育成方針を定義します。</p>
-      <div style="overflow-x:auto">
-        <table class="rank-list-table" id="rank-detail-table"></table>
-      </div>
-    </div>
-
-    <!-- MBTIグループ -->
-    <div class="logic-section">
-      <h3>🧠 MBTIグループ定義</h3>
-      <p class="logic-desc">16種類のMBTIタイプを4グループに分類し、それぞれの傾向をまとめています。</p>
-      <div class="mbti-group-grid" id="mbti-group-grid"></div>
-    </div>
-
-    <!-- MBTI × Rank ペルソナ一覧 -->
-    <div class="logic-section">
-      <h3>🎭 ランク（S1〜C4）× MBTIタイプ　ペルソナ一覧（256パターン）</h3>
-      <p class="logic-desc">16ランク（S1〜C4）× MBTIタイプ（16種）の組み合わせで動的生成される256パターンのペルソナ定義です。特定の組み合わせは <code>rankMbtiOverrides</code> でカスタム上書き可能です。</p>
-      <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:flex-end">
-        <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:5px">ランクで絞り込み</label>
-          <select id="filter-rank" onchange="renderPersonaTable()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#334155">
-            <option value="">すべてのランク</option>
-            <optgroup label="S ティア（IQ120+）">
-              <option>S1</option><option>S2</option><option>S3</option><option>S4</option>
-            </optgroup>
-            <optgroup label="A ティア（IQ105〜119）">
-              <option>A1</option><option>A2</option><option>A3</option><option>A4</option>
-            </optgroup>
-            <optgroup label="B ティア（IQ90〜104）">
-              <option>B1</option><option>B2</option><option>B3</option><option>B4</option>
-            </optgroup>
-            <optgroup label="C ティア（IQ89以下）">
-              <option>C1</option><option>C2</option><option>C3</option><option>C4</option>
-            </optgroup>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:5px">MBTIタイプで絞り込み</label>
-          <select id="filter-mbti" onchange="renderPersonaTable()" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;color:#334155">
-            <option value="">すべてのタイプ</option>
-            <optgroup label="NT（分析家）"><option>INTJ</option><option>INTP</option><option>ENTJ</option><option>ENTP</option></optgroup>
-            <optgroup label="NF（外交官）"><option>INFJ</option><option>INFP</option><option>ENFJ</option><option>ENFP</option></optgroup>
-            <optgroup label="SJ（番人）"><option>ISTJ</option><option>ISFJ</option><option>ESTJ</option><option>ESFJ</option></optgroup>
-            <optgroup label="SP（探検家）"><option>ISTP</option><option>ISFP</option><option>ESTP</option><option>ESFP</option></optgroup>
-          </select>
-        </div>
-        <button onclick="document.getElementById('filter-rank').value='';document.getElementById('filter-mbti').value='';renderPersonaTable()" class="btn btn-secondary btn-sm">リセット</button>
-        <span id="persona-count-label" style="font-size:12px;color:#94a3b8;font-weight:500;align-self:center"></span>
-      </div>
-      <div style="overflow-x:auto">
-        <table class="persona-matrix-table" id="persona-matrix-table"></table>
-      </div>
-    </div>
-
     <!-- カテゴリ別目標スコア設定 -->
     <div class="logic-section">
       <h3>🎯 カテゴリ別目標スコア設定</h3>
@@ -2585,50 +2528,6 @@ function switchTabById(name) {
 
 // ===== ロジック一覧タブ描画 =====
 function renderLogicTab() {
-  // ランク詳細テーブル
-  const rankTable = document.getElementById('rank-detail-table');
-  const tierColors = { S:'#7c3aed', A:'#2563eb', B:'#16a34a', C:'#d97706' };
-  const tierClass  = { S:'rank-cell-s', A:'rank-cell-a', B:'rank-cell-b', C:'rank-cell-c' };
-  rankTable.innerHTML = `
-    <thead><tr>
-      <th style="width:60px">ランク</th>
-      <th>思考力</th><th>実行力</th><th>育成方針</th>
-    </tr></thead>
-    <tbody>${Object.entries(rankData).map(([rank, d]) => {
-      const tier = rank[0];
-      return `<tr>
-        <td><span class="rank-cell ${tierClass[tier]}" style="min-width:40px;font-size:13px">${rank}</span></td>
-        <td>${d.thinking}</td>
-        <td>${d.execution}</td>
-        <td>${d.growth}</td>
-      </tr>`;
-    }).join('')}</tbody>`;
-
-  // MBTIグループ
-  const groupGrid = document.getElementById('mbti-group-grid');
-  const groupColorBg = { NT:'#e9d8f5', NF:'#d4f0b0', SJ:'#c0d8f0', SP:'#fde5c0' };
-  const groupColorText = { NT:'#5b21b6', NF:'#2d6a1f', SJ:'#1a3a6e', SP:'#7c3100' };
-  const groupColorBorder = { NT:'#c4a8e0', NF:'#96d468', SJ:'#7ab0d8', SP:'#f5a855' };
-  const chipBg = { NT:'#f0e4fa', NF:'#e2f5c8', SJ:'#d4e8f8', SP:'#fef0d8' };
-  const typesByGroup = {};
-  Object.entries(mbtiData).forEach(([type, d]) => {
-    if (!typesByGroup[d.group]) typesByGroup[d.group] = [];
-    typesByGroup[d.group].push({ type, name: d.name });
-  });
-  groupGrid.innerHTML = Object.entries(mbtiGroupData).map(([grp, gd]) => `
-    <div class="mbti-group-block" style="background:${groupColorBg[grp]};border-color:${groupColorBorder[grp]}">
-      <div class="mg-title" style="color:${groupColorText[grp]}">${grp} — ${gd.name}</div>
-      <div class="mg-style" style="color:${groupColorText[grp]};opacity:0.75">${gd.style}</div>
-      <div class="mbti-type-chips">
-        ${(typesByGroup[grp]||[]).map(t => `
-          <span class="mbti-type-chip" style="background:${chipBg[grp]};color:${groupColorText[grp]}">${t.type} <span style="font-weight:500;opacity:0.8">${t.name}</span></span>
-        `).join('')}
-      </div>
-    </div>`).join('');
-
-  // ペルソナテーブル（256パターン、フィルター付き）
-  renderPersonaTable();
-
   // カテゴリ別目標スコアエディター
   renderTargetEditor();
 
@@ -3021,6 +2920,8 @@ function resetThresholds() {
 
 // ===== ペルソナテーブル（フィルター付き 256パターン）=====
 function renderPersonaTable() {
+  const table = document.getElementById('persona-matrix-table');
+  if (!table) return;
   const rankFilter  = (document.getElementById('filter-rank')  || {}).value || '';
   const mbtiFilter  = (document.getElementById('filter-mbti')  || {}).value || '';
   const rankOrder   = ['S1','S2','S3','S4','A1','A2','A3','A4','B1','B2','B3','B4','C1','C2','C3','C4'];
@@ -3054,8 +2955,6 @@ function renderPersonaTable() {
   const countEl = document.getElementById('persona-count-label');
   if (countEl) countEl.textContent = `${total}件表示`;
 
-  const table = document.getElementById('persona-matrix-table');
-  if (!table) return;
   table.innerHTML = `
     <thead><tr>
       <th style="width:80px">ランク</th>
