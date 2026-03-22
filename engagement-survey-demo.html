@@ -1541,16 +1541,41 @@ function sanitize(str) {
 
 // GAS通信ヘルパー（CORS完全回避版 + APIキー + セッショントークン）
 
-// 書き込み用: imgタグでGET（レスポンス不要）
+// 書き込み用: 小さいデータはimgタグGET、大きいデータはformタグPOST
 function gasPost(payload) {
   if (!GAS_URL) return Promise.resolve(null);
   payload.apiKey = API_KEY;
   payload.token = _sessionToken;
   const params = new URLSearchParams({ action: payload.action, data: JSON.stringify(payload), apiKey: API_KEY, token: _sessionToken });
+  const url = GAS_URL + '?' + params.toString();
+  // URLが2000文字超 → form POST で送信（URL長制限回避）
+  if (url.length > 2000) {
+    return new Promise(resolve => {
+      const iframe = document.createElement('iframe');
+      iframe.name = '_gasPostFrame' + Date.now();
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = GAS_URL;
+      form.target = iframe.name;
+      form.style.display = 'none';
+      ['action', 'data', 'apiKey', 'token'].forEach(k => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = k;
+        input.value = k === 'data' ? JSON.stringify(payload) : k === 'action' ? payload.action : k === 'apiKey' ? API_KEY : _sessionToken;
+        form.appendChild(input);
+      });
+      document.body.appendChild(form);
+      iframe.onload = () => { setTimeout(() => { iframe.remove(); form.remove(); }, 1000); resolve({ ok: true }); };
+      form.submit();
+    });
+  }
   return new Promise(resolve => {
     const img = new Image();
     img.onload = img.onerror = () => resolve({ ok: true });
-    img.src = GAS_URL + '?' + params.toString();
+    img.src = url;
   });
 }
 
@@ -1652,8 +1677,29 @@ localStorage.setItem = function(key, value) {
   if (_skipSync) return;
   if (SYNC_KEYS.includes(key)) {
     saveSettingToCloud(key);
-  } else if (key.startsWith('es_profile_')) {
+  } else if (key.startsWith('es_profile_') || key.startsWith('es_biziq_')) {
     saveSettingToCloud(key);
+  }
+};
+
+// ローカルのBizIQデータをクラウドに一括同期
+function syncLocalBizIQToCloud() {
+  if (!GAS_URL) return;
+  for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    if (key && key.startsWith('es_biziq_')) {
+      saveSettingToCloud(key);
+    }
+  }
+}
+
+// localStorageのremoveItemをフック → クラウド側も空値で上書き（削除扱い）
+const _origRemoveItem = localStorage.removeItem.bind(localStorage);
+localStorage.removeItem = function(key) {
+  _origRemoveItem(key);
+  if (_skipSync) return;
+  if (SYNC_KEYS.includes(key) || key.startsWith('es_profile_') || key.startsWith('es_biziq_')) {
+    if (GAS_URL) gasPost({ action: 'saveSettings', key, value: '' });
   }
 };
 
@@ -3028,6 +3074,7 @@ function doLogin() {
           reloadAllSettings();
           rebuildEmpData();
           renderDashboard();
+          syncLocalBizIQToCloud();
         });
       });
       return;
@@ -5026,6 +5073,8 @@ rebuildEmpData();
       loadAllSettingsFromCloud().then(() => {
         rebuildEmpData();
         renderDashboard();
+        // ローカルのBizIQデータをクラウドに同期（未同期分）
+        syncLocalBizIQToCloud();
       });
     });
   } else if (_sessionRole === 'employee' && _sessionEmpId) {
