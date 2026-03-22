@@ -3781,9 +3781,7 @@ function reloadAllSettings() {
 }
 
 function getDeptsFromEmployees() {
-  const fromEmps = [...new Set(Object.values(employees).map(e => e.dept).filter(Boolean))];
-  const merged = [...new Set([...deptList, ...fromEmps])].sort();
-  return merged;
+  return [...new Set([...deptList])].sort();
 }
 
 function renderDeptManager() {
