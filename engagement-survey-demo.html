@@ -1325,25 +1325,40 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
 // ↓ ステップ3でデプロイ後に取得するURLをここに貼り付ける
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwNGZUdEMSMHklI6dz-XlVGqYTmALukzUWCkzeuvo8lh1qQSLowcl6x6vvUp5Prk8zWUA/exec';
 
-// GAS通信ヘルパー（全てGETで送信 — CORS問題を完全回避）
-async function gasCall(params) {
-  if (!GAS_URL) return null;
-  try {
-    const url = GAS_URL + '?' + new URLSearchParams(params).toString();
-    const res = await fetch(url);
-    return await res.json();
-  } catch (e) {
-    console.warn('GAS error:', e);
-    return null;
-  }
-}
+// GAS通信ヘルパー（CORS完全回避版）
 
+// 書き込み用: imgタグでGET（レスポンス不要、CORS無関係）
 function gasPost(payload) {
-  return gasCall({ action: payload.action, data: JSON.stringify(payload) });
+  if (!GAS_URL) return Promise.resolve(null);
+  const params = new URLSearchParams({ action: payload.action, data: JSON.stringify(payload) });
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = img.onerror = () => resolve({ ok: true });
+    img.src = GAS_URL + '?' + params.toString();
+  });
 }
 
+// 読み込み用: scriptタグでJSONP（CORS無関係）
+let _gasCallbackId = 0;
 function gasGet(params) {
-  return gasCall(params);
+  if (!GAS_URL) return Promise.resolve(null);
+  return new Promise(resolve => {
+    const cbName = '_gasCb' + (++_gasCallbackId) + '_' + Date.now();
+    const timeout = setTimeout(() => { cleanup(); resolve(null); }, 10000);
+
+    window[cbName] = function(data) { cleanup(); resolve(data); };
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    params.callback = cbName;
+    const script = document.createElement('script');
+    script.src = GAS_URL + '?' + new URLSearchParams(params).toString();
+    script.onerror = () => { cleanup(); resolve(null); };
+    document.head.appendChild(script);
+  });
 }
 
 async function submitToGoogleSheets(empId, month, answers) {

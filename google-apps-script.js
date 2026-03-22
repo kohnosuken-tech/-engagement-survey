@@ -4,11 +4,13 @@
 // ============================================================
 
 const SHEET_RESPONSES = 'responses';
+var _currentCallback = '';
 
 function doGet(e) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const action = e.parameter.action;
+    _currentCallback = e.parameter.callback || '';
 
     // dataパラメータがある場合はJSON解析（書き込み系）
     var data = e.parameter;
@@ -131,8 +133,13 @@ function handleLoadSettings(ss, data) {
   return jsonResponse({ ok: true, data: result });
 }
 
-// ===== JSONレスポンス =====
+// ===== JSONレスポンス（JSONP対応） =====
 function jsonResponse(obj) {
+  if (_currentCallback) {
+    return ContentService
+      .createTextOutput(_currentCallback + '(' + JSON.stringify(obj) + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
