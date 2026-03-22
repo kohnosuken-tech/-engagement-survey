@@ -36,47 +36,81 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
   /* ===== 庭園テーマ ログイン ===== */
   #screen-login {
     align-items: center; justify-content: center; position: relative; overflow: hidden;
-    background: url('login-bg.png') center/cover no-repeat;
-    background-color: #2d4a2d;
+    background-color: #0a0a0a;
+  }
+  #screen-login .login-bg {
+    position: absolute; inset: 0; background: url('login-bg.png') center/cover no-repeat;
+    animation: kenBurns 25s ease-in-out infinite alternate;
+    transform-origin: center;
+  }
+  @keyframes kenBurns {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.08) translate(-1%, -1%); }
   }
   #screen-login::before {
-    content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: rgba(0,0,0,0.15);
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse at 50% 30%, transparent 30%, rgba(0,0,0,0.4) 100%);
   }
   #screen-login::after {
-    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 200px; pointer-events: none;
-    background: linear-gradient(0deg, rgba(0,0,0,0.4), transparent);
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 250px; pointer-events: none; z-index: 1;
+    background: linear-gradient(0deg, rgba(0,0,0,0.6), transparent);
   }
-  /* 苔のテクスチャ風ドット */
-  .garden-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  /* 光の筋 */
+  .light-ray {
+    position: absolute; top: -10%; left: 45%; width: 200px; height: 120%; z-index: 1;
+    background: linear-gradient(180deg, rgba(255,255,200,0.06), transparent 70%);
+    transform: rotate(8deg); pointer-events: none;
+    animation: rayPulse 8s ease-in-out infinite;
+  }
+  @keyframes rayPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+  }
+  /* 蛍のような光粒 */
+  .garden-particles { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
   .garden-particle {
-    position: absolute; border-radius: 50%; opacity: 0.15;
-    animation: gardenFloat 15s ease-in-out infinite;
+    position: absolute; border-radius: 50%;
+    animation: fireflyFloat linear infinite;
   }
-  @keyframes gardenFloat {
-    0%, 100% { transform: translateY(0) scale(1); opacity: 0.1; }
-    50% { transform: translateY(-20px) scale(1.1); opacity: 0.2; }
+  @keyframes fireflyFloat {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.6; }
+    100% { transform: translateY(-100vh) translateX(30px); opacity: 0; }
   }
   #screen-login .login-title {
-    position: absolute; top: 36px; left: 40px; z-index: 2;
+    position: absolute; top: 36px; left: 40px; z-index: 3;
+    animation: titleFadeIn 1.5s cubic-bezier(0.16,1,0.3,1) both;
+    animation-delay: 0.3s;
+  }
+  @keyframes titleFadeIn {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
   }
   #screen-login .login-title h1 {
     font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 700;
     letter-spacing: 1px; margin: 0;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
   }
   #screen-login .login-title .login-subtitle {
     font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 3px; text-transform: uppercase;
     font-weight: 500; margin-top: 2px;
   }
   #screen-login .card {
-    position: absolute; bottom: 32px; right: 32px; z-index: 1;
+    position: absolute; bottom: 32px; right: 32px; z-index: 2;
     border-radius: 16px;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.35);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.06);
     padding: 16px 20px;
     text-align: left;
+    animation: cardSlideUp 1.2s cubic-bezier(0.16,1,0.3,1) both;
+    animation-delay: 0.6s;
+  }
+  @keyframes cardSlideUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   .login-fields {
     display: flex; gap: 8px; align-items: center;
@@ -94,6 +128,7 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
   .login-fields input:focus {
     outline: none; border-color: rgba(255,255,255,0.4);
     background: rgba(255,255,255,0.12);
+    box-shadow: 0 0 20px rgba(255,255,255,0.08);
   }
   #screen-login .btn-primary {
     padding: 10px 16px; min-width: 0;
@@ -698,6 +733,8 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
 
 <!-- ログイン -->
 <div id="screen-login" class="screen active">
+  <div class="login-bg"></div>
+  <div class="light-ray"></div>
   <div class="garden-particles" id="garden-particles"></div>
   <div class="login-title">
     <h1>エンゲージメントサーベイ</h1>
@@ -4711,21 +4748,22 @@ rebuildEmpData();
   }
 })();
 
-// 庭園パーティクル（ログイン画面の浮遊する光）
+// 蛍パーティクル
 (function initGardenParticles() {
   const container = document.getElementById('garden-particles');
   if (!container) return;
-  const colors = ['#8bba78', '#a3cc8f', '#6b9e5a', '#c4d8a8', '#78a862'];
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 20; i++) {
     const p = document.createElement('div');
     p.className = 'garden-particle';
-    const size = 4 + Math.random() * 12;
+    const size = 2 + Math.random() * 4;
+    const duration = 12 + Math.random() * 18;
     p.style.cssText = `
       width:${size}px; height:${size}px;
-      left:${Math.random()*100}%; top:${Math.random()*100}%;
-      background:${colors[Math.floor(Math.random()*colors.length)]};
-      animation-delay:${Math.random()*15}s;
-      animation-duration:${10+Math.random()*10}s;
+      left:${Math.random()*100}%; bottom:${-Math.random()*20}%;
+      background: radial-gradient(circle, rgba(200,230,150,0.8), rgba(150,200,100,0.2));
+      box-shadow: 0 0 ${size*3}px rgba(180,220,130,0.3);
+      animation-delay:${Math.random()*duration}s;
+      animation-duration:${duration}s;
     `;
     container.appendChild(p);
   }
