@@ -1325,55 +1325,25 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
 // ↓ ステップ3でデプロイ後に取得するURLをここに貼り付ける
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbwNGZUdEMSMHklI6dz-XlVGqYTmALukzUWCkzeuvo8lh1qQSLowcl6x6vvUp5Prk8zWUA/exec';
 
-// GAS通信ヘルパー（CORS対応: POSTはiframe form送信、GETはscript JSONP風）
-function gasPost(payload) {
-  return new Promise(resolve => {
-    if (!GAS_URL) { resolve(null); return; }
-    try {
-      // hidden formでPOST（CORS制限を回避）
-      const iframe = document.createElement('iframe');
-      iframe.name = 'gas_post_' + Date.now();
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = GAS_URL;
-      form.target = iframe.name;
-
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = 'payload';
-      input.value = JSON.stringify(payload);
-      form.appendChild(input);
-
-      document.body.appendChild(form);
-      iframe.onload = () => {
-        setTimeout(() => { iframe.remove(); form.remove(); }, 1000);
-        resolve({ ok: true });
-      };
-      iframe.onerror = () => {
-        iframe.remove(); form.remove();
-        resolve(null);
-      };
-      form.submit();
-    } catch (e) {
-      console.warn('GAS POST error:', e);
-      resolve(null);
-    }
-  });
-}
-
-async function gasGet(params) {
+// GAS通信ヘルパー（全てGETで送信 — CORS問題を完全回避）
+async function gasCall(params) {
   if (!GAS_URL) return null;
   try {
     const url = GAS_URL + '?' + new URLSearchParams(params).toString();
     const res = await fetch(url);
     return await res.json();
   } catch (e) {
-    console.warn('GAS GET error:', e);
+    console.warn('GAS error:', e);
     return null;
   }
+}
+
+function gasPost(payload) {
+  return gasCall({ action: payload.action, data: JSON.stringify(payload) });
+}
+
+function gasGet(params) {
+  return gasCall(params);
 }
 
 async function submitToGoogleSheets(empId, month, answers) {
