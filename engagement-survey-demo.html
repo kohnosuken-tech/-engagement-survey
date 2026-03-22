@@ -57,59 +57,60 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
     0%, 100% { transform: translateY(0) scale(1); opacity: 0.1; }
     50% { transform: translateY(-20px) scale(1.1); opacity: 0.2; }
   }
+  #screen-login .login-title {
+    position: absolute; top: 36px; left: 40px; z-index: 2;
+  }
+  #screen-login .login-title h1 {
+    font-size: 16px; color: rgba(255,255,255,0.9); font-weight: 700;
+    letter-spacing: 1px; margin: 0;
+  }
+  #screen-login .login-title .login-subtitle {
+    font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 3px; text-transform: uppercase;
+    font-weight: 500; margin-top: 2px;
+  }
   #screen-login .card {
-    position: absolute; bottom: 0; left: 0; right: 0; z-index: 1;
-    border-radius: 24px 24px 0 0;
-    background: rgba(255,255,255,0.35);
-    backdrop-filter: blur(32px) saturate(1.4);
-    -webkit-backdrop-filter: blur(32px) saturate(1.4);
-    box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
-    padding: 32px 36px 40px;
+    position: absolute; bottom: 32px; right: 32px; z-index: 1;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    padding: 16px 20px;
     text-align: left;
   }
-  #screen-login h1 {
-    font-size: 18px; margin-bottom: 2px; color: rgba(255,255,255,0.95); font-weight: 800;
-    letter-spacing: 2px;
-  }
-  #screen-login .login-subtitle {
-    font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 4px; text-transform: uppercase;
-    font-weight: 600; margin-bottom: 20px;
-  }
-  #screen-login > .card > p { color: rgba(255,255,255,0.5); margin-bottom: 16px; font-size: 12px; font-weight: 500; }
   .login-fields {
-    display: flex; gap: 10px; margin-bottom: 14px;
+    display: flex; gap: 8px; align-items: center;
   }
   .login-fields input {
-    flex: 1; padding: 12px 14px;
-    border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
-    font-size: 14px; text-align: center; letter-spacing: 2px;
+    width: 110px; padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+    font-size: 13px; text-align: center; letter-spacing: 1px;
     transition: all 0.3s;
     font-family: 'Inter', monospace; font-weight: 600;
-    background: rgba(0,0,0,0.3);
+    background: rgba(255,255,255,0.08);
     color: #fff;
   }
-  .login-fields input::placeholder { color: rgba(255,255,255,0.35); letter-spacing: 1px; font-size: 13px; }
+  .login-fields input::placeholder { color: rgba(255,255,255,0.3); letter-spacing: 1px; font-size: 12px; }
   .login-fields input:focus {
-    outline: none; border-color: rgba(255,255,255,0.5);
-    box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
-    background: rgba(0,0,0,0.4);
+    outline: none; border-color: rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.12);
   }
   #screen-login .btn-primary {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.25);
-    box-shadow: none;
-    letter-spacing: 3px; color: #fff;
+    padding: 10px 16px; min-width: 0;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: none; color: #fff; font-size: 16px;
+    border-radius: 8px;
   }
   #screen-login .btn-primary:hover {
-    background: rgba(255,255,255,0.25);
-    transform: none;
-    box-shadow: none;
-  }
-  #screen-login .btn-primary:active {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.22);
     transform: none; box-shadow: none;
   }
-  .login-error { color: #ff8a8a; font-size: 12px; margin-top: 6px; font-weight: 500; }
+  #screen-login .btn-primary:active {
+    background: rgba(255,255,255,0.08);
+    transform: none; box-shadow: none;
+  }
+  .login-error { color: #ff8a8a; font-size: 11px; margin-top: 6px; font-weight: 500; }
 
   /* サーベイ */
   #screen-survey { align-items: flex-start; justify-content: center; padding: 40px 20px; background: linear-gradient(160deg, #eef2ff 0%, #faf5ff 50%, #f0fdf4 100%); }
@@ -698,13 +699,15 @@ if (typeof pdfjsLib !== 'undefined') pdfjsLib.GlobalWorkerOptions.workerSrc = ''
 <!-- ログイン -->
 <div id="screen-login" class="screen active">
   <div class="garden-particles" id="garden-particles"></div>
-  <div class="card">
+  <div class="login-title">
     <h1>エンゲージメントサーベイ</h1>
     <div class="login-subtitle">Engagement Survey</div>
+  </div>
+  <div class="card">
     <div class="login-fields">
       <input type="text" id="login-id" placeholder="ID" maxlength="10">
       <input type="password" id="login-pw" placeholder="PASS" onkeydown="if(event.key==='Enter')doLogin()">
-      <button class="btn btn-primary" onclick="doLogin()">ログイン</button>
+      <button class="btn btn-primary" onclick="doLogin()">→</button>
     </div>
     <p class="login-error" id="login-error"></p>
   </div>
