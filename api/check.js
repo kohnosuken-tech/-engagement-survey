@@ -6,7 +6,8 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   try {
-    const { empId, month } = req.method === 'POST' ? req.body : req.query;
+    const { month } = req.method === 'POST' ? req.body : req.query;
+    const empId = user.empId; // トークンから取得（なりすまし防止）
     if (!empId || !month) return res.status(400).json({ ok: false, error: 'empId and month required' });
 
     const results = await queryDB('surveys', {
@@ -19,6 +20,6 @@ module.exports = async function handler(req, res) {
     return res.json({ submitted: results.length > 0 });
   } catch (e) {
     console.error('check error:', e);
-    return res.status(500).json({ ok: false, error: e.message });
+    return res.status(500).json({ ok: false, error: 'internal_error' });
   }
 };

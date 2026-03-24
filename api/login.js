@@ -3,7 +3,7 @@ const { createToken, setCors } = require('../lib/auth');
 const crypto = require('crypto');
 
 module.exports = async function handler(req, res) {
-  setCors(res);
+  setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   try {

@@ -18,6 +18,6 @@ module.exports = async function handler(req, res) {
     return res.json({ ok: true, data });
   } catch (e) {
     console.error('settings-load error:', e);
-    return res.status(500).json({ ok: false, error: e.message });
+    return res.status(500).json({ ok: false, error: 'internal_error' });
   }
 };

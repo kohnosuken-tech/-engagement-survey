@@ -29,6 +29,6 @@ module.exports = async function handler(req, res) {
     return res.json({ ok: true });
   } catch (e) {
     console.error('settings-save error:', e);
-    return res.status(500).json({ ok: false, error: e.message });
+    return res.status(500).json({ ok: false, error: 'internal_error' });
   }
 };
