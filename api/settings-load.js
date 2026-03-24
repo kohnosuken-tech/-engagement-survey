@@ -2,7 +2,7 @@ const { queryDB, P } = require('../lib/notion');
 const { requireAuth } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
-  const user = requireAuth(req, res, 'admin');
+  const user = requireAuth(req, res);
   if (!user) return;
 
   try {
