@@ -1456,6 +1456,27 @@ async function loadAllFromGoogleSheets(month) {
   return data?.ok ? data.data : null;
 }
 
+// サーバーからサーベイ回答をlocalStorageに復元
+async function restoreSurveyAnswersFromServer() {
+  try {
+    const data = await loadAllFromGoogleSheets('');
+    if (!data || data.length === 0) return 0;
+    let count = 0;
+    _skipSync = true;
+    for (const entry of data) {
+      if (entry.empId && entry.month && entry.answers) {
+        const key = `es_${entry.empId}_${entry.month}`;
+        const value = typeof entry.answers === 'string' ? entry.answers : JSON.stringify(entry.answers);
+        _origSetItem(key, value);
+        count++;
+      }
+    }
+    _skipSync = false;
+    console.log('サーバーから' + count + '件のサーベイ回答を復元');
+    return count;
+  } catch (e) { console.warn('サーベイ回答復元失敗:', e); _skipSync = false; return 0; }
+}
+
 // ===== Google Sheets 設定データ同期 =====
 const SYNC_KEYS = [
   'es_employees', 'es_emp_passwords', 'es_survey_period',
@@ -1479,7 +1500,7 @@ async function loadAllSettingsFromCloud() {
     let count = 0;
     _skipSync = true;
     for (const [key, value] of Object.entries(data.data)) {
-      if (value && key.startsWith('es_')) {
+      if (value && value !== '__DELETED__' && key.startsWith('es_')) {
         _origSetItem(key, value);
         count++;
         console.log('restored:', key, value.substring?.(0,50) || value);
@@ -1514,13 +1535,14 @@ function syncLocalBizIQToCloud() {
   }
 }
 
-// localStorageのremoveItemをフック → クラウド側も空値で上書き（削除扱い）
+// localStorageのremoveItemをフック → クラウド側は削除マーカーで上書き（復元可能に）
 const _origRemoveItem = localStorage.removeItem.bind(localStorage);
 localStorage.removeItem = function(key) {
   _origRemoveItem(key);
   if (_skipSync) return;
   if (SYNC_KEYS.includes(key) || key.startsWith('es_profile_') || key.startsWith('es_biziq_')) {
-    apiPost('settings-save', { key, value: '' });
+    // 空文字ではなく削除マーカーを送信（settings-saveで空文字だとNotionページが永久削除されるため）
+    apiPost('settings-save', { key, value: '__DELETED__' });
   }
 };
 
@@ -2893,7 +2915,10 @@ function doLogin() {
         }
         Object.keys(employees).forEach(k => delete employees[k]);
         emps.forEach(e => { employees[e.empId] = e; });
-        loadAllSettingsFromCloud().then(() => {
+        Promise.all([
+          loadAllSettingsFromCloud(),
+          restoreSurveyAnswersFromServer(),
+        ]).then(() => {
           reloadAllSettings();
           rebuildEmpData();
           renderDashboard();
@@ -2906,18 +2931,22 @@ function doLogin() {
 
     // 社員ログイン
     currentEmpId = result.empId;
-    if (hasSubmittedThisMonth(result.empId)) {
-      document.getElementById('already-name').textContent = sanitize(result.name);
-      showScreen('already');
-      return;
-    }
-    const draft = localStorage.getItem('es_draft_' + result.empId);
-    answers = {};
-    if (draft) { try { answers = JSON.parse(draft); showToast('前回の途中保存データを復元しました'); } catch(e) {} }
-    showScreen('survey');
-    document.getElementById('survey-user-name').textContent = `${sanitize(result.name)}（${sanitize(result.dept)}）`;
-    currentPage = 0;
-    renderPage();
+    // サーバー側で提出済みチェック（localStorageが空でも正しく判定）
+    const currentMonth = months[months.length - 1];
+    checkSubmittedOnline(result.empId, currentMonth).then(submitted => {
+      if (submitted || hasSubmittedThisMonth(result.empId)) {
+        document.getElementById('already-name').textContent = sanitize(result.name);
+        showScreen('already');
+        return;
+      }
+      const draft = localStorage.getItem('es_draft_' + result.empId);
+      answers = {};
+      if (draft) { try { answers = JSON.parse(draft); showToast('前回の途中保存データを復元しました'); } catch(e) {} }
+      showScreen('survey');
+      document.getElementById('survey-user-name').textContent = `${sanitize(result.name)}（${sanitize(result.dept)}）`;
+      currentPage = 0;
+      renderPage();
+    });
   });
 }
 
@@ -4917,29 +4946,34 @@ function switchMasterTab(name, btn) {
       }
       Object.keys(employees).forEach(k => delete employees[k]);
       emps.forEach(e => { employees[e.empId] = e; });
-      loadAllSettingsFromCloud().then(() => {
+      Promise.all([
+        loadAllSettingsFromCloud(),
+        restoreSurveyAnswersFromServer(),
+      ]).then(() => {
         reloadAllSettings();
         rebuildEmpData();
         renderDashboard();
         renderIdList();
         renderEmployeeList();
-        // syncLocalBizIQToCloudは復元直後に実行するとクラウドデータを空で上書きするため削除
       });
     });
   } else if (_sessionRole === 'employee' && _sessionEmpId) {
     currentEmpId = _sessionEmpId;
-    if (hasSubmittedThisMonth(_sessionEmpId)) {
-      document.getElementById('already-name').textContent = sanitize(_sessionName);
-      showScreen('already');
-      return;
-    }
-    const draft = localStorage.getItem('es_draft_' + _sessionEmpId);
-    answers = {};
-    if (draft) { try { answers = JSON.parse(draft); } catch(e) {} }
-    showScreen('survey');
-    document.getElementById('survey-user-name').textContent = `${sanitize(_sessionName)}（${sanitize(_sessionDept)}）`;
-    currentPage = 0;
-    renderPage();
+    const currentMonth = months[months.length - 1];
+    checkSubmittedOnline(_sessionEmpId, currentMonth).then(submitted => {
+      if (submitted || hasSubmittedThisMonth(_sessionEmpId)) {
+        document.getElementById('already-name').textContent = sanitize(_sessionName);
+        showScreen('already');
+        return;
+      }
+      const draft = localStorage.getItem('es_draft_' + _sessionEmpId);
+      answers = {};
+      if (draft) { try { answers = JSON.parse(draft); } catch(e) {} }
+      showScreen('survey');
+      document.getElementById('survey-user-name').textContent = `${sanitize(_sessionName)}（${sanitize(_sessionDept)}）`;
+      currentPage = 0;
+      renderPage();
+    });
   }
 })();
 
