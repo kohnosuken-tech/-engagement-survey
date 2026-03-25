@@ -1479,8 +1479,7 @@ async function restoreSurveyAnswersFromServer() {
 
 // ===== Google Sheets 設定データ同期 =====
 const SYNC_KEYS = [
-  'es_employees', 'es_emp_passwords', 'es_survey_period',
-  'es_cat_thresholds', 'es_cat_targets', 'es_admin_accounts',
+  'es_survey_period', 'es_cat_thresholds', 'es_cat_targets',
   'es_custom_questions', 'es_action_plan', 'es_question_cat_map', 'es_cat_weights', 'es_dept_list'
 ];
 
@@ -1500,7 +1499,12 @@ async function loadAllSettingsFromCloud() {
     let count = 0;
     _skipSync = true;
     for (const [key, value] of Object.entries(data.data)) {
-      if (value && value !== '__DELETED__' && key.startsWith('es_')) {
+      if (value === '__DELETED__' && key.startsWith('es_')) {
+        // クラウドで削除済み → ローカルも削除（他端末の削除を反映）
+        _origRemoveItem(key);
+        continue;
+      }
+      if (value && key.startsWith('es_')) {
         _origSetItem(key, value);
         count++;
         console.log('restored:', key, value.substring?.(0,50) || value);
@@ -1569,8 +1573,21 @@ function reloadEmployees() {
 }
 
 const categories = ['仕事のやりがい', '上司との関係性', 'チームワーク', '業務量・残業', '会社への信頼', '成長・キャリア'];
-const months = ['2025-10', '2025-11', '2025-12', '2026-01', '2026-02', '2026-03'];
-const monthLabels = { '2025-10':'10月', '2025-11':'11月', '2025-12':'12月', '2026-01':'1月', '2026-02':'2月', '2026-03':'3月' };
+// 月リストを動的生成（2025-10 から現在月まで、最大12ヶ月）
+const months = (() => {
+  const result = [];
+  const now = new Date();
+  const endY = now.getFullYear(), endM = now.getMonth() + 1;
+  let y = 2025, m = 10;
+  while (result.length < 12) {
+    const key = `${y}-${String(m).padStart(2, '0')}`;
+    result.push(key);
+    if (y === endY && m === endM) break;
+    m++; if (m > 12) { m = 1; y++; }
+  }
+  return result;
+})();
+const monthLabels = Object.fromEntries(months.map(k => [k, parseInt(k.split('-')[1]) + '月']));
 
 // 月次・社員別スコアデータ（responsesシートから動的に構築）
 const empData = {};
@@ -1869,8 +1886,10 @@ function calcScoresFromAnswers(answers) {
 }
 
 function rebuildEmpData() {
+  // 削除済み社員のデータをクリアしてから再構築
+  Object.keys(empData).forEach(k => { if (!employees[k]) delete empData[k]; });
   Object.keys(employees).forEach(empId => {
-    if (!empData[empId]) empData[empId] = {};
+    empData[empId] = {};
     months.forEach(m => {
       const saved = localStorage.getItem(`es_${empId}_${m}`);
       if (!saved) return;

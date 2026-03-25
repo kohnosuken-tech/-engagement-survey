@@ -9,6 +9,12 @@ module.exports = async function handler(req, res) {
     const { key, value } = req.method === 'POST' ? req.body : req.query;
     if (!key) return res.status(400).json({ ok: false, error: 'key required' });
 
+    // 一般社員は自分のBizIQ/プロフィールのみ書込可。システム設定はadmin限定
+    const isPersonalKey = key.startsWith('es_biziq_') || key.startsWith('es_profile_');
+    if (!isPersonalKey && user.role !== 'admin') {
+      return res.status(403).json({ ok: false, error: 'forbidden' });
+    }
+
     const existing = await queryDB('settings', {
       property: 'key', title: { equals: key },
     });

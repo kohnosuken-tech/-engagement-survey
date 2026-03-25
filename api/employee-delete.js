@@ -17,6 +17,14 @@ module.exports = async function handler(req, res) {
       await updatePage(existing[0].id, { isActive: P.checkbox(false) });
     }
 
+    // Auth DBのレコードもアーカイブ（ログイン不可にする）
+    const authRecords = await queryDB('auth', {
+      property: 'empId', rich_text: { equals: empId },
+    });
+    for (const auth of authRecords) {
+      await updatePage(auth.id, {}, true); // archive
+    }
+
     return res.json({ ok: true });
   } catch (e) {
     console.error('employee-delete error:', e);
