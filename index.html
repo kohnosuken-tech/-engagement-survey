@@ -976,6 +976,10 @@ if (typeof pdfjsLib !== 'undefined') {
           <label>戦闘力</label>
           <input type="number" id="new-emp-bp" placeholder="例：8500" min="0">
         </div>
+        <div class="form-group" style="max-width:260px">
+          <label>メールアドレス</label>
+          <input type="email" id="new-emp-email" placeholder="例：yamada@al-bo.io">
+        </div>
         <div class="form-group" style="max-width:160px">
           <label>MBTIタイプ</label>
           <select id="new-emp-mbti">
@@ -1283,6 +1287,72 @@ if (typeof pdfjsLib !== 'undefined') {
       </div>
     </div>
 
+    <!-- メール配信設定 -->
+    <div style="background:white;border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:28px;border:1px solid rgba(0,0,0,0.04)">
+      <div class="section-title" style="margin-bottom:8px">✉️ サーベイ案内メール配信</div>
+      <p style="font-size:13px;color:#64748b;margin-bottom:20px">毎月指定した日時に、メールアドレスが登録されている社員へサーベイの案内メールを自動送信します。<br>送信元: <strong>albonahr@al-bo.io</strong>（GAS設置先のアカウント）</p>
+
+      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px">送信日（毎月）</label>
+          <select id="mail-send-day" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit;color:#1e293b">
+            ${Array.from({length:28},(_,i)=>`<option value="${i+1}">${i+1}日</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px">送信時刻</label>
+          <select id="mail-send-hour" style="padding:8px 12px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-family:inherit;color:#1e293b">
+            ${Array.from({length:24},(_,i)=>`<option value="${i}">${String(i).padStart(2,'0')}:00</option>`).join('')}
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="saveMailSchedule()">💾 保存</button>
+        <span id="mail-schedule-msg" style="font-size:13px;color:#16a34a;font-weight:600;display:none">✅ 保存しました</span>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px">メール件名</label>
+        <input type="text" id="mail-subject" value="【ALBONA】今月のエンゲージメントサーベイのお願い" style="width:100%;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;color:#1e293b">
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px">メール本文テンプレート</label>
+        <textarea id="mail-body-template" rows="10" style="width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;color:#1e293b;line-height:1.7;resize:vertical">{name} さん
+
+お疲れ様です。
+
+今月のエンゲージメントサーベイの回答をお願いいたします。
+所要時間は約3〜5分です。
+
+▼ 回答はこちら
+https://albona-survey.vercel.app
+
+ログインID: {empId}
+
+回答期限: {deadline}
+
+ご協力よろしくお願いいたします。
+
+ALBONA 人事部</textarea>
+        <p style="font-size:11px;color:#94a3b8;margin-top:6px">使える変数: {name}=氏名, {empId}=社員ID, {dept}=部署, {deadline}=回答期限</p>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px">GAS ウェブアプリURL</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="flex:1;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:12px;font-family:monospace;color:#1e293b">
+          <button class="btn btn-secondary btn-sm" onclick="saveGasUrl()">保存</button>
+        </div>
+        <p style="font-size:11px;color:#94a3b8;margin-top:6px">albonahr@al-bo.io のGASウェブアプリURLを入力してください。テスト送信・社員リスト同期に使います。</p>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="testSendMail()">📧 テスト送信（自分宛）</button>
+        <span id="mail-test-msg" style="font-size:13px;font-weight:600;display:none"></span>
+      </div>
+
+      <div id="mail-schedule-current" style="margin-top:16px;font-size:13px;color:#64748b;background:#f8fafc;padding:10px 14px;border-radius:8px;display:inline-block"></div>
+    </div>
+
     <!-- 管理者アカウント管理 -->
     <div style="background:white;border-radius:14px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.06);margin-bottom:28px;border:1px solid rgba(0,0,0,0.04)">
       <div class="section-title" style="margin-bottom:8px">👤 管理者アカウント管理</div>
@@ -1480,7 +1550,8 @@ async function restoreSurveyAnswersFromServer() {
 // ===== Google Sheets 設定データ同期 =====
 const SYNC_KEYS = [
   'es_survey_period', 'es_cat_thresholds', 'es_cat_targets',
-  'es_custom_questions', 'es_action_plan', 'es_question_cat_map', 'es_cat_weights', 'es_dept_list'
+  'es_custom_questions', 'es_action_plan', 'es_question_cat_map', 'es_cat_weights', 'es_dept_list',
+  'es_mail_schedule'
 ];
 
 // 設定を1つ保存
@@ -3341,12 +3412,13 @@ function issueNewId() {
   if (!dept) { showToast('⚠️ 所属部署を入力してください'); return; }
   const iq         = parseInt(document.getElementById('new-emp-iq').value) || 0;
   const battlePower = parseInt(document.getElementById('new-emp-bp').value) || 0;
+  const email      = document.getElementById('new-emp-email').value.trim();
   const mbti       = document.getElementById('new-emp-mbti').value || '';
   const newId = nextEmpId();
   const pw = generatePassword();
 
   showToast('登録中...');
-  apiPost('employee-save', { empId: newId, name, dept, role: 'employee', iq, battlePower, mbti, password: pw }).then(saveRes => {
+  apiPost('employee-save', { empId: newId, name, dept, role: 'employee', iq, battlePower, mbti, email, password: pw }).then(saveRes => {
     if (!saveRes?.ok) { showToast('❌ 保存に失敗しました'); return Promise.reject(); }
     return fetchEmployeesFromServer();
   }).then(emps => {
@@ -3372,6 +3444,7 @@ function issueNewId() {
     document.getElementById('new-emp-dept').value = '';
     document.getElementById('new-emp-iq').value = '';
     document.getElementById('new-emp-bp').value = '';
+    document.getElementById('new-emp-email').value = '';
     document.getElementById('new-emp-mbti').value = '';
     rebuildEmpData();
     renderIdList();
@@ -3407,17 +3480,19 @@ function renderIdList() {
         ${statsRow}
       </td>
       <td><span class="dept-chip">${emp.dept}</span></td>
+      <td style="font-size:12px;color:#475569">${emp.email ? `<span style="font-family:monospace">${sanitize(emp.email)}</span>` : '<span style="color:#94a3b8">未登録</span>'}</td>
       <td style="font-family:'Inter',monospace;font-size:13px;font-weight:500;color:#6366f1">${emp.password || '<span style="color:#94a3b8">未設定</span>'}</td>
       <td style="color:#94a3b8;font-size:13px">${issuedAt}</td>
       <td>
         <button class="copy-btn" onclick="copyIdToClipboard('${id}')">📋 ID</button>
+        <button class="copy-btn" onclick="promptChangeEmail('${id}')" style="margin-left:6px">✉️ メール</button>
         <button class="copy-btn" onclick="promptChangePassword('${id}')" style="margin-left:6px">🔑 PW変更</button>
         <button onclick="deleteEmployee('${id}')" class="copy-btn" style="color:#dc2626;border-color:#fecaca;margin-left:6px">🗑 削除</button>
       </td>
     </tr>`;
   });
   table.innerHTML = `<table>
-    <thead><tr><th>社員ID</th><th>氏名 ／ ランク・MBTI</th><th>所属部署</th><th>パスワード</th><th>発行日</th><th>操作</th></tr></thead>
+    <thead><tr><th>社員ID</th><th>氏名 ／ ランク・MBTI</th><th>所属部署</th><th>メール</th><th>パスワード</th><th>発行日</th><th>操作</th></tr></thead>
     <tbody>${rows.join('')}</tbody>
   </table>`;
 }
@@ -3452,6 +3527,20 @@ function promptChangePassword(empId) {
       if (employees[empId]) employees[empId].password = newPw.trim();
       renderIdList();
     } else showToast('❌ パスワード更新に失敗しました');
+  });
+}
+
+function promptChangeEmail(empId) {
+  const current = employees[empId]?.email || '';
+  const newEmail = prompt(`${empId} のメールアドレスを入力：`, current);
+  if (newEmail === null) return;
+  showToast('メールアドレス更新中...');
+  apiPost('employee-save', { empId, email: newEmail.trim() }).then(res => {
+    if (res?.ok) {
+      showToast('✅ メールアドレスを更新しました');
+      if (employees[empId]) employees[empId].email = newEmail.trim();
+      renderIdList();
+    } else showToast('❌ メールアドレス更新に失敗しました');
   });
 }
 
@@ -3515,6 +3604,82 @@ function saveSurveyPeriod() {
   if (cur) cur.textContent = `現在の期間：${surveyPeriod.start} 〜 ${surveyPeriod.end}`;
   const msg = document.getElementById('period-save-msg');
   if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+}
+
+// ===== メール配信設定 =====
+function saveMailSchedule() {
+  const day = document.getElementById('mail-send-day').value;
+  const hour = document.getElementById('mail-send-hour').value;
+  const subject = document.getElementById('mail-subject').value.trim();
+  const body = document.getElementById('mail-body-template').value;
+  const config = { day: Number(day), hour: Number(hour), subject, bodyTemplate: body };
+  const configStr = JSON.stringify(config);
+  localStorage.setItem('es_mail_schedule', configStr);
+  apiPost('settings-save', { key: 'es_mail_schedule', value: configStr }).then(() => {
+    const msg = document.getElementById('mail-schedule-msg');
+    if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 2500); }
+    renderMailScheduleStatus(config);
+    showToast('✅ メール配信設定を保存しました');
+  });
+}
+
+function loadMailSchedule() {
+  const saved = localStorage.getItem('es_mail_schedule');
+  if (saved) {
+    try { applyMailScheduleConfig(JSON.parse(saved)); } catch(e) {}
+  }
+  const gasUrl = localStorage.getItem('es_gas_url');
+  if (gasUrl) {
+    const el = document.getElementById('gas-url-input');
+    if (el) el.value = gasUrl;
+  }
+}
+
+function applyMailScheduleConfig(config) {
+  if (!config) return;
+  document.getElementById('mail-send-day').value = config.day || 1;
+  document.getElementById('mail-send-hour').value = config.hour || 9;
+  if (config.subject) document.getElementById('mail-subject').value = config.subject;
+  if (config.bodyTemplate) document.getElementById('mail-body-template').value = config.bodyTemplate;
+  renderMailScheduleStatus(config);
+}
+
+function saveGasUrl() {
+  const url = document.getElementById('gas-url-input').value.trim();
+  if (!url) { showToast('⚠️ URLを入力してください'); return; }
+  localStorage.setItem('es_gas_url', url);
+  showToast('✅ GAS URLを保存しました');
+}
+
+function renderMailScheduleStatus(config) {
+  const el = document.getElementById('mail-schedule-current');
+  if (el) el.innerHTML = `現在の設定：毎月 <strong>${config.day}日 ${String(config.hour).padStart(2,'0')}:00</strong> に自動送信`;
+}
+
+function testSendMail() {
+  const subject = document.getElementById('mail-subject').value.trim();
+  const body = document.getElementById('mail-body-template').value;
+  const msgEl = document.getElementById('mail-test-msg');
+  if (!subject) { showToast('⚠️ 件名を入力してください'); return; }
+  msgEl.style.display = 'inline';
+  msgEl.style.color = '#6366f1';
+  msgEl.textContent = '送信中...';
+  // GASのテスト送信エンドポイントを呼ぶ
+  const gasUrl = localStorage.getItem('es_gas_url');
+  if (!gasUrl) { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ GAS URLが未設定です（設定 → GAS URL）'; return; }
+  const params = new URLSearchParams({
+    action: 'testMail',
+    callback: '',
+    data: JSON.stringify({ subject, bodyTemplate: body }),
+  });
+  fetch(gasUrl + '?' + params.toString())
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) { msgEl.style.color = '#16a34a'; msgEl.textContent = '✅ テストメール送信完了（GASアカウント宛）'; }
+      else { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ ' + (data.error || '送信失敗'); }
+    })
+    .catch(e => { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ 通信エラー: ' + e.message; })
+    .finally(() => setTimeout(() => msgEl.style.display = 'none', 5000));
 }
 
 function exportScoreCSV() {
@@ -3725,6 +3890,7 @@ function reloadAllSettings() {
     const saved = localStorage.getItem('es_question_cat_map');
     if (saved) Object.assign(questionCatMap, JSON.parse(saved));
   } catch(e) {}
+  loadMailSchedule();
 }
 
 function getDeptsFromEmployees() {

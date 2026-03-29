@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const body = req.method === 'POST' ? req.body : req.query;
-    const { empId, name, dept, role, iq, battlePower, mbti, password } = body;
+    const { empId, name, dept, role, iq, battlePower, mbti, email, password } = body;
     if (!empId) return res.status(400).json({ ok: false, error: 'empId required' });
 
     // 既存社員を検索
@@ -23,6 +23,7 @@ module.exports = async function handler(req, res) {
     if (iq !== undefined) props.iq = P.num(Number(iq));
     if (battlePower !== undefined) props.battlePower = P.num(Number(battlePower));
     if (mbti !== undefined) props.mbti = P.rich(mbti);
+    if (email !== undefined) props.email = P.rich(email);
     if (password) props.password = P.rich(password);
 
     if (existing.length > 0) {
