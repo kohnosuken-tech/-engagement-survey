@@ -240,20 +240,14 @@ function handleSendMails(ss) {
   }
 }
 
-// テスト送信（指定されたメールアドレスに送信）
+// テスト送信（albonahr@al-bo.io に固定送信 — パラメータ不要）
 function handleTestMail(ss, data) {
   try {
-    var subject = data.subject || '【テスト】エンゲージメントサーベイ案内';
-    var bodyTemplate = data.bodyTemplate || 'テスト送信です';
-    var testTo = data.testTo || 'albonahr@al-bo.io';
+    var testTo = 'albonahr@al-bo.io';
+    var subject = '[テスト] 【ALBONA】エンゲージメントサーベイ案内';
+    var body = 'テストユーザー さん\n\nお疲れ様です。\n\n今月のエンゲージメントサーベイの回答をお願いいたします。\n所要時間は約3〜5分です。\n\n▼ 回答はこちら\nhttps://albona-survey.vercel.app\n\nログインID: EMP000\n\nご協力よろしくお願いいたします。\n\nALBONA 人事部';
 
-    var body = bodyTemplate
-      .replace(/\{name\}/g, 'テストユーザー')
-      .replace(/\{empId\}/g, 'EMP000')
-      .replace(/\{dept\}/g, 'テスト部')
-      .replace(/\{deadline\}/g, '月末');
-
-    GmailApp.sendEmail(testTo, '[テスト] ' + subject, body);
+    GmailApp.sendEmail(testTo, subject, body);
     return jsonResponse({ ok: true, sentTo: testTo });
   } catch(e) {
     return jsonResponse({ error: e.message });

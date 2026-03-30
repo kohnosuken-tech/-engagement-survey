@@ -3657,25 +3657,17 @@ function renderMailScheduleStatus(config) {
 }
 
 function testSendMail() {
-  const subject = document.getElementById('mail-subject').value.trim();
-  const body = document.getElementById('mail-body-template').value;
   const msgEl = document.getElementById('mail-test-msg');
-  if (!subject) { showToast('⚠️ 件名を入力してください'); return; }
   msgEl.style.display = 'inline';
   msgEl.style.color = '#6366f1';
   msgEl.textContent = '送信中...';
-  // GASのテスト送信エンドポイントを呼ぶ
   const gasUrl = localStorage.getItem('es_gas_url');
   if (!gasUrl) { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ GAS URLが未設定です（設定 → GAS URL）'; return; }
-  const params = new URLSearchParams({
-    action: 'testMail',
-    callback: '',
-    data: JSON.stringify({ subject, bodyTemplate: body, testTo: 'albonahr@al-bo.io' }),
-  });
-  fetch(gasUrl + '?' + params.toString())
+  // テスト送信はパラメータ最小限（URL長制限対策）
+  fetch(gasUrl + '?action=testMail')
     .then(r => r.json())
     .then(data => {
-      if (data.ok) { msgEl.style.color = '#16a34a'; msgEl.textContent = '✅ テストメール送信完了（GASアカウント宛）'; }
+      if (data.ok) { msgEl.style.color = '#16a34a'; msgEl.textContent = '✅ テストメール送信完了（albonahr@al-bo.io 宛）'; }
       else { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ ' + (data.error || '送信失敗'); }
     })
     .catch(e => { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ 通信エラー: ' + e.message; })
