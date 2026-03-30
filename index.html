@@ -3663,15 +3663,24 @@ function testSendMail() {
   msgEl.textContent = '送信中...';
   const gasUrl = localStorage.getItem('es_gas_url');
   if (!gasUrl) { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ GAS URLが未設定です（設定 → GAS URL）'; return; }
-  // テスト送信はパラメータ最小限（URL長制限対策）
-  fetch(gasUrl + '?action=testMail')
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok) { msgEl.style.color = '#16a34a'; msgEl.textContent = '✅ テストメール送信完了（albonahr@al-bo.io 宛）'; }
-      else { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ ' + (data.error || '送信失敗'); }
-    })
-    .catch(e => { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ 通信エラー: ' + e.message; })
-    .finally(() => setTimeout(() => msgEl.style.display = 'none', 5000));
+  // JSONP方式でCORS回避
+  const cbName = '_gasTestCb_' + Date.now();
+  window[cbName] = function(data) {
+    if (data.ok) { msgEl.style.color = '#16a34a'; msgEl.textContent = '✅ テストメール送信完了（albonahr@al-bo.io 宛）'; }
+    else { msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ ' + (data.error || '送信失敗'); }
+    setTimeout(() => msgEl.style.display = 'none', 5000);
+    delete window[cbName];
+    document.body.removeChild(script);
+  };
+  const script = document.createElement('script');
+  script.src = gasUrl + '?action=testMail&callback=' + cbName;
+  script.onerror = function() {
+    msgEl.style.color = '#dc2626'; msgEl.textContent = '❌ 通信エラー';
+    setTimeout(() => msgEl.style.display = 'none', 5000);
+    delete window[cbName];
+    document.body.removeChild(script);
+  };
+  document.body.appendChild(script);
 }
 
 function exportScoreCSV() {
