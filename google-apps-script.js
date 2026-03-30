@@ -158,9 +158,8 @@ function jsonResponse(obj) {
 
 // ===== Vercel APIからメール送信対象の社員データを取得 =====
 function fetchEmployeesFromAPI() {
-  var props = PropertiesService.getScriptProperties();
-  var apiBase = props.getProperty('VERCEL_API_BASE') || 'https://albona-survey.vercel.app';
-  var secret = props.getProperty('MAIL_API_SECRET') || '';
+  var apiBase = 'https://albona-survey.vercel.app';
+  var secret = '7b43146c5b54e222c6fa451d5ed7f074';
 
   var url = apiBase + '/api/mail-employees?secret=' + encodeURIComponent(secret);
   var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
