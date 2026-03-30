@@ -3670,7 +3670,7 @@ function testSendMail() {
   const params = new URLSearchParams({
     action: 'testMail',
     callback: '',
-    data: JSON.stringify({ subject, bodyTemplate: body }),
+    data: JSON.stringify({ subject, bodyTemplate: body, testTo: 'albonahr@al-bo.io' }),
   });
   fetch(gasUrl + '?' + params.toString())
     .then(r => r.json())

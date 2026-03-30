@@ -240,12 +240,12 @@ function handleSendMails(ss) {
   }
 }
 
-// テスト送信（GASアカウント自身のメールアドレスに送信）
+// テスト送信（指定されたメールアドレスに送信）
 function handleTestMail(ss, data) {
   try {
     var subject = data.subject || '【テスト】エンゲージメントサーベイ案内';
     var bodyTemplate = data.bodyTemplate || 'テスト送信です';
-    var myEmail = Session.getActiveUser().getEmail();
+    var testTo = data.testTo || 'albonahr@al-bo.io';
 
     var body = bodyTemplate
       .replace(/\{name\}/g, 'テストユーザー')
@@ -253,8 +253,8 @@ function handleTestMail(ss, data) {
       .replace(/\{dept\}/g, 'テスト部')
       .replace(/\{deadline\}/g, '月末');
 
-    GmailApp.sendEmail(myEmail, '[テスト] ' + subject, body);
-    return jsonResponse({ ok: true, sentTo: myEmail });
+    GmailApp.sendEmail(testTo, '[テスト] ' + subject, body);
+    return jsonResponse({ ok: true, sentTo: testTo });
   } catch(e) {
     return jsonResponse({ error: e.message });
   }
