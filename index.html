@@ -1342,7 +1342,15 @@ ALBONA 人事部</textarea>
           <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/xxxxx/exec" style="flex:1;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:12px;font-family:monospace;color:#1e293b">
           <button class="btn btn-secondary btn-sm" onclick="saveGasUrl()">保存</button>
         </div>
-        <p style="font-size:11px;color:#94a3b8;margin-top:6px">albonahr@al-bo.io のGASウェブアプリURLを入力してください。テスト送信・社員リスト同期に使います。</p>
+        <p style="font-size:11px;color:#94a3b8;margin-top:6px">albonahr@al-bo.io のGASウェブアプリURLを入力してください。</p>
+      </div>
+      <div style="margin-bottom:20px">
+        <label style="display:block;font-size:12px;font-weight:700;color:#475569;margin-bottom:6px">GAS アクセストークン</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="password" id="gas-token-input" placeholder="GASスクリプトプロパティのGAS_ACCESS_TOKENと同じ値" style="flex:1;padding:10px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:12px;font-family:monospace;color:#1e293b">
+          <button class="btn btn-secondary btn-sm" onclick="saveGasToken()">保存</button>
+        </div>
+        <p style="font-size:11px;color:#94a3b8;margin-top:6px">メール送信の認証に使用します。GASのスクリプトプロパティに設定した値と同じにしてください。</p>
       </div>
 
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -3634,6 +3642,11 @@ function loadMailSchedule() {
     const el = document.getElementById('gas-url-input');
     if (el) el.value = gasUrl;
   }
+  const gasToken = localStorage.getItem('es_gas_token');
+  if (gasToken) {
+    const el = document.getElementById('gas-token-input');
+    if (el) el.value = gasToken;
+  }
 }
 
 function applyMailScheduleConfig(config) {
@@ -3650,6 +3663,13 @@ function saveGasUrl() {
   if (!url) { showToast('⚠️ URLを入力してください'); return; }
   localStorage.setItem('es_gas_url', url);
   showToast('✅ GAS URLを保存しました');
+}
+
+function saveGasToken() {
+  const token = document.getElementById('gas-token-input').value.trim();
+  if (!token) { showToast('⚠️ トークンを入力してください'); return; }
+  localStorage.setItem('es_gas_token', token);
+  showToast('✅ GASトークンを保存しました');
 }
 
 function renderMailScheduleStatus(config) {
@@ -3691,7 +3711,8 @@ function sendMailsNow() {
   const gasUrl = localStorage.getItem('es_gas_url');
   if (!gasUrl) { showToast('❌ GAS URLが未設定です'); return; }
   // GASのsendMailsを新しいタブで実行（CORS回避）
-  const w = window.open(gasUrl + '?action=sendMails', '_blank');
+  const gasToken = localStorage.getItem('es_gas_token') || '';
+  const w = window.open(gasUrl + '?action=sendMails&token=' + encodeURIComponent(gasToken), '_blank');
   showToast('📨 送信処理を開始しました。新しいタブで結果を確認してください。');
 }
 
