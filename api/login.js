@@ -2,12 +2,34 @@ const { queryDB, P } = require('../lib/notion');
 const { createToken, setCors } = require('../lib/auth');
 const crypto = require('crypto');
 
+// 簡易Rate Limiting（メモリベース、Vercel Serverless向け）
+const loginAttempts = new Map();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1分
+const RATE_LIMIT_MAX = 5; // 1分あたり5回まで
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const attempts = loginAttempts.get(ip) || [];
+  const recent = attempts.filter(t => now - t < RATE_LIMIT_WINDOW);
+  if (recent.length >= RATE_LIMIT_MAX) return false;
+  recent.push(now);
+  loginAttempts.set(ip, recent);
+  return true;
+}
+
 module.exports = async function handler(req, res) {
   setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
 
+  if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method_not_allowed' });
+
+  const ip = req.headers['x-forwarded-for'] || req.connection?.remoteAddress || 'unknown';
+  if (!checkRateLimit(ip)) {
+    return res.status(429).json({ ok: false, error: 'too_many_requests' });
+  }
+
   try {
-    const { empId, password } = req.method === 'POST' ? req.body : req.query;
+    const { empId, password } = req.body;
     if (!empId || !password) return res.status(400).json({ ok: false, error: 'empId and password required' });
 
     // Auth DBから該当社員を検索
@@ -24,9 +46,17 @@ module.exports = async function handler(req, res) {
     const storedHash = P.readRich(authPage.properties.passwordHash);
     const role = P.readSelect(authPage.properties.role) || 'employee';
 
-    // パスワード検証
-    const inputHash = crypto.createHash('sha256').update(password).digest('hex');
-    if (storedHash !== inputHash) {
+    // パスワード検証（scrypt形式 or レガシーsha256形式に対応）
+    let passwordValid = false;
+    if (storedHash.startsWith('scrypt:')) {
+      const [, salt, hash] = storedHash.split(':');
+      const inputHash = crypto.scryptSync(password, salt, 64).toString('hex');
+      passwordValid = crypto.timingSafeEqual(Buffer.from(inputHash, 'hex'), Buffer.from(hash, 'hex'));
+    } else {
+      const inputHash = crypto.createHash('sha256').update(password).digest('hex');
+      passwordValid = storedHash === inputHash;
+    }
+    if (!passwordValid) {
       return res.json({ ok: false, error: 'invalid_credentials' });
     }
 

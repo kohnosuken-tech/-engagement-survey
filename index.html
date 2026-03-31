@@ -2159,9 +2159,9 @@ function renderDashboard() {
                 <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc;color:#334155">
                   <span style="font-size:13px;font-weight:800;color:#6366f1;background:#eef2ff;padding:3px 8px;border-radius:6px;font-family:'Inter',monospace">${emp.id}</span>
                 </td>
-                <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc;font-weight:600;color:#1e293b">${emp.name}</td>
+                <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc;font-weight:600;color:#1e293b">${sanitize(emp.name)}</td>
                 <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc">
-                  <span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;font-size:12px;color:#64748b;font-weight:600">${emp.dept}</span>
+                  <span style="background:#f1f5f9;padding:3px 10px;border-radius:20px;font-size:12px;color:#64748b;font-weight:600">${sanitize(emp.dept)}</span>
                 </td>
                 <td style="padding:13px 16px;font-size:14px;border-top:1px solid #f8fafc">
                   <span style="background:#fef2f2;color:#dc2626;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid #fecaca">未回答</span>
@@ -2444,10 +2444,10 @@ function renderEmployeeList() {
       return `
       <tr class="clickable" onclick="showDetail('${r.id}')">
         <td>
-          <div style="font-weight:600;color:#1e293b">${r.name}</div>
+          <div style="font-weight:600;color:#1e293b">${sanitize(r.name)}</div>
           <div style="display:flex;gap:4px;margin-top:2px">
             <span style="font-size:11px;color:#6366f1;background:#eef2ff;padding:1px 6px;border-radius:4px;font-family:monospace;font-weight:700">${r.id}</span>
-            <span style="font-size:11px;background:#f1f5f9;padding:1px 6px;border-radius:4px;color:#64748b">${r.dept}</span>
+            <span style="font-size:11px;background:#f1f5f9;padding:1px 6px;border-radius:4px;color:#64748b">${sanitize(r.dept)}</span>
           </div>
         </td>
         <td>${r.rank ? `<span class="rank-badge-sm ${rc}">${r.rank}</span>` : '<span style="color:#cbd5e1">―</span>'}</td>
@@ -3475,14 +3475,14 @@ function renderIdList() {
       <td><span class="id-badge">${id}</span>${newMark}</td>
       <td>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span style="font-weight:600;color:#1e293b">${emp.name}</span>
+          <span style="font-weight:600;color:#1e293b">${sanitize(emp.name)}</span>
           ${rankBadge}${mbtiBadge}
         </div>
         ${statsRow}
       </td>
-      <td><span class="dept-chip">${emp.dept}</span></td>
+      <td><span class="dept-chip">${sanitize(emp.dept)}</span></td>
       <td style="font-size:12px;color:#475569">${emp.email ? `<span style="font-family:monospace">${sanitize(emp.email)}</span>` : '<span style="color:#94a3b8">未登録</span>'}</td>
-      <td style="font-family:'Inter',monospace;font-size:13px;font-weight:500;color:#6366f1">${emp.password || '<span style="color:#94a3b8">未設定</span>'}</td>
+      <td style="font-family:'Inter',monospace;font-size:13px;font-weight:500;color:#6366f1">${emp.hasPassword ? '<span style="color:#16a34a">設定済</span>' : '<span style="color:#94a3b8">未設定</span>'}</td>
       <td style="color:#94a3b8;font-size:13px">${issuedAt}</td>
       <td>
         <button class="copy-btn" onclick="copyIdToClipboard('${id}')">📋 ID</button>
@@ -3525,7 +3525,7 @@ function promptChangePassword(empId) {
   apiPost('employee-save', { empId, password: newPw.trim() }).then(res => {
     if (res?.ok) {
       showToast('✅ パスワードを更新しました');
-      if (employees[empId]) employees[empId].password = newPw.trim();
+      if (employees[empId]) employees[empId].hasPassword = true;
       renderIdList();
     } else showToast('❌ パスワード更新に失敗しました');
   });
@@ -3566,7 +3566,7 @@ function copyUnsubmittedList() {
   const submitted = getSubmittedIds(month);
   const unsubmitted = Object.entries(employees)
     .filter(([id]) => !submitted.includes(id))
-    .map(([id, emp]) => `${id} ${emp.name}（${emp.dept}）`)
+    .map(([id, emp]) => `${id} ${sanitize(emp.name)}（${sanitize(emp.dept)}）`)
     .join('\n');
   if (!unsubmitted) { showToast('未回答者はいません'); return; }
   navigator.clipboard?.writeText(unsubmitted).then(() => showToast('📋 コピーしました'))
@@ -3740,7 +3740,7 @@ function showDeptDetail(dept, month) {
     }).join('');
     const diffText = r.diff !== null ? `<span style="color:${r.diff>=0?'#16a34a':'#dc2626'};font-size:12px;margin-left:4px">${r.diff>0?'+':''}${r.diff}</span>` : '';
     return `<tr style="border-bottom:1px solid #f1f5f9">
-      <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#334155;white-space:nowrap">${r.name}</td>
+      <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#334155;white-space:nowrap">${sanitize(r.name)}</td>
       <td style="padding:10px 12px;font-size:15px;font-weight:800;color:#1e293b">${r.total}点${diffText}</td>
       ${catCells}
     </tr>`;
@@ -3837,7 +3837,7 @@ function renderAdminAccountList() {
     <tbody>${accounts.map((a, i) => `
       <tr style="border-bottom:1px solid #f1f5f9">
         <td style="padding:10px 12px;font-size:13px;font-weight:700;color:#334155">${a.name}</td>
-        <td style="padding:10px 12px;font-size:13px;font-family:monospace;color:#6366f1">${a.password}</td>
+        <td style="padding:10px 12px;font-size:13px;font-family:monospace;color:#6366f1">${a.hasPassword ? '<span style="color:#16a34a">設定済</span>' : '<span style="color:#94a3b8">未設定</span>'}</td>
         <td style="padding:10px 12px;font-size:12px;color:#94a3b8">${a.createdAt || '—'}</td>
         <td style="padding:10px 12px;text-align:right">${accounts.length > 1 ? `<button onclick="deleteAdminAccount(${i})" style="background:none;border:1px solid #fecaca;color:#dc2626;border-radius:6px;padding:3px 10px;font-size:12px;cursor:pointer">削除</button>` : ''}</td>
       </tr>`).join('')}
@@ -4077,8 +4077,8 @@ function renderActionPlan() {
       return `<div onclick="selectActionEmployee('${id}')" style="background:${isSelected?'#eef2ff':'white'};border:2px solid ${isSelected?'#6366f1':'#e2e8f0'};border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.15s">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
           <div>
-            <div style="font-size:13px;font-weight:700;color:#1e293b">${emp.name}</div>
-            <div style="font-size:11px;color:#94a3b8;margin-top:2px">${emp.dept}${rankInfo ? ' · ' + rankInfo : ''}</div>
+            <div style="font-size:13px;font-weight:700;color:#1e293b">${sanitize(emp.name)}</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px">${sanitize(emp.dept)}${rankInfo ? ' · ' + rankInfo : ''}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-size:14px;font-weight:800;color:#1e293b">${total}点</div>

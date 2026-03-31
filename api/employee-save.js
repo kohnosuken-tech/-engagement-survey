@@ -38,7 +38,8 @@ module.exports = async function handler(req, res) {
 
     // パスワードが指定されていればAuth DBも更新
     if (password) {
-      const hash = crypto.createHash('sha256').update(password).digest('hex');
+      const salt = crypto.randomBytes(16).toString('hex');
+      const hash = 'scrypt:' + salt + ':' + crypto.scryptSync(password, salt, 64).toString('hex');
       const authExisting = await queryDB('auth', {
         property: 'empId', rich_text: { equals: empId },
       });

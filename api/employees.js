@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
         battlePower: P.readNum(p.battlePower),
         mbti: P.readRich(p.mbti),
         email: P.readRich(p.email),
-        password: P.readRich(p.password),
+        hasPassword: !!P.readRich(p.password),
         isActive: P.readCheckbox(p.isActive),
         issuedAt: P.readRich(p.issuedAt),
       };

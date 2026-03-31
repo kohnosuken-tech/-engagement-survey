@@ -6,11 +6,26 @@
 const SHEET_RESPONSES = 'responses';
 var _currentCallback = '';
 
+// GASアクセストークン検証
+function verifyGasToken(e) {
+  var token = e.parameter.token || '';
+  var props = PropertiesService.getScriptProperties();
+  var expected = props.getProperty('GAS_ACCESS_TOKEN') || '';
+  if (!expected || token !== expected) return false;
+  return true;
+}
+
 function doGet(e) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const action = e.parameter.action;
     _currentCallback = e.parameter.callback || '';
+
+    // 読み取り系以外はトークン認証が必要
+    var writeActions = ['submit', 'saveSettings', 'sendMails'];
+    if (writeActions.indexOf(action) >= 0 && !verifyGasToken(e)) {
+      return jsonResponse({ error: 'unauthorized' });
+    }
 
     // dataパラメータがある場合はJSON解析（書き込み系）
     var data = e.parameter;
@@ -158,11 +173,15 @@ function jsonResponse(obj) {
 
 // ===== Vercel APIからメール送信対象の社員データを取得 =====
 function fetchEmployeesFromAPI() {
-  var apiBase = 'https://engagementsurvey-system-nvlq.vercel.app';
-  var secret = '7b43146c5b54e222c6fa451d5ed7f074';
+  var props = PropertiesService.getScriptProperties();
+  var apiBase = props.getProperty('VERCEL_API_BASE') || 'https://engagementsurvey-system-nvlq.vercel.app';
+  var secret = props.getProperty('MAIL_API_SECRET') || '';
 
-  var url = apiBase + '/api/mail-employees?secret=' + encodeURIComponent(secret);
-  var response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+  var url = apiBase + '/api/mail-employees';
+  var response = UrlFetchApp.fetch(url, {
+    muteHttpExceptions: true,
+    headers: { 'x-mail-secret': secret }
+  });
   var data = JSON.parse(response.getContentText());
   if (!data.ok || !data.data) return [];
   return data.data;

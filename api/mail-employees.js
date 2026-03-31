@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
 
   // GASからの呼び出し用: シークレットキーで認証
-  const secret = req.headers['x-mail-secret'] || req.query.secret || '';
+  const secret = req.headers['x-mail-secret'] || '';
   const envSecret = (process.env.MAIL_API_SECRET || '').trim();
   if (!envSecret || secret !== envSecret) {
     return res.status(403).json({ ok: false, error: 'forbidden' });
