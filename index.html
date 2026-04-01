@@ -2151,7 +2151,7 @@ function renderDashboard() {
   if (month === currentMonth) {
     const submittedIds = getSubmittedIds(month);
     const unsubmitted = Object.entries(employees)
-      .filter(([id]) => !submittedIds.includes(id))
+      .filter(([id, emp]) => emp.role !== 'admin' && !submittedIds.includes(id))
       .map(([id, emp]) => ({ id, ...emp }));
 
     unsubSection.style.display = 'block';
@@ -2386,7 +2386,7 @@ function renderDashboard() {
       else if (avg >= 60) { color1 = '#fbbf24'; color2 = '#f59e0b'; textColor = '#d97706'; }
       else { color1 = '#f87171'; color2 = '#ef4444'; textColor = '#dc2626'; }
       return `<div style="background:white;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.2s" onclick="showDeptDetail('${dept}', '${month}')">
-        <div style="width:100px;font-size:13px;font-weight:700;color:#374151">${dept}</div>
+        <div style="width:100px;font-size:13px;font-weight:700;color:#374151">${sanitize(dept)}</div>
         <div style="flex:1;background:#f1f5f9;border-radius:4px;height:12px;overflow:hidden">
           <div style="height:100%;width:${avg}%;background:linear-gradient(90deg,${color1},${color2});border-radius:4px;transition:width 0.5s"></div>
         </div>
@@ -3028,10 +3028,12 @@ function doLogin() {
           restoreSurveyAnswersFromServer(),
         ]).then(() => {
           reloadAllSettings();
+          syncDeptListFromEmployees();
           rebuildEmpData();
           renderDashboard();
           renderIdList();
           renderEmployeeList();
+          renderDeptManager();
         });
       });
       return;
@@ -3937,7 +3939,17 @@ function reloadAllSettings() {
 }
 
 function getDeptsFromEmployees() {
-  return [...new Set([...deptList])].sort();
+  // deptList + 実際の社員データの部署をマージ（実データ優先）
+  const empDepts = Object.values(employees).map(e => e.dept).filter(Boolean);
+  return [...new Set([...deptList, ...empDepts])].sort();
+}
+
+// 社員データからdeptListを自動同期（実データにある部署を追加、社員がいない部署を除去）
+function syncDeptListFromEmployees() {
+  const empDepts = [...new Set(Object.values(employees).filter(e => e.role !== 'admin').map(e => e.dept).filter(Boolean))];
+  // 実際に社員が存在する部署のみ残す
+  deptList = empDepts.sort();
+  localStorage.setItem('es_dept_list', JSON.stringify(deptList));
 }
 
 function renderDeptManager() {
@@ -5179,10 +5191,12 @@ function switchMasterTab(name, btn) {
         restoreSurveyAnswersFromServer(),
       ]).then(() => {
         reloadAllSettings();
+        syncDeptListFromEmployees();
         rebuildEmpData();
         renderDashboard();
         renderIdList();
         renderEmployeeList();
+        renderDeptManager();
       });
     });
   } else if (_sessionRole === 'employee' && _sessionEmpId) {
