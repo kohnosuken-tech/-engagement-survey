@@ -3956,10 +3956,15 @@ function renderDeptManager() {
   const el = document.getElementById('dept-manager-list');
   if (!el) return;
   const depts = getDeptsFromEmployees();
-  el.innerHTML = depts.map(d => `<div style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;font-size:13px;font-weight:600;color:#16a34a">
-    ${sanitize(d)}
-    <span onclick="removeDept('${sanitize(d)}')" style="cursor:pointer;color:#94a3b8;font-size:16px;line-height:1;margin-left:2px" title="削除">&times;</span>
-  </div>`).join('');
+  const empDepts = new Set(Object.values(employees).filter(e => e.role !== 'admin').map(e => e.dept).filter(Boolean));
+  el.innerHTML = depts.map(d => {
+    const hasEmployees = empDepts.has(d);
+    const empCount = Object.values(employees).filter(e => e.dept === d && e.role !== 'admin').length;
+    return `<div style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;background:${hasEmployees ? '#f0fdf4' : '#f8fafc'};border:1px solid ${hasEmployees ? '#bbf7d0' : '#e2e8f0'};border-radius:20px;font-size:13px;font-weight:600;color:${hasEmployees ? '#16a34a' : '#94a3b8'}">
+      ${sanitize(d)}${hasEmployees ? ' <span style="font-size:11px;font-weight:400">(' + empCount + '名)</span>' : ''}
+      <span onclick="removeDept('${sanitize(d)}')" style="cursor:pointer;color:#94a3b8;font-size:16px;line-height:1;margin-left:2px" title="削除">&times;</span>
+    </div>`;
+  }).join('');
   updateDeptOptions();
 }
 
@@ -3977,7 +3982,12 @@ function addDept() {
 }
 
 function removeDept(name) {
-  if (!confirm(`「${name}」を部署一覧から削除しますか？\n※所属社員のデータは変わりません。`)) return;
+  const empsInDept = Object.values(employees).filter(e => e.dept === name && e.role !== 'admin');
+  if (empsInDept.length > 0) {
+    alert(`「${name}」には${empsInDept.length}名の社員が所属しているため削除できません。\n\n先に社員の部署を変更してください。`);
+    return;
+  }
+  if (!confirm(`「${name}」を部署一覧から削除しますか？`)) return;
   deptList = deptList.filter(d => d !== name);
   localStorage.setItem('es_dept_list', JSON.stringify(deptList));
   saveSettingToCloud('es_dept_list');
