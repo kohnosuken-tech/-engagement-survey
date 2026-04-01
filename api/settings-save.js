@@ -8,15 +8,17 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method_not_allowed' });
     const { key, value } = req.body;
-    if (!key) return res.status(400).json({ ok: false, error: 'key required' });
+    if (!key || typeof key !== 'string') return res.status(400).json({ ok: false, error: 'key required' });
+    if (key.length > 200) return res.status(400).json({ ok: false, error: 'key too long' });
+    if (value && typeof value === 'string' && value.length > 50000) return res.status(400).json({ ok: false, error: 'value too large' });
 
     // 一般社員は自分のBizIQ/プロフィールのみ書込可。システム設定はadmin限定
     const isPersonalKey = key.startsWith('es_biziq_') || key.startsWith('es_profile_');
     if (!isPersonalKey && user.role !== 'admin') {
       return res.status(403).json({ ok: false, error: 'forbidden' });
     }
-    // 一般社員は自分のデータのみ書き込み可
-    if (isPersonalKey && user.role !== 'admin' && !key.includes(user.empId)) {
+    // 一般社員は自分のデータのみ書き込み可（完全一致チェック）
+    if (isPersonalKey && user.role !== 'admin' && key !== 'es_biziq_' + user.empId && key !== 'es_profile_' + user.empId) {
       return res.status(403).json({ ok: false, error: 'forbidden' });
     }
 

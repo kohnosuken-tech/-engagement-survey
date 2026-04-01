@@ -21,9 +21,8 @@ function doGet(e) {
     const action = e.parameter.action;
     _currentCallback = e.parameter.callback || '';
 
-    // 読み取り系以外はトークン認証が必要
-    var writeActions = ['submit', 'saveSettings', 'sendMails'];
-    if (writeActions.indexOf(action) >= 0 && !verifyGasToken(e)) {
+    // テストメール以外は全アクションでトークン認証が必要
+    if (action !== 'testMail' && !verifyGasToken(e)) {
       return jsonResponse({ error: 'unauthorized' });
     }
 

@@ -1,7 +1,7 @@
+const { setCors } = require('../lib/auth');
+
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  setCors(req, res);
   if (req.method === 'OPTIONS') return res.status(204).end();
   // セッションはクライアント側で管理しているためサーバー側は常にOK
   return res.json({ ok: true });

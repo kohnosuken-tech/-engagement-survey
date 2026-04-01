@@ -6,9 +6,11 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   try {
-    const { month, answers } = req.method === 'POST' ? req.body : req.query;
+    if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method_not_allowed' });
+    const { month, answers } = req.body;
     const empId = user.empId; // トークンから取得（なりすまし防止）
     if (!empId || !month) return res.status(400).json({ ok: false, error: 'empId and month required' });
+    if (!/^\d{4}-\d{2}$/.test(month)) return res.status(400).json({ ok: false, error: 'invalid month format' });
 
     // 重複チェック
     const existing = await queryDB('surveys', {
@@ -19,8 +21,9 @@ module.exports = async function handler(req, res) {
     });
     if (existing.length > 0) return res.json({ ok: false, error: 'already_submitted' });
 
-    // 回答保存
+    // 回答保存（サイズ制限: 10KB）
     const answersStr = typeof answers === 'string' ? answers : JSON.stringify(answers);
+    if (answersStr.length > 10000) return res.status(400).json({ ok: false, error: 'answers too large' });
     await createPage('surveys', {
       empId: P.rich(empId),
       month: P.rich(month),

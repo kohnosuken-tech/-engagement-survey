@@ -6,9 +6,10 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   try {
-    const { month } = req.method === 'POST' ? req.body : req.query;
+    const { month } = req.query || req.body || {};
     const empId = user.empId; // トークンから取得（なりすまし防止）
     if (!empId || !month) return res.status(400).json({ ok: false, error: 'empId and month required' });
+    if (!/^\d{4}-\d{2}$/.test(month)) return res.status(400).json({ ok: false, error: 'invalid month format' });
 
     const results = await queryDB('surveys', {
       and: [

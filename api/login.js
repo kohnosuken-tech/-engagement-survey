@@ -54,7 +54,8 @@ module.exports = async function handler(req, res) {
       passwordValid = crypto.timingSafeEqual(Buffer.from(inputHash, 'hex'), Buffer.from(hash, 'hex'));
     } else {
       const inputHash = crypto.createHash('sha256').update(password).digest('hex');
-      passwordValid = storedHash === inputHash;
+      passwordValid = storedHash.length === inputHash.length &&
+        crypto.timingSafeEqual(Buffer.from(storedHash), Buffer.from(inputHash));
     }
     if (!passwordValid) {
       return res.json({ ok: false, error: 'invalid_credentials' });

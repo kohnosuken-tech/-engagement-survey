@@ -21,7 +21,7 @@
 <meta name="twitter:description" content="チームの声を可視化するエンゲージメントサーベイツール">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e" crossorigin="anonymous"></script>
 <script>
 if (typeof pdfjsLib !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -3420,8 +3420,10 @@ function nextEmpId() {
 
 function generatePassword() {
   const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+  const arr = new Uint32Array(8);
+  crypto.getRandomValues(arr);
   let pw = '';
-  for (let i = 0; i < 8; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < 8; i++) pw += chars[arr[i] % chars.length];
   return pw;
 }
 
@@ -5104,6 +5106,14 @@ function initBizIQMasterUI() {
   renderBizIQMasterTable();
 }
 
+function deleteBizIQData(id) {
+  const empName = employees[id]?.name || id;
+  if (!confirm(empName + 'の適性検査データを削除しますか？')) return;
+  localStorage.removeItem('es_biziq_' + id);
+  renderBizIQMasterTable();
+  showToast('🗑 削除しました');
+}
+
 function renderBizIQMasterTable() {
   const tbody = document.getElementById('biziq-master-tbody');
   if (!tbody) return;
@@ -5123,7 +5133,7 @@ function renderBizIQMasterTable() {
       <td style="font-size:12px;color:#94a3b8">${d.examDate || '―'}</td>
       <td>
         <button class="detail-link" onclick="showDetail('${id}')">詳細</button>
-        <button class="detail-link" style="background:#fef2f2;color:#dc2626" onclick="if(confirm('${employees[id]?.name}の適性検査データを削除しますか？')){localStorage.removeItem('es_biziq_${id}');renderBizIQMasterTable();showToast('🗑 削除しました')}">削除</button>
+        <button class="detail-link" style="background:#fef2f2;color:#dc2626" onclick="deleteBizIQData('${id}')">削除</button>
       </td>
     </tr>`;
   }).filter(Boolean);

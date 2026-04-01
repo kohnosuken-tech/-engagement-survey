@@ -7,9 +7,16 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   try {
-    const body = req.method === 'POST' ? req.body : req.query;
-    const { empId, name, dept, role, iq, battlePower, mbti, email, password } = body;
-    if (!empId) return res.status(400).json({ ok: false, error: 'empId required' });
+    if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method_not_allowed' });
+    const { empId, name, dept, role, iq, battlePower, mbti, email, password } = req.body;
+    if (!empId || typeof empId !== 'string') return res.status(400).json({ ok: false, error: 'empId required' });
+    if (empId.length > 20) return res.status(400).json({ ok: false, error: 'empId too long' });
+
+    // 入力バリデーション
+    if (name !== undefined && typeof name !== 'string') return res.status(400).json({ ok: false, error: 'invalid name' });
+    if (name && name.length > 100) return res.status(400).json({ ok: false, error: 'name too long' });
+    if (role !== undefined && !['employee', 'admin'].includes(role)) return res.status(400).json({ ok: false, error: 'invalid role' });
+    if (email !== undefined && email !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ ok: false, error: 'invalid email' });
 
     // 既存社員を検索
     const existing = await queryDB('employees', {
@@ -20,11 +27,11 @@ module.exports = async function handler(req, res) {
     if (name !== undefined) props.name = P.title(name);
     if (dept !== undefined) props.dept = P.select(dept);
     if (role !== undefined) props.role = P.select(role);
-    if (iq !== undefined) props.iq = P.num(Number(iq));
-    if (battlePower !== undefined) props.battlePower = P.num(Number(battlePower));
+    if (iq !== undefined) props.iq = P.num(Number(iq) || 0);
+    if (battlePower !== undefined) props.battlePower = P.num(Number(battlePower) || 0);
     if (mbti !== undefined) props.mbti = P.rich(mbti);
     if (email !== undefined) props.email = P.rich(email);
-    if (password) props.password = P.rich(password);
+    // パスワードはEmployees DBに平文保存しない（Auth DBにハッシュのみ保存）
 
     if (existing.length > 0) {
       await updatePage(existing[0].id, props);
