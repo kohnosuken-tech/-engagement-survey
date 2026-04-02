@@ -1,0 +1,32 @@
+# 環境変数・秘密情報
+.env
+.env.*
+.env.local
+.env.production
+.env.staging
+
+# 認証情報
+credentials.json
+serviceAccountKey.json
+service-account.json
+*-credentials.json
+
+# 秘密鍵
+*.pem
+*.key
+*.p12
+*.pfx
+
+# シークレットディレクトリ
+secrets/
+
+# 依存関係・Git
+node_modules/
+.git/
+
+# Vercel
+.vercel/
+
+# OS
+.DS_Store
+Thumbs.db
